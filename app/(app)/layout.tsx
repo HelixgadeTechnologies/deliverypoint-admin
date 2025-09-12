@@ -1,8 +1,8 @@
 
 "use client";
 
+import Header from "@/ui/header-component";
 import Sidebar from "@/ui/sidebar";
-// import Navigation from "@/ui/navigation";
 
 
 export default function AllUserSettingsLayout({
@@ -17,7 +17,7 @@ export default function AllUserSettingsLayout({
         <Sidebar />
       </div>
       <section className="flex-grow flex flex-col overflow-hidden">
-        {/* <Navigation /> */}
+        <Header />
         <div className="flex-grow overflow-y-auto p-6 bg-white">
           {children}
         </div>

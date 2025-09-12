@@ -1,10 +1,16 @@
-"use client"
+"use client";
 
 import { useSidebar } from "@/context/SidebarContext";
+import { sidebarData } from "@/lib/config/sidebar";
 import Image from "next/image";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { Icon } from "@iconify/react";
 
 export default function Sidebar() {
-    const { mobileOpen, closeMobile } = useSidebar();
+  const { mobileOpen, closeMobile } = useSidebar();
+  const router = useRouter();
+  const pathname = usePathname();
   return (
     <>
       {/* overlay for mobile */}
@@ -20,16 +26,54 @@ export default function Sidebar() {
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         } md:translate-x-0 transition-all duration-300 ease-in-out`}
       >
-        <div className="relative w-full h-8">
-            <Image 
+        <div className="relative w-full h-8 py-5">
+          <Image
             src={"/logo-text.svg"}
             alt="DeliverPoint 2025"
             fill
-            className="object-cover"
-            />
+            className="object-contain"
+          />
         </div>
 
-        <section className="flex flex-col justify-between h-full w-full mt-10"></section>
+        <section className="flex flex-col justify-between h-full w-full mt-10">
+          <div className="space-y-1">
+            {sidebarData.map((link, index) => {
+              const isActive = pathname.startsWith(link.url);
+              return (
+                <Link
+                  key={index}
+                  href={link.url}
+                  onClick={() => router.push(link.url)}
+                  className={`h-10 w-full px-4 py-2.5 rounded-lg flex items-center gap-2 ${
+                    isActive
+                      ? "bg-[#0095DA] text-white"
+                      : "hover:bg-gray-50 text-gray-600"
+                  }`}
+                >
+                  <Icon
+                    icon={link.icon}
+                    width={18}
+                    height={18}
+                    color={isActive ? "#FFF" : "#737373"}
+                  />
+                  <span className="text-sm">{link.name}</span>
+                </Link>
+              );
+            })}
+          </div>
+          <div
+            onClick={() => {}}
+            className={`h-10 w-full px-4 py-2.5 rounded-lg flex items-center gap-2 text-[#FF4D4F] cursor-pointer hover:text-red-600 transition-colors duration-300`}
+          >
+            <Icon
+              icon={"streamline:logout-1"}
+              width={18}
+              height={18}
+              color={"#FF4D4F"}
+            />
+            <span className="text-sm">Logout</span>
+          </div>
+        </section>
       </aside>
     </>
   );
