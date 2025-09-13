@@ -18,7 +18,7 @@ export default function AllUserSettingsLayout({
       </div>
       <section className="flex-grow flex flex-col overflow-hidden">
         <Header />
-        <div className="flex-grow overflow-y-auto p-6 bg-white">
+        <div className="flex-grow overflow-y-auto p-6 bg-[#f9fcff]">
           {children}
         </div>
       </section>

@@ -3,3 +3,25 @@
 .primary {
   color: #0095DA;
 }
+
+.scrollable {
+  overflow-y: auto;
+  max-height: 300px; /* example */
+}
+
+/* Webkit browsers */
+.scrollable::-webkit-scrollbar {
+  width: 8px; /* scrollbar thickness */
+}
+
+.scrollable::-webkit-scrollbar-track {
+  background: transparent; 
+}
+
+.scrollable::-webkit-scrollbar-thumb {
+  background: #C9D1DA;
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+  margin: 40px;
+}
+
