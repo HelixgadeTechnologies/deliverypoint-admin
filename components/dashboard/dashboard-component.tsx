@@ -1,6 +1,6 @@
 "use client";
 
-import { recentActivities } from "@/lib/config/recent-activities";
+import { recentActivities } from "@/lib/config/demo-data/recent-activities";
 import ActivityRow from "@/ui/activity-row";
 import AreaChartComponent from "@/ui/area-chart";
 import CardComponent from "@/ui/card-wrapper";
