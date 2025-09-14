@@ -57,8 +57,9 @@ export default function NotificationsTab() {
           width={32}
           color="#0095DA"
           onClick={handleNotifs}
+          className="cursor-pointer"
         />
-        <div className="size-[22px] bg-[#0095DA] text-white rounded-full flex justify-center items-center text-xs absolute -top-1 right-0 cursor-pointer">
+        <div className="size-[22px] bg-[#0095DA] text-white rounded-full flex justify-center items-center text-xs absolute -top-1 right-0">
           3
         </div>
       </div>

@@ -30,7 +30,7 @@ export default function Header() {
             </div>
           </div>
           <NotificationsTab />
-          <Avatar name="Esther Chinda" />
+          <Avatar name="John Doe" />
         </div>
       </header>
 

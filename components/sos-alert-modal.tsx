@@ -5,6 +5,7 @@ import { Icon } from "@iconify/react";
 import Modal from "@/ui/popup-modal";
 import CardComponent from "@/ui/card-wrapper";
 import Heading from "@/ui/text-heading";
+import { useState } from "react";
 
 type Props = {
   isOpen: boolean;
@@ -12,6 +13,15 @@ type Props = {
 };
 
 export default function SOSAlertModal({ isOpen, onClose }: Props) {
+  const [isMapOpen, setIsMapOpen] = useState(false);
+
+    const [selectedSosId, setSelectedSosId] = useState<string | null>(null);
+
+    const openMap = (sosId: string) => {
+    setSelectedSosId(sosId);
+    setIsMapOpen(true);
+    };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} maxWidth="876px">
       <div className="flex items-center justify-between">
@@ -70,13 +80,16 @@ export default function SOSAlertModal({ isOpen, onClose }: Props) {
                 </div>
                 {/* action buttons */}
                 <div className="flex items-center gap-4">
-                  <button className="bg-[#21C788] px-6 py-3 rounded-full h-[46px] w-fit flex items-center justify-center gap-3 cursor-pointer hover:bg-[#15b879]">
+                  <button className="bg-[#21C788] px-6 py-3 rounded-full h-[46px] w-fit flex items-center justify-center gap-3 cursor-pointer hover:bg-[#15b879] transition-colors duration-300 ease-in-out">
                     <Icon icon={"fontisto:phone"} color="#FFF" />
                     <p className="text-sm font-semibold text-white">
                       Call Rider
                     </p>
                   </button>
-                  <button className="bg-white border border-[#7C7979] px-6 py-3 rounded-full h-[46px] w-fit flex items-center justify-center gap-3 cursor-pointer hover:bg-blue-50">
+                  <button
+                    onClick={() => openMap(sos.id)}
+                    className="bg-white border border-[#7C7979] px-6 py-3 rounded-full h-[46px] w-fit flex items-center justify-center gap-3 cursor-pointer hover:bg-blue-50 transition-colors duration-300 ease-in-out"
+                  >
                     <Icon icon={"fa:send"} color="#7C7979" />
                     <p className="text-sm font-semibold text-[#7C7979]">
                       Track Location
@@ -85,6 +98,12 @@ export default function SOSAlertModal({ isOpen, onClose }: Props) {
                 </div>
               </div>
 
+              {isMapOpen && selectedSosId === sos.id && (
+                <div>
+                    location goes here
+                </div>
+              )}
+              {/* grids */}
               <div className="flex justify-between gap-4 h-[170px]">
                 {/* rider location */}
                 <div className="bg-[#F9FAFB] rounded-xl px-3 py-5 w-full space-y-4">
@@ -127,7 +146,9 @@ export default function SOSAlertModal({ isOpen, onClose }: Props) {
                       Current Delivery
                     </p>
                   </div>
-                  <p className="text-[#1F1F1F] font-bold text-base">Order: {sos.currentDelivery}</p>
+                  <p className="text-[#1F1F1F] font-bold text-base">
+                    Order: {sos.currentDelivery}
+                  </p>
                   <p>From: {sos.from}</p>
                   <p>To: {sos.to}</p>
                   <div className="flex gap-2 items-center">

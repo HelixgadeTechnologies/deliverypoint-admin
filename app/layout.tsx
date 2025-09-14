@@ -23,7 +23,7 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   title: "Delivery Point | Admin Dashboard",
   description: "Platform for Admin of Delivery Point Application",
-  icons: '/favicon.png' 
+  icons: '/delivery-point-favicon.svg' 
 };
 
 export default function RootLayout({
