@@ -1,6 +1,5 @@
 "use client";
 
-import { Ticket } from "@/types/support";
 import DashboardStatCard from "@/ui/stat-card";
 import StatusTab from "@/ui/status-tab";
 import Table from "@/ui/table";
@@ -9,99 +8,24 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import SearchInput from "@/ui/forms/search-input";
 import DropDown from "@/ui/forms/select-dropdown";
+import Link from "next/link";
+import { supportHead, supportStats, supportTickets } from "@/lib/config/demo-data/support";
 
-// export const metadata = {
-//   title: "Support - Delivery Point | Admin",
-//   description: "Manage support tickets from users, vendors, and riders",
-// };
 
 export default function Support() {
   const [activeRowId, setActiveRowId] = useState<string | null>(null);
 
-  const stats = [
-    {
-      title: "Total Tickets",
-      amount: "0",
-      icon: "majesticons:headset-line",
-      iconBg: "#0095DA",
-    },
-    {
-      title: "Open Tickets",
-      amount: "0",
-      icon: "simple-line-icons:close",
-      iconBg: "#FF4D4F",
-    },
-    {
-      title: "In Progress",
-      amount: "0",
-      icon: "ion:time-outline",
-      iconBg: "#FFAC33",
-    },
-    {
-      title: "Resolved Today",
-      amount: "0",
-      icon: "simple-line-icons:check",
-      iconBg: "#21C788",
-    },
-  ];
-
-  const head = [
-    "Ticket ID",
-    "Submitted By",
-    "User Type",
-    "Subject",
-    "Date Created",
-    "Status",
-    "Actions",
-  ];
-
-  const tickets: Ticket[] = [
-    {
-      ticketID: "#TK-1001",
-      submittedBy: "John Doe",
-      userType: "Rider",
-      subject: {
-        title: "App Keeps Crashing",
-        description: "The rider app keeps crashing when I try to mark ...",
-      },
-      dateCreated: "14 Mar, 2025	",
-      status: "In Progress",
-    },
-    {
-      ticketID: "#TK-1002",
-      submittedBy: "John Doe",
-      userType: "User",
-      subject: {
-        title: "Order not received",
-        description:
-          "My order #ORD-12345 was marked as delivered but I never received it. The rider said they left it at my door but nothing was there.",
-      },
-      dateCreated: "14 Mar, 2025	",
-      status: "Resolved",
-    },
-    {
-      ticketID: "#TK-1003",
-      submittedBy: "John Doe",
-      userType: "Vendor",
-      subject: {
-        title: "Payment Settlement Delay",
-        description: "My weekly settlement is 3 days late. Usually receiv...",
-      },
-      dateCreated: "14 Mar, 2025	",
-      status: "Open",
-    },
-  ];
 
   return (
     <section className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <DashboardStatCard data={stats} />
+        <DashboardStatCard data={supportStats} />
       </div>
       <Table
         heading="Support"
         subtitle="Manage support tickets from users, vendors, and riders"
-        tableHead={head}
-        tableData={tickets}
+        tableHead={supportHead}
+        tableData={supportTickets}
         renderRow={(row) => (
           <>
             <td className="px-6">{row.ticketID}</td>
@@ -129,12 +53,12 @@ export default function Support() {
                   color="#909CAD"
                   onClick={() =>
                     setActiveRowId((prev) =>
-                      prev === row.ticketID ? null : row.ticketID
+                      prev === row.id ? null : row.id
                     )
                   }
                 />
               </div>
-              {activeRowId === row.ticketID && (
+              {activeRowId === row.id && (
                 <AnimatePresence>
                   <motion.div
                     initial={{ y: -10, opacity: 0 }}
@@ -143,13 +67,13 @@ export default function Support() {
                     transition={{ duration: 0.2, ease: "easeOut" }}
                     className="absolute top-3/5 mt-2 right-10 bg-white z-30 rounded-[6px] shadow-md w-[150px] text-sm"
                   >
-                    <div
-                      // onClick={() => handleViewUser(row, setActiveRowId)}
+                    <Link
+                      href={`/support/${row.id}`}
                       className="cursor-pointer hover:text-blue-600 flex gap-2 p-3 items-center"
                     >
                       <Icon icon={"fluent-mdl2:view"} height={16} width={16} />
                       View Details
-                    </div>
+                    </Link>
                   </motion.div>
                 </AnimatePresence>
               )}
