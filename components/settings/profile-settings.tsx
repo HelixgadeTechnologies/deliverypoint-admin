@@ -4,11 +4,15 @@ import Button from "@/ui/button";
 import CardComponent from "@/ui/card-wrapper";
 import PasswordInput from "@/ui/forms/password-input";
 import TextInput from "@/ui/forms/text-input";
+import Modal from "@/ui/popup-modal";
 import Heading from "@/ui/text-heading";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
+import { useState } from "react";
 
 export default function ProfileSettings() {
+  // todo:  add to auth context later
+  const [confirmLogout, setConfirmLogout] = useState(false);
   return (
     <section className="space-y-6">
       <Heading
@@ -133,10 +137,33 @@ export default function ProfileSettings() {
             </div>
           </div>
           <div className="w-[120px]">
-            <Button content="Log Out All" isSecondary variant="error" />
+            <Button
+              content="Log Out All"
+              isSecondary
+              variant="error"
+              onClick={() => setConfirmLogout(true)}
+            />
           </div>
         </div>
       </CardComponent>
+
+      <Modal isOpen={confirmLogout} onClose={() => setConfirmLogout(false)}>
+        <div className="space-y-4">
+          <div className="flex justify-center text-[#FF4D4F]">
+            <Icon icon={"ep:warning"} width={70} height={70} />
+          </div>
+          <Heading
+            heading="Log Out"
+            subtitle="Are you sure you want to log out?"
+            className="text-center justify-center"
+          />
+
+          <div className="flex gap-4 items-center my-4">
+            <Button content="Cancel" isSecondary variant="error" onClick={() => setConfirmLogout(false)} />
+            <Button content="Log Out" variant="error" />
+          </div>
+        </div>
+      </Modal>
     </section>
   );
 }

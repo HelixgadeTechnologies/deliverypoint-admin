@@ -37,7 +37,7 @@ export default function ToggleSwitch({ label, name, isChecked, onChange }: Toggl
         >
           <span
             className={`
-              absolute top-[2px] left-[2px] size-5 bg-white rounded-full shadow-sm transition-transform duration-200 ease-in-out
+              absolute top-[1.7px] left-[2px] size-5 bg-white rounded-full shadow-sm transition-transform duration-200 ease-in-out
               ${isChecked ? 'translate-x-5' : 'translate-x-0'}
             `}
           />

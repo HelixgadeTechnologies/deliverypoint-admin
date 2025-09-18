@@ -19,7 +19,7 @@ function getInitials(fullName?: string) {
 }
 
 
-export default function Avatar({ src, name, href = "/user/profile" }: AvatarProps) {
+export default function Avatar({ src, name, href = "" }: AvatarProps) {
   const initials = getInitials(name);
 
   return (

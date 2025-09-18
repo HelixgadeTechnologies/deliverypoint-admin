@@ -21,7 +21,7 @@ export default function Heading({
  }: HeadingProps) {
     return (
         <div className={`md:leading-6 h-[60px] space-y-1 md:space-y-${spacing} ${className}`}>
-            <div className="flex gap-2 items-center">
+            <div className={`flex gap-2 items-center ${className}`}>
                 {icon && <Icon icon={icon} height={20} width={20} color={iconColor} />}
                 <h2 className={`${sm ? 'text-xl' : 'text-2xl'} font-bold text-[#1F1F1F]`}>{heading}</h2>
             </div>
