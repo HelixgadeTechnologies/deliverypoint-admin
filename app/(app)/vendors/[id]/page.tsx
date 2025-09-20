@@ -1,16 +1,26 @@
 "use client";
 
-import { vendorData } from "@/lib/config/demo-data/vendors";
+import {
+  orderHistory,
+  orderSummary,
+  paymentSummary,
+  vendorData,
+} from "@/lib/config/demo-data/vendors";
+import { usePathname } from "next/navigation";
+import { Icon } from "@iconify/react";
+import { JSX, useState } from "react";
 import BackButton from "@/ui/back-button";
 import Button from "@/ui/button";
 import CardComponent from "@/ui/card-wrapper";
 import StatusTab from "@/ui/status-tab";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
-import { Icon } from "@iconify/react";
-import { JSX, useState } from "react";
-import Modal from "@/ui/popup-modal";
+import VendorApprovedModal from "@/components/vendors/vendor-approved-modal";
+import VendorActivatedModal from "@/components/vendors/vendor-activated-modal";
+import VendorSuspendedModal from "@/components/vendors/vendor-suspended-modal";
 import Heading from "@/ui/text-heading";
+import DocumentPreview from "@/ui/document-preview-modal";
+import SummaryRow from "@/ui/summary-row";
+import OrderSummaryTab from "@/ui/order-summary-tab";
 
 export default function VendorDetails() {
   const pathname = usePathname();
@@ -47,6 +57,18 @@ export default function VendorDetails() {
         icon="material-symbols:check-rounded"
         onClick={() => setVendorActivatedModal(true)}
       />
+    ),
+  };
+
+  // for card on suspended vendors
+  const statusCard: Record<string, JSX.Element> = {
+    Suspended: (
+      <div className="bg-[#FF4D4F15] py-2 px-4 rounded-2xl text-[#FF4D4F] w-full">
+        <h4 className="font-semibold text-base">Reason</h4>
+        <p className="text-sm font-normal">
+          Rider was involved in actions not conforming to company’s policy.
+        </p>
+      </div>
     ),
   };
 
@@ -97,22 +119,135 @@ export default function VendorDetails() {
               {statusActions[selectedVendor.status]}
             </div>
           </div>
+
+          {/* details */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* profile info */}
+            <CardComponent height="100%">
+              <Heading xs heading="Profile Information" />
+              <div className="space-y-4 text-sm">
+                <div>
+                  <h4 className="text-[#1F1F1F]">Business Category</h4>
+                  <p className="text-[#6E747D]">Resturant</p>
+                </div>
+                <div>
+                  <h4 className="text-[#1F1F1F]">Contact Email</h4>
+                  <p className="text-[#6E747D]">maria@pizzapalace.com</p>
+                </div>
+                <div>
+                  <h4 className="text-[#1F1F1F]">Phone Number</h4>
+                  <p className="text-[#6E747D]">09016796847</p>
+                </div>
+                <div>
+                  <h4 className="text-[#1F1F1F]">Business Address</h4>
+                  <p className="text-[#6E747D]">
+                    Some street, some road, more street
+                  </p>
+                </div>
+                <div>
+                  <h4 className="text-[#1F1F1F]">Registration Date</h4>
+                  <p className="text-[#6E747D]">15/01/2024</p>
+                </div>
+                <div>
+                  <h4 className="text-[#1F1F1F]">Opening Hours</h4>
+                  <p className="text-[#6E747D]">Mon - Sat: 2:00pm - 10:00pm</p>
+                  <p className="text-[#6E747D]">Sun: 2:00pm - 10:00pm</p>
+                </div>
+
+                {/* docs */}
+                <div className="space-y-4">
+                  <h4 className="text-[#1F1F1F]">Documents</h4>
+                  <DocumentPreview
+                    title="Business License/Valid ID"
+                    size="1.2 MB"
+                    type="PNG"
+                    uploadDate="2024-04-29"
+                  />
+                  <DocumentPreview
+                    title="Logo/Business Banner"
+                    size="1.2 MB"
+                    type="JPG"
+                    uploadDate="2024-04-29"
+                  />
+                </div>
+              </div>
+            </CardComponent>
+
+            {/* order summary */}
+            <CardComponent height="100%">
+              <Heading xs heading="Order Summary" />
+              <div className="space-y-4">
+                {/* icons and text */}
+                <div className="space-y-4 text-sm">
+                  {orderSummary.map((summary, index) => (
+                    <SummaryRow
+                      key={index}
+                      name={summary.name}
+                      amount={summary.amount}
+                      icon={summary.icon}
+                      color={summary.color}
+                    />
+                  ))}
+                </div>
+                {/* divider */}
+                <div className="h-0.5 w-full bg-[#E4E9EF]"></div>
+                <div className="space-y-4">
+                  {orderHistory.map((order, index) => (
+                    <OrderSummaryTab
+                      key={index}
+                      orderId={order.orderId}
+                      date={order.date}
+                      status={order.status}
+                      amount={order.amount}
+                    />
+                  ))}
+                </div>
+              </div>
+            </CardComponent>
+
+            {/* payment summary */}
+            <CardComponent height="100%">
+              <Heading xs heading="Payment Summary" />
+              <div className="space-y-4 text-sm">
+                {paymentSummary.map((summary, index) => (
+                  <SummaryRow
+                    key={index}
+                    name={summary.name}
+                    amount={summary.amount}
+                    icon={summary.icon}
+                    color={summary.color}
+                  />
+                ))}
+              </div>
+              <div className="mt-4 text-sm">
+                <h4 className="text-[#1F1F1F]">Last Withdrawal</h4>
+                <p className="text-[#6E747D]">2024-12-14</p>
+              </div>
+              <div className="mt-6">{statusCard[selectedVendor.status]}</div>
+            </CardComponent>
+          </div>
         </div>
       </CardComponent>
 
       {/* vendor approved modal */}
-      <Modal 
-      isOpen={vendorApprovedModal} 
-      onClose={() => setVendorApprovedModal(false)}
-      >
-        <div className="flex flex-col items-center justify-center gap-2">
-            <Icon icon={"material-symbols:check-circle-outline"} height={60} width={60} color="#0095DA" />
-            <Heading heading="Vendor Approved" subtitle={`The vendor "${selectedVendor.vendor.vendorBusiness}" registration request has been approved and they will be notified via email to Sign in.`} className="text-center" />
-            <div className="mt-16 w-full">
-                <Button content="Close" />
-            </div>
-        </div>
-      </Modal>
+      <VendorApprovedModal
+        isOpen={vendorApprovedModal}
+        onClose={() => setVendorApprovedModal(false)}
+        vendor={selectedVendor.vendor.vendorBusiness}
+      />
+
+      {/* vendor activated modal */}
+      <VendorActivatedModal
+        isOpen={vendorActivatedModal}
+        onClose={() => setVendorActivatedModal(false)}
+        vendor={selectedVendor.vendor.vendorBusiness}
+      />
+
+      {/* vendor suspended modal */}
+      <VendorSuspendedModal
+        isOpen={vendorDeactivatedModal}
+        onClose={() => setVendorDeactivatedModal(false)}
+      />
     </>
   );
 }

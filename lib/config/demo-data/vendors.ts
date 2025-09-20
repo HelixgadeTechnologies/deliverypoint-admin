@@ -1,4 +1,4 @@
-import { Vendor } from "@/types/table-data";
+import { Orders, Vendor } from "@/types/table-data";
 
 export const vendorStats = [
   {
@@ -86,4 +86,61 @@ export const vendorData: Vendor[] = [
         totalOrders: "1,247",
         registration: "14 Mar, 2025	",
     },
+]
+
+export const orderSummary = [
+  {
+    name: "Total Orders",
+    amount: "0",
+    icon: "majesticons:box-line",
+    color: "#21C788",
+  },
+   {
+    name: "Pending Orders",
+    amount: "0",
+    icon: "mdi-light:clock",
+    color: "#FFAC33",
+  },
+   {
+    name: "Canceled Orders",
+    amount: "0",
+    icon: "streamline:graph-arrow-increase",
+    color: "#FF4D4F",
+  },
+]
+
+export const paymentSummary = [
+  {
+    name: "Total Earnings",
+    amount: "0",
+    icon: "mynaui:dollar-solid",
+    color: "#16A271",
+  },
+   {
+    name: "Commission Taken",
+    amount: "0",
+    icon: "streamline:graph-arrow-increase",
+    color: "#21C788",
+  },
+]
+
+export const orderHistory: Orders[] = [
+  {
+    orderId: "ORD0001",
+    date: "2025/04/29",
+    status: "Completed",
+    amount: "18, 705.5",
+  },
+  {
+    orderId: "ORD0002",
+    date: "2025/04/29",
+    status: "In Progress",
+    amount: "18, 705.5",
+  },
+  {
+    orderId: "ORD0003",
+    date: "2025/04/29",
+    status: "Canceled",
+    amount: "18, 705.5",
+  },
 ]

@@ -8,6 +8,8 @@ export type Status =
   | "Pending"
   | "Active"
   | "Suspended"
+  | "Completed"
+  | "Canceled";
 
 export type Ticket = {
   id: string;
@@ -22,7 +24,7 @@ export type Ticket = {
 
 export type Withdrawal = {
   id: string;
-  name:  { fullName: string; phoneNumber: string };
+  name: { fullName: string; phoneNumber: string };
   userType: string;
   walletBalance: string;
   lastPayoutDate: string;
@@ -31,17 +33,24 @@ export type Withdrawal = {
 };
 
 export type Vendor = {
-    id: string;
-    vendor: {
-        image: string;
-        vendorName: string;
-        vendorBusiness: string;
-    };
-    contact: {
-        email: string;
-        phone: string;
-    };
-    status: Status;
-    totalOrders: string;
-    registration: string;
-}
+  id: string;
+  vendor: {
+    image: string;
+    vendorName: string;
+    vendorBusiness: string;
+  };
+  contact: {
+    email: string;
+    phone: string;
+  };
+  status: Status;
+  totalOrders: string;
+  registration: string;
+};
+
+export type Orders = {
+  orderId: string;
+  date: string;
+  status: Status;
+  amount: string;
+};

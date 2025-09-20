@@ -14,7 +14,7 @@ export default function TextareaInput({
   placeholder,
 }: TextareaProps) {
   return (
-    <div className="space-y-2 relative">
+    <div className="space-y-2 relative w-full">
       <label className="text-sm capitalize text-[#1F1F1F] block">{label}</label>
       <textarea
         value={value}
