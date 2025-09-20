@@ -23,7 +23,7 @@ export default function UserDetailsModal({
   const [confirmApproval, setConfirmApproval] = useState(false);
 
   if (!user) {
-    return <>no user found</>;
+    return null;
   }
   return (
     <>

@@ -5,7 +5,9 @@ export type Status =
   | "Open"
   | "Resolved"
   | "Approved"
-  | "Pending";
+  | "Pending"
+  | "Active"
+  | "Suspended"
 
 export type Ticket = {
   id: string;
@@ -19,12 +21,27 @@ export type Ticket = {
 };
 
 export type Withdrawal = {
-  id: string | null;
+  id: string;
   name:  { fullName: string; phoneNumber: string };
   userType: string;
   walletBalance: string;
   lastPayoutDate: string;
   withdrawal: number;
   status: Status;
-//   email: string;
 };
+
+export type Vendor = {
+    id: string;
+    vendor: {
+        image: string;
+        vendorName: string;
+        vendorBusiness: string;
+    };
+    contact: {
+        email: string;
+        phone: string;
+    };
+    status: Status;
+    totalOrders: string;
+    registration: string;
+}

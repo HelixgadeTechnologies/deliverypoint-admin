@@ -41,7 +41,7 @@ export default function Table<T>({
                 return (
                     <tr
                     key={i}
-                    className="h-[88px] text-[#1F1F1F] bg-white border-b border-[#FAFAFA]"
+                    className="h-[88px] text-[#1F1F1F] bg-white border-b border-[#E5E7EB]"
                     >
                     {renderRow(row)}
                     </tr>
