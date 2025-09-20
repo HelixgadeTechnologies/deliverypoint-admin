@@ -44,6 +44,15 @@ export default function SupportDetails() {
     ),
   };
 
+  const statusCard: Record<string, JSX.Element> = {
+    Resolved: (
+      <div className="bg-[#0095DA15] py-2 px-4 rounded-2xl primary w-[360px]">
+        <h4 className="font-semibold text-base">Internal Note</h4>
+        <p className="text-sm font-normal">Customer contacted twice. Need to investigate with rider.</p>
+      </div>
+    )
+  }
+
   return (
     <>
       <CardComponent>
@@ -110,6 +119,8 @@ export default function SupportDetails() {
                     {selectedTicket.ticketID}
                   </p>
                 </div>
+                {/* status based card */}
+                {statusCard[selectedTicket.status]}
               </div>
             </CardComponent>
             <CardComponent maxWidth="40%">

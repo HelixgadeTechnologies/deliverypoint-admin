@@ -85,7 +85,7 @@ export default function Support() {
           <SearchInput
             name="search"
             value=""
-            placeholder="Search Rider..."
+            placeholder="Search tickets..."
             onChange={() => {}}
           />
         </div>

@@ -1,4 +1,4 @@
-import { Ticket } from "@/types/support";
+import { Ticket } from "@/types/table-data";
 
 export const supportStats = [
     {

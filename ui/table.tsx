@@ -30,7 +30,7 @@ export default function Table<T>({
             <thead>
                 <tr className="bg-[#E4E9EF33] h-[60px] text-[#7C7979] font-normal text-sm">
                 {tableHead.map((head, index) => (
-                    <th key={index} className={`px-6 py-3 text-center`}>
+                    <th key={index} className={`px-6 py-3`}>
                     {head}
                     </th>
                 ))}
@@ -41,7 +41,7 @@ export default function Table<T>({
                 return (
                     <tr
                     key={i}
-                    className="h-[88px] text-[#1F1F1F] bg-white border-b border-[#FAFAFA] text-center"
+                    className="h-[88px] text-[#1F1F1F] bg-white border-b border-[#FAFAFA]"
                     >
                     {renderRow(row)}
                     </tr>
