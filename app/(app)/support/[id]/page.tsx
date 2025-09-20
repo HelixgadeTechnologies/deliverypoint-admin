@@ -10,6 +10,7 @@ import { JSX, useState } from "react";
 import Modal from "@/ui/popup-modal";
 import Heading from "@/ui/text-heading";
 import TextareaInput from "@/ui/forms/textarea";
+import BackButton from "@/ui/back-button";
 
 export default function SupportDetails() {
   const pathname = usePathname();
@@ -22,6 +23,7 @@ export default function SupportDetails() {
 
   if (!selectedTicket) return <div>Not found.</div>;
 
+  // for buttons
   const statusActions: Record<string, JSX.Element> = {
     Open: (
       <div className="gap-2 items-center flex md:w-[400px]">
@@ -44,6 +46,7 @@ export default function SupportDetails() {
     ),
   };
 
+  // for card on resolved tickets
   const statusCard: Record<string, JSX.Element> = {
     Resolved: (
       <div className="bg-[#0095DA15] py-2 px-4 rounded-2xl primary w-[360px]">
@@ -58,13 +61,7 @@ export default function SupportDetails() {
       <CardComponent>
         <div className="space-y-6">
           {/* back button */}
-          <button
-            onClick={() => window.history.back()}
-            className="flex items-center gap-3 text-[#0095DA] cursor-pointer"
-          >
-            <Icon icon="mdi-light:arrow-left" height={20} width={20} />
-            <p>Back to Support</p>
-          </button>
+          <BackButton text="Back to Support" />
 
           {/* header */}
           <div className="flex justify-between items-center">
