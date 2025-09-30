@@ -192,15 +192,7 @@ export default function VendorDetails() {
                 {/* divider */}
                 <div className="h-0.5 w-full bg-[#E4E9EF]"></div>
                 <div className="space-y-4">
-                  {orderHistory.map((order, index) => (
-                    <OrderSummaryTab
-                      key={index}
-                      orderId={order.orderId}
-                      date={order.date}
-                      status={order.status}
-                      amount={order.amount}
-                    />
-                  ))}
+                  {orderHistory.map(order => <OrderSummaryTab key={order.orderId} orderDetails={order} /> )}
                 </div>
               </div>
             </CardComponent>

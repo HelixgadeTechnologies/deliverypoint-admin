@@ -1,4 +1,5 @@
-import { Orders, Vendor } from "@/types/table-data";
+import { OrderDetails } from "@/types/orders";
+import { Vendor } from "@/types/table-data";
 
 export const vendorStats = [
   {
@@ -124,23 +125,62 @@ export const paymentSummary = [
   },
 ]
 
-export const orderHistory: Orders[] = [
+export const orderHistory: OrderDetails[] = [
   {
     orderId: "ORD0001",
     date: "2025/04/29",
     status: "Completed",
-    amount: "18, 705.5",
+    total: "18, 705.5",
+    time: "2 hours ago",
+    items: [
+      { item: "2x Chicken Burger (+Extra Cheese, Bacon)", price: "3,000" },
+      { item: "1x Fries", price: "2,000" },
+    ],
+    customerInformation: {
+      name: "Sarah Johnson",
+      phoneNumber: "09016796847",
+      address: "123 Main St, Apt 4B, Downtown Area, Lagos",
+      rating: {
+        rateCount: 4,
+        review: "Amazing Food! with a great taste.",
+      }
+    },
+    driversInformation: {
+      name: "Haniu Joseph",
+      phoneNumber: "12345678901"
+    }
   },
   {
     orderId: "ORD0002",
     date: "2025/04/29",
     status: "In Progress",
-    amount: "18, 705.5",
+    total: "18, 705.5",
+      time: "2 hours ago",
+    items: [
+      { item: "2x Chicken Burger (+Extra Cheese, Bacon)", price: "3,000" },
+      { item: "1x Fries", price: "2,000" },
+    ],
+    customerInformation: {
+      name: "Jane Doe",
+      phoneNumber: "09016796847",
+      address: "123 Main St, Apt 4B, Downtown Area, Lagos",
+    },
   },
   {
     orderId: "ORD0003",
     date: "2025/04/29",
     status: "Canceled",
-    amount: "18, 705.5",
+    total: "18, 705.5",
+      time: "2 hours ago",
+    items: [
+      { item: "2x Chicken Burger (+Extra Cheese, Bacon)", price: "3,000" },
+      { item: "1x Fries", price: "2,000" },
+    ],
+    customerInformation: {
+      name: "Jane Doe",
+      phoneNumber: "09016796847",
+      address: "123 Main St, Apt 4B, Downtown Area, Lagos",
+    },
+    cancellationReason: "Items were accidentally ordered."
   },
 ]

@@ -23,7 +23,7 @@ export default function Modal({
         <>
           {/* Overlay */}
           <motion.div
-            className="fixed inset-0 bg-black/80 z-40 flex items-center justify-center"
+            className="fixed inset-0 bg-black/80 z-40 flex items-center justify-center h-screen"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

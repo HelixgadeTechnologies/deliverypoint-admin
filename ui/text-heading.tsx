@@ -1,7 +1,7 @@
 import { Icon } from "@iconify/react";
 
 type HeadingProps = {
-    heading: string;
+    heading?: string;
     subtitle?: string;
     spacing?: string;
     className?: string;
@@ -27,7 +27,7 @@ export default function Heading({
                 {icon && <Icon icon={icon} height={20} width={20} color={iconColor} />}
                 <h2 className={`${xs ? 'text-base' : sm ? 'text-xl' : 'text-2xl'} font-bold text-[#1F1F1F]`}>{heading}</h2>
             </div>
-            {subtitle && <p className={`${sm ? 'text-xs md:text-sm' : 'text-sm md:text-base'} font-normal text-[#7C7979]`}>{subtitle}</p>}
+            {subtitle && <p className={`${xs ? 'text-[9px] md:text-[13px]' : sm ? 'text-xs md:text-sm' : 'text-sm md:text-base'} font-normal text-[#7C7979]`}>{subtitle}</p>}
           </div>
     )
 }

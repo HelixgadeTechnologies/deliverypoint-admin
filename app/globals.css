@@ -6,19 +6,24 @@
 
 .scrollable {
   overflow-y: auto;
-  max-height: 300px; /* example */
+  max-height: 300px;
+}
+
+.scrollable-modal {
+  overflow-y: auto;
+  max-height: 500px;
 }
 
 /* Webkit browsers */
-.scrollable::-webkit-scrollbar {
+.scrollable::-webkit-scrollbar, .scrollable-modal::-webkit-scrollbar {
   width: 8px; /* scrollbar thickness */
 }
 
-.scrollable::-webkit-scrollbar-track {
+.scrollable::-webkit-scrollbar-track, .scrollable-modal::-webkit-scrollbar-track {
   background: transparent; 
 }
 
-.scrollable::-webkit-scrollbar-thumb {
+.scrollable::-webkit-scrollbar-thumb, .scrollable-modal::-webkit-scrollbar-thumb {
   background: #C9D1DA;
   border-top-left-radius: 6px;
   border-bottom-left-radius: 6px;
