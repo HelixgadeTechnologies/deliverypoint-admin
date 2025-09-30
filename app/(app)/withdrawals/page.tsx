@@ -14,10 +14,9 @@ import StatusTab from "@/ui/status-tab";
 import Table from "@/ui/table";
 import { useState } from "react";
 import { Icon } from "@iconify/react";
-import { AnimatePresence, motion } from "framer-motion";
 import UserDetailsModal from "@/components/withdrawals/user-details-modal";
 import { useWithdrawalModal } from "@/utils/withdrawal-utility";
-
+import ViewDetails from "@/ui/table-action";
 
 export default function Withdrawals() {
   const [activeRowId, setActiveRowId] = useState<string | null>(null);
@@ -71,20 +70,7 @@ export default function Withdrawals() {
                 />
               </div>
               {activeRowId === row.id && (
-                <AnimatePresence>
-                  <motion.div
-                    initial={{ y: -10, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: -10, opacity: 0 }}
-                    transition={{ duration: 0.2, ease: "easeOut" }}
-                    className="absolute top-3/5 mt-2 right-10 bg-white z-30 rounded-[6px] shadow-md w-[150px] text-sm"
-                  >
-                    <div onClick={() => handleViewUserDetails(row, setActiveRowId)} className="cursor-pointer hover:text-blue-600 flex gap-2 p-3 items-center">
-                      <Icon icon={"fluent-mdl2:view"} height={16} width={16} />
-                      View Details
-                    </div>
-                  </motion.div>
-                </AnimatePresence>
+                <ViewDetails onClick={() => handleViewUserDetails(row, setActiveRowId)}/>
               )}
             </td>
           </>

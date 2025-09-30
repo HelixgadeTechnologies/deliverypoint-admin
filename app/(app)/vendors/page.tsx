@@ -1,5 +1,4 @@
 "use client";
-
 import {
   vendorData,
   vendorHead,
@@ -11,14 +10,12 @@ import DashboardStatCard from "@/ui/stat-card";
 import StatusTab from "@/ui/status-tab";
 import Table from "@/ui/table";
 import Image from "next/image";
-import { AnimatePresence, motion } from "framer-motion";
 import { Icon } from "@iconify/react";
-import Link from "next/link";
 import { useState } from "react";
+import ViewDetails from "@/ui/table-action";
 
 export default function Vendors() {
   const [activeRowId, setActiveRowId] = useState<string | null>(null);
-
   return (
     <section className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -67,23 +64,7 @@ export default function Vendors() {
                 />
               </div>
               {activeRowId === row.id && (
-                <AnimatePresence>
-                  <motion.div
-                    initial={{ y: -10, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: -10, opacity: 0 }}
-                    transition={{ duration: 0.2, ease: "easeOut" }}
-                    className="absolute top-3/5 mt-2 right-10 bg-white z-30 rounded-[6px] shadow-md w-[150px] text-sm"
-                  >
-                    <Link
-                      href={`/vendors/${row.id}`}
-                      className="cursor-pointer hover:text-blue-600 flex gap-2 p-3 items-center"
-                    >
-                      <Icon icon={"fluent-mdl2:view"} height={16} width={16} />
-                      View Details
-                    </Link>
-                  </motion.div>
-                </AnimatePresence>
+                <ViewDetails href={`/vendors/${row.id}`} />
               )}
             </td>
           </>
@@ -93,7 +74,7 @@ export default function Vendors() {
           <SearchInput
             name="search"
             value=""
-            placeholder="Search..."
+            placeholder="Search vendor..."
             onChange={() => {}}
           />
         </div>

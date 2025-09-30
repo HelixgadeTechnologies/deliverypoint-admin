@@ -5,11 +5,10 @@ import StatusTab from "@/ui/status-tab";
 import Table from "@/ui/table";
 import { Icon } from "@iconify/react";
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import SearchInput from "@/ui/forms/search-input";
 import DropDown from "@/ui/forms/select-dropdown";
-import Link from "next/link";
 import { supportHead, supportStats, supportTickets } from "@/lib/config/demo-data/support";
+import ViewDetails from "@/ui/table-action";
 
 
 export default function Support() {
@@ -59,23 +58,7 @@ export default function Support() {
                 />
               </div>
               {activeRowId === row.id && (
-                <AnimatePresence>
-                  <motion.div
-                    initial={{ y: -10, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: -10, opacity: 0 }}
-                    transition={{ duration: 0.2, ease: "easeOut" }}
-                    className="absolute top-3/5 mt-2 right-10 bg-white z-30 rounded-[6px] shadow-md w-[150px] text-sm"
-                  >
-                    <Link
-                      href={`/support/${row.id}`}
-                      className="cursor-pointer hover:text-blue-600 flex gap-2 p-3 items-center"
-                    >
-                      <Icon icon={"fluent-mdl2:view"} height={16} width={16} />
-                      View Details
-                    </Link>
-                  </motion.div>
-                </AnimatePresence>
+              <ViewDetails href={`/support/${row.id}`} />
               )}
             </td>
           </>

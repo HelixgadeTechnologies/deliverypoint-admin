@@ -54,3 +54,17 @@ export type Orders = {
   status: Status;
   amount: string;
 };
+
+export type Riders = {
+  id: string;
+  rider: {
+    image: string;
+    name: string;
+    email: string;
+  };
+  vehicleType: "Motorcycle" | "Bicycle" | "Van";
+  riderStatus: "Offline" | "Online";
+  deliveryStatus: Status;
+  completedDeliveries: string;
+  registration: string;
+};

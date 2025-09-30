@@ -32,7 +32,7 @@ export default function Dashboard() {
       title: "Users",
       amount: "0",
       percent: 0,
-      icon: "mdi:account-multiple-outline",
+      icon: "lucide:users",
       iconBg: "#886CE4",
     },
     {
