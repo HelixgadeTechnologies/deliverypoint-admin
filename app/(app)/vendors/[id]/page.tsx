@@ -1,5 +1,4 @@
 "use client";
-
 import {
   orderHistory,
   orderSummary,
@@ -20,9 +19,13 @@ import VendorSuspendedModal from "@/components/vendors/vendor-suspended-modal";
 import Heading from "@/ui/text-heading";
 import DocumentPreview from "@/ui/document-preview-modal";
 import SummaryRow from "@/ui/summary-row";
-import OrderSummaryTab from "@/ui/order-summary-tab";
+import OrderDetailsModal from "@/components/vendors/order-details-modal";
+import { OrderDetails } from "@/types/orders";
 
 export default function VendorDetails() {
+  // for order details
+  const [selectedOrder, setSelectedOrder] = useState<OrderDetails | null>(null);
+
   const pathname = usePathname();
   const [vendorApprovedModal, setVendorApprovedModal] = useState(false);
   const [vendorActivatedModal, setVendorActivatedModal] = useState(false);
@@ -192,7 +195,33 @@ export default function VendorDetails() {
                 {/* divider */}
                 <div className="h-0.5 w-full bg-[#E4E9EF]"></div>
                 <div className="space-y-4">
-                  {orderHistory.map(order => <OrderSummaryTab key={order.orderId} orderDetails={order} /> )}
+                  {orderHistory.map((order) => (
+                    <div key={order.orderId} className="h-[85px] w-full bg-white p-4 shadow rounded flex justify-between items-center">
+                      <div className="text-sm">
+                        <h4 className="text-[#1F1F1F]">
+                          {order.orderId}
+                        </h4>
+                        <p className="text-[#6E747D]">{order.date}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <button
+                          onClick={() => setSelectedOrder(order)}
+                          className={`w-20 h-7 rounded-lg text-white flex justify-center items-center text-xs cursor-pointer ${
+                            order.status === "Completed"
+                              ? "bg-[#21C788]"
+                              : order.status === "Canceled"
+                              ? "bg-[#FF4D4F]"
+                              : "bg-[#FFAC33]"
+                          }`}
+                        >
+                          {order.status}
+                        </button>
+                        <p className="text-sm text-[#6E747D]">
+                          ₦ {order.total}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </CardComponent>
@@ -240,6 +269,15 @@ export default function VendorDetails() {
         isOpen={vendorDeactivatedModal}
         onClose={() => setVendorDeactivatedModal(false)}
       />
+
+      {/* order details */}
+      {selectedOrder && (
+        <OrderDetailsModal
+          isOpen={!!selectedOrder}
+          onClose={() => setSelectedOrder(null)}
+          orderDetails={selectedOrder}
+        />
+      )}
     </>
   );
 }

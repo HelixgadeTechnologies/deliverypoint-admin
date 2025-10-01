@@ -1,3 +1,4 @@
+import { RiderOrderDetails } from "@/types/riders";
 import { Riders } from "@/types/table-data";
 
 export const riderStats = [
@@ -80,5 +81,78 @@ export const riderTableData: Riders[] = [
         deliveryStatus: "Suspended",
         completedDeliveries: "1,247",
         registration: "14 Mar, 2025",
+    },
+];
+
+export const deliverySummary = [
+  {
+    name: "Total Deliveries",
+    amount: "0",
+    icon: "majesticons:box-line",
+    color: "#21C788",
+  },
+  {
+    name: "Pending Deliveries",
+    amount: "0",
+    icon: "mdi-light:clock",
+    color: "#FFAC33",
+  },
+  {
+    name: "Reject Deliveries",
+    amount: "0",
+    icon: "streamline:graph-arrow-increase",
+    color: "#FF4D4F",
+  },
+];
+
+export const riderOrderHistory: RiderOrderDetails[] = [
+    {
+        orderId: "ORD001",
+        status: "Completed",
+        date: "2025-04-29",
+        time: "2 hours ago",
+        total: "18.705",
+        details: {
+            customer: "James O",
+            items: ["1x Jollof  Rice + Meat", "1x Plantain"]
+        },
+        pickupAddress: "Mama's Kitchen 123 Main St, Downtown",
+        deliveryAddress: "123 Main St, Downtown",
+        deliveryFee: "500",
+        deliveryInfo: {
+            distance: "0.8 km",
+            time: "8 Minutes",
+            review: "Amazing delivery services",
+            rateCount: 3,
+        },
+    },
+    {
+        orderId: "ORD002",
+        status: "In Progress",
+        date: "2025-04-29",
+        time: "2 hours ago",
+        total: "18.705",
+        details: {
+            customer: "James O",
+            items: ["1x Jollof  Rice + Meat", "1x Plantain"]
+        },
+        pickupAddress: "Mama's Kitchen 123 Main St, Downtown",
+        deliveryAddress: "123 Main St, Downtown",
+        deliveryFee: "500",
+    },
+    {
+        orderId: "ORD003",
+        status: "Rejected",
+        date: "2025-04-29",
+        time: "2 hours ago",
+        total: "18.705",
+        details: {
+            customer: "James O",
+            items: ["1x Jollof  Rice + Meat", "1x Plantain"]
+        },
+        pickupAddress: "Mama's Kitchen 123 Main St, Downtown",
+        deliveryAddress: "123 Main St, Downtown",
+        deliveryFee: "500",
+        cancellationReason: "Order not in my route"
     },
 ];

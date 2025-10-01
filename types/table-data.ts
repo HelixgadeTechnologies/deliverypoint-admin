@@ -9,7 +9,8 @@ export type Status =
   | "Active"
   | "Suspended"
   | "Completed"
-  | "Canceled";
+  | "Canceled"
+  | "Rejected";
 
 export type Ticket = {
   id: string;
