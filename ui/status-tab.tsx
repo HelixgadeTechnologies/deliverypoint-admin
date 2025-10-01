@@ -71,7 +71,7 @@ const statusStyles = {
 // Size configurations
 const sizeStyles = {
   sm: "h-6 px-2 text-xs min-w-[70px]",
-  md: "h-[28px] px-3 text-xs min-w-[80px]",
+  md: "h-[28px] px-3 text-xs w-[90px] min-w-[80px]",
   lg: "h-8 px-4 text-sm min-w-[110px]"
 };
 

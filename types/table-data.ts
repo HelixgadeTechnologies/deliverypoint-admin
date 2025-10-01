@@ -69,3 +69,16 @@ export type Riders = {
   completedDeliveries: string;
   registration: string;
 };
+
+export type Users = {
+  id: string;
+  user: {
+    image: string;
+    name: string;
+    email: string;
+  };
+  phoneNumber: string;
+  status: Status;
+  totalOrders: string;
+  registration: string;
+}
