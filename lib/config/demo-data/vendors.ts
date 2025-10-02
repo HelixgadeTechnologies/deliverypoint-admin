@@ -1,4 +1,4 @@
-import { OrderDetails } from "@/types/orders";
+import { VendorOrderDetails } from "@/types/vendors";
 import { Vendor } from "@/types/table-data";
 
 export const vendorStats = [
@@ -125,7 +125,7 @@ export const paymentSummary = [
   },
 ];
 
-export const orderHistory: OrderDetails[] = [
+export const vendorOderHistory: VendorOrderDetails[] = [
   {
     orderId: "ORD0001",
     date: "2025/04/29",

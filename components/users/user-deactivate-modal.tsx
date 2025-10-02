@@ -9,7 +9,7 @@ type Props = {
   onClose: () => void;
 };
 
-export default function RiderSuspendedModal({ isOpen, onClose }: Props) {
+export default function UserDeactivateModal({ isOpen, onClose }: Props) {
   const [query, setQuery] = useState("");
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -23,7 +23,7 @@ export default function RiderSuspendedModal({ isOpen, onClose }: Props) {
         <Icon icon={"ep:warning"} height={60} width={60} color="#FF4D4F" />
         <h4 className="text-xl font-bold text-center">Warning</h4>
         <p className="text-center text-sm text-[#7C7979]">
-          Are you sure you want to deactivate this Rider? If yes kindly provide
+          Are you sure you want to deactivate this user? If yes kindly provide
           details below
         </p>
         <TextareaInput

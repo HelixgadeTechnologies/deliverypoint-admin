@@ -1,6 +1,6 @@
 "use client";
 import {
-  orderHistory,
+  vendorOderHistory,
   orderSummary,
   paymentSummary,
   vendorData,
@@ -19,12 +19,15 @@ import VendorSuspendedModal from "@/components/vendors/vendor-suspended-modal";
 import Heading from "@/ui/text-heading";
 import DocumentPreview from "@/ui/document-preview-modal";
 import SummaryRow from "@/ui/summary-row";
-import OrderDetailsModal from "@/components/vendors/order-details-modal";
-import { OrderDetails } from "@/types/orders";
+import OrderDetailsModal from "@/components/vendors/vendor-order-details-modal";
+import { VendorOrderDetails } from "@/types/vendors";
+import Divider from "@/ui/divider";
 
 export default function VendorDetails() {
   // for order details
-  const [selectedOrder, setSelectedOrder] = useState<OrderDetails | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<VendorOrderDetails | null>(
+    null
+  );
 
   const pathname = usePathname();
   const [vendorApprovedModal, setVendorApprovedModal] = useState(false);
@@ -85,7 +88,7 @@ export default function VendorDetails() {
 
           {/* header */}
           <div className="flex items-start justify-between">
-            <div className="flex items-start relative gap-3">
+            <div className="flex items-center relative gap-3">
               <Image
                 src={selectedVendor.vendor.image}
                 alt="Profile Picture"
@@ -112,7 +115,7 @@ export default function VendorDetails() {
               </div>
 
               {/* status */}
-              <div className="absolute -top-0 -right-10">
+              <div className="">
                 <StatusTab status={selectedVendor.status} />
               </div>
             </div>
@@ -192,15 +195,15 @@ export default function VendorDetails() {
                     />
                   ))}
                 </div>
-                {/* divider */}
-                <div className="h-0.5 w-full bg-[#E4E9EF]"></div>
-                <div className="space-y-4">
-                  {orderHistory.map((order) => (
-                    <div key={order.orderId} className="h-[85px] w-full bg-white p-4 shadow rounded flex justify-between items-center">
+                <Divider />
+                <div className="space-y-4 scrollable">
+                  {vendorOderHistory.map((order) => (
+                    <div
+                      key={order.orderId}
+                      className="h-[85px] w-full bg-white p-4 shadow rounded flex justify-between items-center"
+                    >
                       <div className="text-sm">
-                        <h4 className="text-[#1F1F1F]">
-                          {order.orderId}
-                        </h4>
+                        <h4 className="text-[#1F1F1F]">{order.orderId}</h4>
                         <p className="text-[#6E747D]">{order.date}</p>
                       </div>
                       <div className="space-y-1">

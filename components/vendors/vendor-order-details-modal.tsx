@@ -1,5 +1,5 @@
 "use client";
-import { OrderDetails } from "@/types/orders";
+import { VendorOrderDetails } from "@/types/vendors";
 import Button from "@/ui/button";
 import Divider from "@/ui/divider";
 import Modal from "@/ui/popup-modal";
@@ -10,7 +10,7 @@ import { JSX } from "react";
 type OrderDetailsProps = {
   isOpen: boolean;
   onClose: () => void;
-  orderDetails: OrderDetails;
+  orderDetails: VendorOrderDetails;
 };
 export default function OrderDetailsModal({
   isOpen,

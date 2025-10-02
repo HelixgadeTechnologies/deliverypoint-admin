@@ -3,12 +3,12 @@ import Modal from "@/ui/popup-modal";
 import { Icon } from "@iconify/react"
 
 type Props = {
-    vendor:  string;
+    user:  string;
     isOpen: boolean;
     onClose: () => void;
 }
 
-export default function VendorActivatedModal({ vendor, isOpen, onClose, }: Props) {
+export default function UserActivatedModal({ user, isOpen, onClose, }: Props) {
     return (
         <Modal
         isOpen={isOpen}
@@ -27,10 +27,10 @@ export default function VendorActivatedModal({ vendor, isOpen, onClose, }: Props
             width={60}
             color="#0095DA"
           />
-          <h4 className="text-xl font-bold text-center">Vendor Activated</h4>
+          <h4 className="text-xl font-bold text-center">User Activated</h4>
           <p className="text-center text-sm text-[#7C7979]">
-            The vendor <strong>{vendor}</strong>{" "}
-            registration request has been activated and they will be notified via
+            The user <strong>{user}</strong>{" "}
+            has been activated and they will be notified via
             email to Sign in.
           </p>
           <Button content="Close" onClick={onClose} />

@@ -13,7 +13,7 @@ export default function VendorSuspendedModal({ isOpen, onClose }: Props) {
   const [query, setQuery] = useState("");
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <div className="flex flex-col items-center justify-center gap-4">
+      <div className="flex flex-col items-center justify-center gap-2">
         <div
           onClick={onClose}
           className="absolute top-5 right-5 size-[34px] rounded-full flex justify-center items-center bg-[#F8F9FA99]"

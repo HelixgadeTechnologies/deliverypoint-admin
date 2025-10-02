@@ -21,7 +21,8 @@ import RiderApprovedModal from "@/components/riders/rider-approved-modal";
 import RiderActivatedModal from "@/components/riders/rider-activated-modal";
 import RiderSuspendedModal from "@/components/riders/rider-suspended-modal";
 import { RiderOrderDetails } from "@/types/riders";
-import OrderDetailsModal from "@/components/riders/order-details-modal";
+import OrderDetailsModal from "@/components/riders/rider-order-details-modal";
+import Divider from "@/ui/divider";
 
 export default function RiderDetails() {
   // for order details
@@ -85,7 +86,7 @@ export default function RiderDetails() {
           <BackButton text="Back to Riders" />
           {/* header */}
           <div className="flex items-start justify-between">
-            <div className="flex items-start relative gap-3">
+            <div className="flex items-center relative gap-3">
               <Image
                 src={selectedRider.rider.image}
                 alt="Profile Picture"
@@ -110,7 +111,7 @@ export default function RiderDetails() {
               </div>
 
               {/* status */}
-              <div className="absolute -top-0 -right-10">
+              <div className="">
                 <StatusTab status={selectedRider.deliveryStatus} />
               </div>
             </div>
@@ -193,9 +194,8 @@ export default function RiderDetails() {
                     />
                   ))}
                 </div>
-                {/* divider */}
-                <div className="h-0.5 w-full bg-[#E4E9EF]"></div>
-                <div className="space-y-4">
+                <Divider/>
+                <div className="space-y-4 scrollable">
                   {riderOrderHistory.map((order) => (
                     <div
                       key={order.orderId}
