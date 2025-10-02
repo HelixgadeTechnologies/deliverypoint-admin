@@ -97,7 +97,7 @@ export default function DropDown({
           >
             {options.length === 0 ? (
               <div className="px-4 py-2 text-xs text-gray-500">
-                No options available
+                No options
               </div>
             ) : (
               options.map((option, index) => (

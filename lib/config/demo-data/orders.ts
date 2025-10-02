@@ -1,3 +1,5 @@
+import { Orders } from "@/types/table-data";
+
 export const orderStats = [
   {
     title: "Orders",
@@ -26,5 +28,84 @@ export const orderStats = [
     icon: "gg:close-o",
     iconBg: "#FF4D4F",
     percent: 0,
+  },
+];
+
+export const orderTableHead = [
+  "Order ID",
+  "Customer Details",
+  "Pickup Location",
+  "Drop-off Location",
+  "Rider Name",
+  "Vendor Name",
+  "Status",
+  "Earnings",
+  "Actions",
+];
+
+export const orderTableData: Orders[] = [
+  {
+    id: "ORD001",
+    customerDetails: {
+      name: "Sarah Johnson",
+      phoneNumber: "+1 (555) 123-4567",
+    },
+    pickupLocation: "McDonald's Downtown",
+    dropOffLocation: "123 Main St, Apt 4B",
+    riderName: "John Rider",
+    vendorName: "McDonald's",
+    status: "Completed",
+    earnings: {
+      main: "2,600",
+      platform: 250,
+    },
+  },
+  {
+    id: "ORD002",
+    customerDetails: {
+      name: "Sarah Johnson",
+      phoneNumber: "+1 (555) 123-4567",
+    },
+    pickupLocation: "McDonald's Downtown",
+    dropOffLocation: "123 Main St, Apt 4B",
+    riderName: "John Rider",
+    vendorName: "McDonald's",
+    status: "Cancelled",
+    earnings: {
+      main: "2,600",
+      platform: 250,
+    },
+  },
+  {
+    id: "ORD003",
+    customerDetails: {
+      name: "Sarah Johnson",
+      phoneNumber: "+1 (555) 123-4567",
+    },
+    pickupLocation: "McDonald's Downtown",
+    dropOffLocation: "123 Main St, Apt 4B",
+    riderName: "John Rider",
+    vendorName: "McDonald's",
+    status: "In Progress",
+    earnings: {
+      main: "2,600",
+      platform: 250,
+    },
+  },
+    {
+    id: "ORD004",
+    customerDetails: {
+      name: "Sarah Johnson",
+      phoneNumber: "+1 (555) 123-4567",
+    },
+    pickupLocation: "McDonald's Downtown",
+    dropOffLocation: "123 Main St, Apt 4B",
+    riderName: "John Rider",
+    vendorName: "McDonald's",
+    status: "Declined",
+    earnings: {
+      main: "2,600",
+      platform: 250,
+    },
   },
 ];

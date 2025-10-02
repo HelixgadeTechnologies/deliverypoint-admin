@@ -25,7 +25,7 @@ export default function Heading({
         <div className={`md:leading-6 h-[60px] space-y-1 md:space-y-${spacing} ${className}`}>
             <div className={`flex gap-2 items-center ${className}`}>
                 {icon && <Icon icon={icon} height={20} width={20} color={iconColor} />}
-                <h2 className={`${xs ? 'text-base' : sm ? 'text-xl' : 'text-2xl'} font-bold text-[#1F1F1F]`}>{heading}</h2>
+                <h2 className={`${xs ? 'text-base leading-5' : sm ? 'text-xl' : 'text-2xl'} font-bold text-[#1F1F1F]`}>{heading}</h2>
             </div>
             {subtitle && <p className={`${xs ? 'text-[9px] md:text-[13px]' : sm ? 'text-xs md:text-sm' : 'text-sm md:text-base'} font-normal text-[#7C7979]`}>{subtitle}</p>}
           </div>

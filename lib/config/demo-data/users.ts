@@ -2,40 +2,39 @@ import { Users } from "@/types/table-data";
 import { UserOrderDetails } from "@/types/users";
 
 export const userTableHead = [
-    "Name",
-    "Phone Number",
-    "Status",
-    "Total Orders",
-    "Registration",
-    "Actions",
+  "Name",
+  "Phone Number",
+  "Status",
+  "Total Orders",
+  "Registration",
+  "Actions",
 ];
 
-
 export const userTableData: Users[] = [
-    {
-        id: "1",
-        user: {
-            image: "/rider-pfp.svg",
-            name: "John Deli",
-            email: "john@gmail.com",
-        },
-        phoneNumber: "+23490395543",
-        status: "Active",
-        totalOrders: "0",
-        registration: "29 Apr 2025",
+  {
+    id: "1",
+    user: {
+      image: "/rider-pfp.svg",
+      name: "John Deli",
+      email: "john@gmail.com",
     },
-    {
-        id: "2",
-        user: {
-            image: "/rider-pfp.svg",
-            name: "John Deli",
-            email: "john@gmail.com",
-        },
-        phoneNumber: "+23490395543",
-        status: "Suspended",
-        totalOrders: "0",
-        registration: "29 Apr 2025",
+    phoneNumber: "+23490395543",
+    status: "Active",
+    totalOrders: "0",
+    registration: "29 Apr 2025",
+  },
+  {
+    id: "2",
+    user: {
+      image: "/rider-pfp.svg",
+      name: "John Deli",
+      email: "john@gmail.com",
     },
+    phoneNumber: "+23490395543",
+    status: "Suspended",
+    totalOrders: "0",
+    registration: "29 Apr 2025",
+  },
 ];
 
 export const userOrderHistory: UserOrderDetails[] = [
@@ -82,7 +81,7 @@ export const userOrderHistory: UserOrderDetails[] = [
   {
     orderId: "ORD0003",
     date: "2025/04/29",
-    status: "Canceled",
+    status: "Cancelled",
     total: "18, 705.5",
     time: "2 hours ago",
     items: [

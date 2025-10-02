@@ -19,7 +19,7 @@ export default function OrderDetailsModal({
 }: OrderDetailsProps) {
   // for status dependent displays
   const statusExtras: Record<string, JSX.Element> = {
-    Canceled: (
+    Cancelled: (
       <div className="bg-[#FFFBEB] border border-[#FFAC3333] py-[9] px-[13px] rounded-md h-[60px] w-full text-sm text-[#92400E] flex items-start gap-1">
         <Icon
           icon={"ep:warning-filled"}
@@ -105,7 +105,7 @@ export default function OrderDetailsModal({
             className={`w-20 h-7 rounded-lg text-white flex justify-center items-center text-xs ${
               orderDetails.status === "Completed"
                 ? "bg-[#21C788]"
-                : orderDetails.status === "Canceled"
+                : orderDetails.status === "Cancelled"
                 ? "bg-[#FF4D4F]"
                 : "bg-[#FFAC33]"
             }`}

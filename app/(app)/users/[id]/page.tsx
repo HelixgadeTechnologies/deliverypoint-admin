@@ -18,7 +18,9 @@ import { UserOrderDetails } from "@/types/users";
 
 export default function UserDetails() {
   // for order details
-  const [selectedOrder, setSelectedOrder] = useState<UserOrderDetails | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<UserOrderDetails | null>(
+    null
+  );
 
   const pathname = usePathname();
   const [userActivatedModal, setUserActivatedModal] = useState(false);
@@ -54,7 +56,7 @@ export default function UserDetails() {
       <div className="bg-[#FF4D4F15] py-2 px-4 rounded-2xl text-[#FF4D4F] w-full">
         <h4 className="font-semibold text-base">Reason</h4>
         <p className="text-sm font-normal">
-        User was involved in actions not conforming to company’s policy
+          User was involved in actions not conforming to company’s policy
         </p>
       </div>
     ),
@@ -79,9 +81,7 @@ export default function UserDetails() {
                 className="object-cover"
               />
               <div>
-                <h4 className="text-base">
-                  {selectedUser.user.name}
-                </h4>
+                <h4 className="text-base">{selectedUser.user.name}</h4>
                 <p className="text-sm text-[#7C7979]">
                   {selectedUser.user.email}
                 </p>
@@ -121,7 +121,7 @@ export default function UserDetails() {
                   <h4 className="text-[#1F1F1F]">Registration Date</h4>
                   <p className="text-[#6E747D]">15/01/2024</p>
                 </div>
-                  <div>
+                <div>
                   <h4 className="text-[#1F1F1F]">Last Order</h4>
                   <p className="text-[#6E747D]">15/01/2024</p>
                 </div>
@@ -132,20 +132,21 @@ export default function UserDetails() {
             <CardComponent height="100%">
               <Heading xs heading="Order History" />
               <div className="space-y-4">
-                <SummaryRow 
-                icon="material-symbols-light:package-2-outline"
-                name="Total Orders"
-                color="#21C788"
-                amount={selectedUser.totalOrders}
+                <SummaryRow
+                  icon="material-symbols-light:package-2-outline"
+                  name="Total Orders"
+                  color="#21C788"
+                  amount={selectedUser.totalOrders}
                 />
                 <Divider />
                 <div className="space-y-4 scrollable">
                   {userOrderHistory.map((order) => (
-                    <div key={order.orderId} className="h-[85px] w-full bg-white p-4 shadow rounded flex justify-between items-center">
+                    <div
+                      key={order.orderId}
+                      className="h-[85px] w-full bg-white p-4 shadow rounded flex justify-between items-center"
+                    >
                       <div className="text-sm">
-                        <h4 className="text-[#1F1F1F]">
-                          {order.orderId}
-                        </h4>
+                        <h4 className="text-[#1F1F1F]">{order.orderId}</h4>
                         <p className="text-[#6E747D]">{order.date}</p>
                       </div>
                       <div className="space-y-1">
@@ -154,7 +155,7 @@ export default function UserDetails() {
                           className={`w-20 h-7 rounded-lg text-white flex justify-center items-center text-xs cursor-pointer ${
                             order.status === "Completed"
                               ? "bg-[#21C788]"
-                              : order.status === "Canceled"
+                              : order.status === "Cancelled"
                               ? "bg-[#FF4D4F]"
                               : "bg-[#FFAC33]"
                           }`}
@@ -174,12 +175,12 @@ export default function UserDetails() {
             {/* order summary */}
             <CardComponent height="100%">
               <Heading xs heading="Order Summary" />
-                <SummaryRow 
+              <SummaryRow
                 icon="mynaui:dollar"
                 name="Total Order Summary"
                 color="#21C788"
                 amount="N 18,750.5"
-                />
+              />
               <div className="mt-4 text-sm">
                 <h4 className="text-[#1F1F1F]">Last Order</h4>
                 <p className="text-[#6E747D]">2024-12-14</p>

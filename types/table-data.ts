@@ -9,7 +9,8 @@ export type Status =
   | "Active"
   | "Suspended"
   | "Completed"
-  | "Canceled"
+  | "Cancelled"
+  | "Declined"
   | "Rejected";
 
 export type Ticket = {
@@ -49,13 +50,6 @@ export type Vendor = {
   registration: string;
 };
 
-export type Orders = {
-  orderId: string;
-  date: string;
-  status: Status;
-  amount: string;
-};
-
 export type Riders = {
   id: string;
   rider: {
@@ -81,4 +75,21 @@ export type Users = {
   status: Status;
   totalOrders: string;
   registration: string;
-}
+};
+
+export type Orders = {
+  id: string;
+  customerDetails: {
+    name: string;
+    phoneNumber: string;
+  };
+  pickupLocation: string;
+  dropOffLocation: string;
+  riderName: string;
+  vendorName: string;
+  status: Status;
+  earnings: {
+    main: string;
+    platform: number;
+  };
+};

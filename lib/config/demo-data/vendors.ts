@@ -103,7 +103,7 @@ export const orderSummary = [
     color: "#FFAC33",
   },
   {
-    name: "Canceled Orders",
+    name: "Cancelled Orders",
     amount: "0",
     icon: "streamline:graph-arrow-increase",
     color: "#FF4D4F",
@@ -169,7 +169,7 @@ export const vendorOderHistory: VendorOrderDetails[] = [
   {
     orderId: "ORD0003",
     date: "2025/04/29",
-    status: "Canceled",
+    status: "Cancelled",
     total: "18, 705.5",
     time: "2 hours ago",
     items: [

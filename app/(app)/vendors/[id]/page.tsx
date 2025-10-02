@@ -212,7 +212,7 @@ export default function VendorDetails() {
                           className={`w-20 h-7 rounded-lg text-white flex justify-center items-center text-xs cursor-pointer ${
                             order.status === "Completed"
                               ? "bg-[#21C788]"
-                              : order.status === "Canceled"
+                              : order.status === "Cancelled"
                               ? "bg-[#FF4D4F]"
                               : "bg-[#FFAC33]"
                           }`}

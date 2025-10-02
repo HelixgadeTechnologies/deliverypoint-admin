@@ -6,6 +6,7 @@ import Modal from "@/ui/popup-modal";
 import CardComponent from "@/ui/card-wrapper";
 import Heading from "@/ui/text-heading";
 import { useState } from "react";
+import MapView from "@/ui/map";
 
 type Props = {
   isOpen: boolean;
@@ -15,12 +16,12 @@ type Props = {
 export default function SOSAlertModal({ isOpen, onClose }: Props) {
   const [isMapOpen, setIsMapOpen] = useState(false);
 
-    const [selectedSosId, setSelectedSosId] = useState<string | null>(null);
+  const [selectedSosId, setSelectedSosId] = useState<string | null>(null);
 
-    const openMap = (sosId: string) => {
+  const openMap = (sosId: string) => {
     setSelectedSosId(sosId);
     setIsMapOpen(true);
-    };
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} maxWidth="876px">
@@ -99,9 +100,20 @@ export default function SOSAlertModal({ isOpen, onClose }: Props) {
               </div>
 
               {isMapOpen && selectedSosId === sos.id && (
-                <div>
-                    location goes here
-                </div>
+                <MapView
+                  currentLocation={{
+                    label: "Current Location",
+                    description: "Approaching GRA Junction",
+                    x: 10,
+                    y: 40,
+                  }}
+                  destination={{
+                    label: "Destination",
+                    x: 90,
+                    y: 50,
+                  }}
+                  showPath={true}
+                />
               )}
               {/* grids */}
               <div className="flex justify-between gap-4 h-[170px]">

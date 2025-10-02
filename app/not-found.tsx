@@ -33,7 +33,7 @@ export default function NotFound() {
             </div>
           </div> */}
         </div>
-        <h1 className="text-6xl font-extrabold text-primary mb-2">404</h1>
+        <h1 className="text-6xl font-extrabold text-primary mb-2 animate-bounce">404</h1>
         <h2 className="text-3xl font-bold text-gray-900 mb-4">
           Oops! Page not found.
         </h2>
