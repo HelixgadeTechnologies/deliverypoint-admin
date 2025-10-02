@@ -22,7 +22,7 @@ export default function Table<T>({
   return (
     <div>
       {/* heading */}
-      <div className="bg-white py-4 px-6 rounded-t-lg space-y-4">
+      <div className="bg-white py-4 px-3 md:px-6 rounded-t-lg space-y-4">
         <Heading heading={heading} subtitle={subtitle} sm />
         <div className="flex flex-col md:flex-row items-start md:items-center gap-2">{children}</div>
         <div className="w-full h-fit overflow-auto md:overflow-visible rounded-b-lg">

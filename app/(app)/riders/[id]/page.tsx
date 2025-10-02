@@ -85,8 +85,8 @@ export default function RiderDetails() {
         <div className="space-y-6">
           <BackButton text="Back to Riders" />
           {/* header */}
-          <div className="flex items-start justify-between">
-            <div className="flex items-center relative gap-3">
+          <div className="flex flex-col md:flex-row items-start justify-between gap-4">
+            <div className="flex flex-col md:flex-row items-start md:items-center relative gap-3">
               <Image
                 src={selectedRider.rider.image}
                 alt="Profile Picture"
@@ -117,7 +117,7 @@ export default function RiderDetails() {
             </div>
 
             {/* action buttons */}
-            <div className="w-[200px]">
+            <div className="w-full md:w-[200px]">
               {statusActions[selectedRider.deliveryStatus]}
             </div>
           </div>

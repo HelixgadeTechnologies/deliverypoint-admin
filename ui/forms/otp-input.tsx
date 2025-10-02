@@ -47,7 +47,7 @@ export default function OTPInput({ length = 4, onChange }: OTPInputProps) {
           value={values[i]}
           onChange={(e) => handleChange(e.target.value, i)}
           onKeyDown={(e) => handleKeyDown(e, i)}
-          className="size-[73px] border border-gray-300 rounded-lg text-center text-2xl font-semibold focus:outline-none focus:ring-2 focus:ring-[#0095DA]"
+          className="size-[55px] md:size-[73px] border border-gray-300 rounded-lg text-center text-2xl font-semibold focus:outline-none focus:ring-2 focus:ring-[#0095DA]"
         />
       ))}
     </div>

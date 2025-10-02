@@ -71,8 +71,8 @@ export default function UserDetails() {
           <BackButton text="Back to Users" />
 
           {/* header */}
-          <div className="flex items-start justify-between">
-            <div className="flex items-center relative gap-3">
+        <div className="flex flex-col md:flex-row items-start justify-between gap-4">
+            <div className="flex flex-col md:flex-row items-start md:items-center relative gap-3">
               <Image
                 src={selectedUser.user.image}
                 alt="Profile Picture"
@@ -94,7 +94,7 @@ export default function UserDetails() {
             </div>
 
             {/* action buttons */}
-            <div className="w-[200px]">
+            <div className="w-full md:w-[200px]">
               {statusActions[selectedUser.status]}
             </div>
           </div>

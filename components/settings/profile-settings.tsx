@@ -27,7 +27,7 @@ export default function ProfileSettings() {
           sm
         />
 
-        <div className="flex gap-3 items-center my-6">
+        <div className="flex flex-col md:flex-row gap-3 items-center my-6">
           <div className="size-14 rounded-full relative">
             <Image
               src="/placeholder.svg"
@@ -43,8 +43,8 @@ export default function ProfileSettings() {
             </div>
           </div>
           <div>
-            <p className="text-[#1F1F1F] text-base">John Doe</p>
-            <p className="text-[#7C7979] text-base">useradmin@gmail.com</p>
+            <p className="text-[#1F1F1F] text-base text-center md:text-start">John Doe</p>
+            <p className="text-[#7C7979] text-base text-center md:text-start">useradmin@gmail.com</p>
           </div>
           <div className="h-[22px] bg-[#0095DA] w-14 rounded-full flex justify-center items-center">
             <span className="text-[10px] text-[#FAFAFA]">Admin</span>
@@ -52,7 +52,7 @@ export default function ProfileSettings() {
         </div>
 
         {/* personal information */}
-        <div className="grid grid-cols-2 gap-6 mt-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
           <TextInput
             value=""
             onChange={() => {}}
@@ -75,7 +75,7 @@ export default function ProfileSettings() {
             name="phoneNumber"
           />
         </div>
-        <div className="w-[200px] mt-6">
+        <div className="w-full md:w-[200px] mt-6">
           <Button content="Save Changes" />
         </div>
       </CardComponent>
@@ -88,7 +88,7 @@ export default function ProfileSettings() {
         />
 
         {/* change password */}
-        <div className="grid grid-cols-2 gap-6 mt-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
           <PasswordInput
             value=""
             onChange={() => {}}
@@ -111,7 +111,7 @@ export default function ProfileSettings() {
             label="Confirm New Password"
             name="confirmPassword"
           />
-          <div className="w-[200px]">
+          <div className="w-full md:w-[200px]">
             <Button content="Update Password" />
           </div>
         </div>
@@ -124,8 +124,8 @@ export default function ProfileSettings() {
           sm
         />
 
-        <div className="border border-[#E4E9EF] h-[78px] w-full rounded-lg p-6 mt-6 flex justify-between items-center">
-          <div className="flex gap-3 items-center">
+        <div className="border border-[#E4E9EF] h-full md:h-[78px] w-full rounded-lg p-6 mt-6 flex flex-col md:flex-row justify-between items-center">
+          <div className="flex flex-wrap gap-3 items-center">
             <Icon icon={"streamline:logout-1"} color={"#FF4D4F"} />
             <div>
               <h4 className="text-[#1F1F1F] font-semibold text-base">
@@ -136,7 +136,7 @@ export default function ProfileSettings() {
               </p>
             </div>
           </div>
-          <div className="w-[120px]">
+          <div className="w-full md:w-[120px] mt-4 md:mt-0">
             <Button
               content="Log Out All"
               isSecondary

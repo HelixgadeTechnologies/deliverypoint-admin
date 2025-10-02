@@ -45,9 +45,9 @@ export default function ResetPasswordComponent() {
         className="object-cover absolute top-[30px] left-[150px]"
       />
 
-      <div className="h-fit w-[480px] rounded-3xl p-10 space-y-2.5 bg-white z-10">
-        <h1 className="text-[#1F1F1F] font-extrabold text-[32px] text-center">Forgot Password?</h1>
-        <p className="text-[#7C7979] text-center text-base font-normal">Enter your email below to reset password</p>
+      <div className="h-screen md:h-fit w-full md:w-[480px] rounded-none md:rounded-3xl p-4 md:p-10 space-y-2.5 bg-white z-10 flex flex-col justify-center md:block">
+        <h1 className="text-[#1F1F1F] font-extrabold text-2xl md:text-[32px] text-center leading-6 whitespace-nowrap">Forgot Password?</h1>
+        <p className="text-[#7C7979] text-center text-sm md:text-base font-normal">Enter your email below to reset password</p>
         <form onSubmit={handleReset} className="space-y-6 mt-8">
             <EmailInput
             value={loginData.email}

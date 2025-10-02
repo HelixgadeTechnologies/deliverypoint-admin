@@ -77,7 +77,7 @@ export default function Riders() {
           </>
         )}
       >
-        <div className="w-3/4">
+        <div className="w-full md:w-3/4">
           <SearchInput
             name="search"
             value=""
@@ -85,7 +85,7 @@ export default function Riders() {
             onChange={() => {}}
           />
         </div>
-        <div className="w-1/4 flex items-center gap-2">
+        <div className="w-full md:w-1/4 flex flex-col md:flex-row md:items-center gap-2">
           <DropDown
             name="riderStatus"
             value=""

@@ -11,7 +11,7 @@ export type Status =
   | "Completed"
   | "Cancelled"
   | "Declined"
-  | "Rejected";
+  | "Rejected" | "Paid";
 
 export type Ticket = {
   id: string;

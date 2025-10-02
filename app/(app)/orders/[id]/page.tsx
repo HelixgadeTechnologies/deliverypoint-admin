@@ -19,6 +19,13 @@ export default function OrderDetails() {
   const orderId = pathname.split("/").pop();
   const selectedOrder = orderTableData.find((order) => order.id === orderId);
   if (!selectedOrder) return <div>Not found</div>;
+
+  // for earnings breakdown
+  // const statusCard: Record<string, JSX.Element> = {
+  //   : (
+
+  //   ),
+  // };
   return (
     <>
       <CardComponent>
@@ -151,25 +158,48 @@ export default function OrderDetails() {
                   <span>Platform Fee</span>
                   <span>N 350</span>
                 </p>
-                <p className="flex justify-between items-center">
-                  <span>Rider Payout</span>
-                  <span>N 350</span>
-                </p>
-                <p className="flex justify-between items-center">
-                  <span>Vendor Payout</span>
-                  <span>N 3500</span>
-                </p>
-                <Divider />
-                <p className="flex justify-between items-center">
-                  <span className="text-[#1F1F1F]">Total Order Value</span>
-                  <span>N 350</span>
-                </p>
+                {/* conditional earning breakdown */}
+                {selectedOrder.status === "Declined" ? (
+                  <div className="space-y-3">
+                    <p className="flex justify-between items-center">
+                      <span>Rider Payout</span>
+                      <span>N 350</span>
+                    </p>
+                    <Divider />
+                    <p className="flex justify-between items-center">
+                      <span className="text-[#1F1F1F]">Total Order Value</span>
+                      <span>N 4200</span>
+                    </p>
+                    <Divider />
+                    <p className="flex justify-between items-center">
+                      <span className="text-[#1F1F1F]">Commission Status</span>
+                      <StatusTab successKeywords={["Paid"]} status="Paid" />
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="flex justify-between items-center">
+                      <span>Rider Payout</span>
+                      <span>N 350</span>
+                    </p>
+                    <p className="flex justify-between items-center">
+                      <span>Vendor Payout</span>
+                      <span>N 3500</span>
+                    </p>
+                    <Divider />
+                    <p className="flex justify-between items-center">
+                      <span className="text-[#1F1F1F]">Total Order Value</span>
+                      <span>N 4200</span>
+                    </p>
+                  </div>
+                )}
               </div>
             </CardComponent>
           </div>
         </div>
       </CardComponent>
 
+      {/* track order modal */}
       <Modal
         isOpen={isMapOpen}
         onClose={() => setIsMapOpen(false)}

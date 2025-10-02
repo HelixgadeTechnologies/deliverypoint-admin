@@ -44,14 +44,14 @@ export default function LoginComponent() {
         width={250}
         priority
         style={{ height: "auto", width: "auto" }}
-        className="object-cover absolute top-[30px] left-[150px]"
+        className="object-cover absolute top-[30px] left-[150px] hidden md:block"
       />
 
-      <div className="h-fit w-[480px] rounded-3xl p-10 space-y-2.5 bg-white z-10">
-        <h1 className="text-[#1F1F1F] font-extrabold text-[32px] text-center">
+      <div className="h-screen md:h-fit w-full md:w-[480px] rounded-none md:rounded-3xl p-4 md:p-10 space-y-2.5 bg-white z-10 flex flex-col justify-center md:block">
+        <h1 className="text-[#1F1F1F] font-extrabold text-2xl md:text-[32px] text-center leading-6">
           Welcome!
         </h1>
-        <p className="text-[#7C7979] text-center text-base font-normal">
+        <p className="text-[#7C7979] text-center text-sm md:text-base font-normal">
           Sign in to continue to dashboard
         </p>
         <form  onSubmit={handleLogin} className="space-y-6">
@@ -70,7 +70,7 @@ export default function LoginComponent() {
           <div className="flex justify-end items-center">
             <Link
               href={"/reset-password"}
-              className="primary hidden md:block text-sm font-medium hover:underline whitespace-nowrap cursor-pointer"
+              className="primary text-xs md:text-sm font-medium hover:underline whitespace-nowrap cursor-pointer"
             >
               Forgot Password?
             </Link>

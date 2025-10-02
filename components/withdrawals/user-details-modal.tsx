@@ -38,7 +38,7 @@ export default function UserDetailsModal({
           </div>
         </div>
         <CardComponent>
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center -gap-3">
             <Heading heading="User Information" sm />
             <StatusTab status={user.status} />
           </div>
@@ -80,7 +80,7 @@ export default function UserDetailsModal({
           </div>
           {user.status === "Pending" && (
             <div className="flex items-center justify-end mt-2.5">
-              <div className="flex items-center gap-2 w-[400px]">
+              <div className="flex flex-col md:flex-row items-center gap-2 w-[400px]">
                 <Button
                   onClick={onClose}
                   content="Cancel"

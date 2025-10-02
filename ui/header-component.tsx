@@ -7,21 +7,24 @@ import Avatar from "./avatar";
 import NotificationsTab from "./notification-tab";
 import { sosData } from "@/lib/config/demo-data/sos";
 import SOSAlertModal from "@/components/sos-alert-modal";
+import { useSidebar } from "@/context/SidebarContext";
 
 export default function Header() {
   const [isSosAlertModal, setIsSosModal] = useState(false);
+  const { openMobile } = useSidebar();
   return (
     <>
-      <header className="bg-white py-4 px-10 border-b border-gray-200 flex justify-between items-center h-[92px]">
+      <header className="bg-white py-4 px-4 md:px-10 border-b border-gray-200 flex justify-between items-center h-[92px]">
         <Heading
           heading="Admin Management"
           subtitle="Welcome back! Here's what's happening today."
+          className="hidden md:block"
         />
-        <div className="flex gap-4 items-center w-full md:w-fit">
+        <div className="flex gap-2 md:gap-4 items-center justify-end w-full md:w-fit">
           {/* sos alert */}
           <div
             onClick={() => setIsSosModal(true)}
-            className="h-11 w-[150px] rounded-full border border-[#FF4D4F] px-[17px] py-2.5 flex justify-between items-center cursor-pointer"
+            className="h-11 w-[150px] rounded-full border border-[#FF4D4F] px-[17px] py-2.5 hidden md:flex justify-between items-center cursor-pointer"
           >
             <Icon icon="fa:warning" color="#FF4D4F" />
             <span className="text-sm text-[#FF4D4F]">SOS Alert</span>
@@ -31,13 +34,21 @@ export default function Header() {
           </div>
           <NotificationsTab />
           <Avatar name="John Doe" />
+          <Icon
+            icon={"material-symbols:menu-rounded"}
+            height={32}
+            width={32}
+            color="#0095DA"
+            className="block md:hidden"
+            onClick={openMobile}
+          />
         </div>
       </header>
 
       {/* sos alert modal */}
       <SOSAlertModal
-      isOpen={isSosAlertModal}
-      onClose={() => setIsSosModal(false)}
+        isOpen={isSosAlertModal}
+        onClose={() => setIsSosModal(false)}
       />
     </>
   );

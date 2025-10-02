@@ -68,7 +68,7 @@ export default function Orders() {
           </>
         )}
       >
-        <div className="w-[90%]">
+        <div className="w-full md:w-[90%]">
           <SearchInput
             name="search"
             value=""
@@ -76,7 +76,7 @@ export default function Orders() {
             onChange={() => {}}
           />
         </div>
-        <div className="w-[10%] flex items-center gap-2">
+        <div className="w-full md:w-[10%] flex items-center gap-2">
           <DropDown
             name="status"
             value=""

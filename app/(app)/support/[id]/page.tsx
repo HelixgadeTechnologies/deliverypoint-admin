@@ -26,7 +26,7 @@ export default function SupportDetails() {
   // for buttons
   const statusActions: Record<string, JSX.Element> = {
     Open: (
-      <div className="gap-2 items-center flex md:w-[400px]">
+      <div className="gap-2 items-center flex w-full md:w-[400px]">
         <Button content="Mark as In Progress" variant="success" isSecondary />
         <Button
           content="Mark as Resolved"
@@ -36,7 +36,7 @@ export default function SupportDetails() {
       </div>
     ),
     "In Progress": (
-      <div className="w-[200px]">
+      <div className="w-full md:w-[200px]">
         <Button
           content="Mark as Resolved"
           variant="success"
@@ -64,8 +64,8 @@ export default function SupportDetails() {
           <BackButton text="Back to Support" />
 
           {/* header */}
-          <div className="flex justify-between items-center">
-            <div className="flex gap-2 items-start">
+          <div className="flex flex-col md:flex-row items-start justify-between gap-4">
+            <div className="flex flex-col md:flex-row items-start relative gap-3">
               <div className="size-11 flex justify-center items-center bg-[#0095DA] rounded-lg">
                 <Icon
                   icon="cuida:ticket-outline"
@@ -89,65 +89,69 @@ export default function SupportDetails() {
             {statusActions[selectedTicket.status]}
           </div>
           {/* body */}
-          <div className="flex gap-6 items-center">
-            <CardComponent maxWidth="60%">
-              <div className="space-y-4">
-                <h4 className="text-base font-bold text-[#1F1F1F]">
-                  Ticket Information
-                </h4>
-                {/* subject */}
-                <div className="text-sm">
-                  <p>Subject</p>
-                  <p className="text-[#6E747D]">
-                    {selectedTicket.subject.title}
-                  </p>
+          <div className="flex flex-col md:flex-row gap-6 items-center">
+            <div className="w-full md:w-3/5">
+              <CardComponent>
+                <div className="space-y-4">
+                  <h4 className="text-base font-bold text-[#1F1F1F]">
+                    Ticket Information
+                  </h4>
+                  {/* subject */}
+                  <div className="text-sm">
+                    <p>Subject</p>
+                    <p className="text-[#6E747D]">
+                      {selectedTicket.subject.title}
+                    </p>
+                  </div>
+                  {/* description */}
+                  <div className="text-sm">
+                    <p>Ticket Description</p>
+                    <p className="text-[#6E747D]">
+                      {selectedTicket.subject.description}
+                    </p>
+                  </div>
+                  {/* related order */}
+                  <div className="text-sm">
+                    <p>Related Order</p>
+                    <p className="text-[#6E747D]">
+                      {selectedTicket.ticketID}
+                    </p>
+                  </div>
+                  {/* status based card */}
+                  {statusCard[selectedTicket.status]}
                 </div>
-                {/* description */}
-                <div className="text-sm">
-                  <p>Ticket Description</p>
-                  <p className="text-[#6E747D]">
-                    {selectedTicket.subject.description}
-                  </p>
+              </CardComponent>
+            </div>
+            <div className="w-full md:w-2/5">
+              <CardComponent>
+                <div className="space-y-4">
+                  <h4 className="text-base font-bold text-[#1F1F1F]">
+                    Contact Information
+                  </h4>
+                  {/* subject */}
+                  <div className="text-sm">
+                    <p>Name</p>
+                    <p className="text-[#6E747D]">
+                      {selectedTicket.submittedBy}
+                    </p>
+                  </div>
+                  {/* description */}
+                  <div className="text-sm">
+                    <p>User type</p>
+                    <p className="text-[#6E747D]">
+                      {selectedTicket.userType}
+                    </p>
+                  </div>
+                  {/* related order */}
+                  <div className="text-sm">
+                    <p>Contact Info</p>
+                    <p className="text-[#6E747D]">
+                      {selectedTicket.email}
+                    </p>
+                  </div>
                 </div>
-                {/* related order */}
-                <div className="text-sm">
-                  <p>Related Order</p>
-                  <p className="text-[#6E747D]">
-                    {selectedTicket.ticketID}
-                  </p>
-                </div>
-                {/* status based card */}
-                {statusCard[selectedTicket.status]}
-              </div>
-            </CardComponent>
-            <CardComponent maxWidth="40%">
-              <div className="space-y-4">
-                <h4 className="text-base font-bold text-[#1F1F1F]">
-                  Contact Information
-                </h4>
-                {/* subject */}
-                <div className="text-sm">
-                  <p>Name</p>
-                  <p className="text-[#6E747D]">
-                    {selectedTicket.submittedBy}
-                  </p>
-                </div>
-                {/* description */}
-                <div className="text-sm">
-                  <p>User type</p>
-                  <p className="text-[#6E747D]">
-                    {selectedTicket.userType}
-                  </p>
-                </div>
-                {/* related order */}
-                <div className="text-sm">
-                  <p>Contact Info</p>
-                  <p className="text-[#6E747D]">
-                    {selectedTicket.email}
-                  </p>
-                </div>
-              </div>
-            </CardComponent>
+              </CardComponent>
+            </div>
           </div>
         </div>
       </CardComponent>

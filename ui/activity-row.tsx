@@ -15,8 +15,8 @@ type ActivityProps = {
 
 export default function ActivityRow({ data }: ActivityProps) {
   return data.map((d, idx) => (
-    <div key={idx} className="flex justify-between items-center">
-      <div className="flex items-center gap-4">
+    <div key={idx} className="flex justify-between items-end md:items-center">
+      <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
         {/* icon */}
         <div
           style={{
@@ -28,8 +28,8 @@ export default function ActivityRow({ data }: ActivityProps) {
         </div>
         {/* message and time */}
         <div>
-          <p className="text-[#1F1F1F] text-base">{d.message}</p>
-          <p className="text-[#7C7979] text-sm">{d.time}</p>
+          <p className="text-[#1F1F1F] text-sm md:text-base">{d.message}</p>
+          <p className="text-[#7C7979] text-xs md:text-sm">{d.time}</p>
         </div>
       </div>
 

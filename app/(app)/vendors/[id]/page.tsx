@@ -87,8 +87,8 @@ export default function VendorDetails() {
           <BackButton text="Back to Vendors" />
 
           {/* header */}
-          <div className="flex items-start justify-between">
-            <div className="flex items-center relative gap-3">
+          <div className="flex flex-col md:flex-row items-start justify-between gap-4">
+            <div className="flex flex-col md:flex-row items-start md:items-center relative gap-3">
               <Image
                 src={selectedVendor.vendor.image}
                 alt="Profile Picture"
@@ -121,7 +121,7 @@ export default function VendorDetails() {
             </div>
 
             {/* action buttons */}
-            <div className="w-[200px]">
+            <div className="w-full md:w-[200px]">
               {statusActions[selectedVendor.status]}
             </div>
           </div>

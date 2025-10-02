@@ -59,7 +59,7 @@ export default function Users() {
         </>
       )}
     >
-      <div className="w-[90%]">
+      <div className="w-full md:w-[90%]">
         <SearchInput
           name="search"
           value=""
@@ -67,7 +67,7 @@ export default function Users() {
           onChange={() => {}}
         />
       </div>
-      <div className="w-[10%]">
+      <div className="w-full md:w-[10%]">
         <DropDown
           name="riderStatus"
           value=""
