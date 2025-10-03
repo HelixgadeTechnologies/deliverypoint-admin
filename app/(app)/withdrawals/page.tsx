@@ -29,7 +29,7 @@ export default function Withdrawals() {
   } = useWithdrawalModal();
   return (
     <section className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <DashboardStatCard data={withdrawalStats} />
       </div>
       <InfoAlert
@@ -70,7 +70,9 @@ export default function Withdrawals() {
                 />
               </div>
               {activeRowId === row.id && (
-                <ViewDetails onClick={() => handleViewUserDetails(row, setActiveRowId)}/>
+                <ViewDetails
+                  onClick={() => handleViewUserDetails(row, setActiveRowId)}
+                />
               )}
             </td>
           </>
@@ -104,9 +106,9 @@ export default function Withdrawals() {
 
       {/* user details modal */}
       <UserDetailsModal
-      isOpen={viewUserDetails}
-      onClose={() => setViewUserDetails(false)}
-      user={selectedUser}
+        isOpen={viewUserDetails}
+        onClose={() => setViewUserDetails(false)}
+        user={selectedUser}
       />
     </section>
   );

@@ -7,17 +7,19 @@ import { Icon } from "@iconify/react";
 import { useState } from "react";
 import SearchInput from "@/ui/forms/search-input";
 import DropDown from "@/ui/forms/select-dropdown";
-import { supportHead, supportStats, supportTickets } from "@/lib/config/demo-data/support";
+import {
+  supportHead,
+  supportStats,
+  supportTickets,
+} from "@/lib/config/demo-data/support";
 import ViewDetails from "@/ui/table-action";
-
 
 export default function Support() {
   const [activeRowId, setActiveRowId] = useState<string | null>(null);
 
-
   return (
     <section className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <DashboardStatCard data={supportStats} />
       </div>
       <Table
@@ -51,14 +53,12 @@ export default function Support() {
                   className="cursor-pointer"
                   color="#909CAD"
                   onClick={() =>
-                    setActiveRowId((prev) =>
-                      prev === row.id ? null : row.id
-                    )
+                    setActiveRowId((prev) => (prev === row.id ? null : row.id))
                   }
                 />
               </div>
               {activeRowId === row.id && (
-              <ViewDetails href={`/support/${row.id}`} />
+                <ViewDetails href={`/support/${row.id}`} />
               )}
             </td>
           </>
@@ -74,18 +74,18 @@ export default function Support() {
         </div>
         <div className="w-full md:w-1/5 flex items-center gap-2">
           <DropDown
-          name="userType"
-          value=""
-          placeholder="User Type"
-          options={[]}
-          onChange={() => {}}
+            name="userType"
+            value=""
+            placeholder="User Type"
+            options={[]}
+            onChange={() => {}}
           />
-            <DropDown
-          name="orderStatus"
-          value=""
-          placeholder="Order Status"
-          options={[]}
-          onChange={() => {}}
+          <DropDown
+            name="orderStatus"
+            value=""
+            placeholder="Order Status"
+            options={[]}
+            onChange={() => {}}
           />
         </div>
       </Table>

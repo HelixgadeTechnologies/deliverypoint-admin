@@ -44,7 +44,7 @@ export default function Sidebar() {
                   key={index}
                   href={link.url}
                   onClick={() => {router.push(link.url); closeMobile()}}
-                  className={`h-8 md:h-10 w-full px-4 py-2.5 rounded-lg flex items-center gap-2 ${
+                  className={`h-10 w-full px-4 py-2.5 rounded-lg flex items-center gap-2 ${
                     isActive
                       ? "bg-[#0095DA] text-white"
                       : "hover:bg-gray-50 text-gray-600"
@@ -56,14 +56,14 @@ export default function Sidebar() {
                     height={18}
                     color={isActive ? "#FFF" : "#737373"}
                   />
-                  <span className="text-xs md:text-sm">{link.name}</span>
+                  <span className="text-sm">{link.name}</span>
                 </Link>
               );
             })}
           </div>
           <div
             onClick={() => {}}
-            className={`h-8 md:h-10 w-full px-4 py-2.5 rounded-lg flex items-center gap-2 text-[#FF4D4F] cursor-pointer hover:text-red-600 transition-colors duration-300`}
+            className={`h-10 w-full px-4 py-2.5 rounded-lg flex items-center gap-2 text-[#FF4D4F] cursor-pointer hover:text-red-600 transition-colors duration-300`}
           >
             <Icon
               icon={"streamline:logout-1"}
@@ -71,7 +71,7 @@ export default function Sidebar() {
               height={18}
               color={"#FF4D4F"}
             />
-            <span className="text-xs md:text-sm">Logout</span>
+            <span className="text-sm">Logout</span>
           </div>
         </section>
       </aside>

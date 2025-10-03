@@ -11,8 +11,8 @@ import TabComponent from "@/ui/tab-component";
 
 export default function Settings() {
   const tabData = [
-    { tabName: "Profile Settings", id: 1 },
-    { tabName: "Notification Preference", id: 2 },
+    { tabName: "Profile Settings", id: 1, icon: "iconamoon:profile-thin" },
+    { tabName: "Notification Preference", id: 2, icon:"iconamoon:notification-thin" },
   ];
   return (
     <TabComponent

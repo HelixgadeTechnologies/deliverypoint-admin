@@ -93,3 +93,23 @@ export type Orders = {
     platform: number;
   };
 };
+
+export type Logistics = {
+  id: string;
+  riderAssigned: {
+    name: string;
+    vehicle: string;
+  },
+  sender: {
+    name: string;
+    phoneNumber: string;
+  };
+  pickupLocation: string;
+  dropoffLocation: string;
+  paymentType: "Card" | "Wallet" | "Cash";
+  status: Status;
+  earnings: {
+    main: string;
+    platform: string;
+  }
+}

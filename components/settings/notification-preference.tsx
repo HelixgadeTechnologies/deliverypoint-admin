@@ -15,7 +15,7 @@ export default function NotificationPreference() {
         subtitle="Choose what notifications you want to receive and how"
       />
 
-      <div className="space-y-6 mt-6">
+      <div className="space-y-6 mt-14 md:mt-6">
         {/* notification types */}
         <div>
           <h4 className="text-[#333333] font-bold text-base">
@@ -23,8 +23,8 @@ export default function NotificationPreference() {
           </h4>
           <div className="space-y-4 mt-4">
             {notificationTypes.map((notif) => (
-              <div key={notif.id} className="flex justify-between items-center">
-                <div className="flex items-center gap-4">
+              <div key={notif.id} className="flex justify-between items-end md:items-center">
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
                   {/* icon */}
                   <div
                     style={{
@@ -80,7 +80,7 @@ export default function NotificationPreference() {
         </div>
       </div>
 
-      <div className="w-[160px] mt-10">
+      <div className="md:w-[160px] mt-10">
         <Button content="Save Preferences" />
       </div>
     </CardComponent>

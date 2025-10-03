@@ -18,7 +18,7 @@ export default function Orders() {
   const [activeRowId, setActiveRowId] = useState<string | null>(null);
   return (
     <section className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <DashboardStatCard data={orderStats} />
       </div>
       <Table
@@ -30,7 +30,9 @@ export default function Orders() {
           <>
             <td className="px-6">{row.id}</td>
             <td className="px-6 max-w-[220px]">
-              <h4 className="text-sm truncate text-center">{row.customerDetails.name}</h4>
+              <h4 className="text-sm truncate text-center">
+                {row.customerDetails.name}
+              </h4>
               <p className="text-xs truncate text-[#7C7979] text-center">
                 {row.customerDetails.phoneNumber}
               </p>
@@ -43,7 +45,9 @@ export default function Orders() {
               <StatusTab status={row.status} />
             </td>
             <td className="px-6 max-w-[220px]">
-              <h4 className="text-sm truncate text-center">N{row.earnings.main}</h4>
+              <h4 className="text-sm truncate text-center">
+                N{row.earnings.main}
+              </h4>
               <p className="text-xs truncate text-[#7C7979] text-center">
                 Platform: N{row.earnings.platform}
               </p>
