@@ -97,7 +97,7 @@ export default function StatusTab({
   const sizeStyle = sizeStyles[size];
 
   return (
-    <div
+    <span
       className={`
         ${sizeStyle}
         ${styles.bg} 
@@ -112,7 +112,7 @@ export default function StatusTab({
       `.replace(/\s+/g, ' ').trim()}
     >
       {status}
-    </div>
+    </span>
   );
 }
 

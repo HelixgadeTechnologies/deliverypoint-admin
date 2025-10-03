@@ -8,18 +8,24 @@ import NotificationsTab from "./notification-tab";
 import { sosData } from "@/lib/config/demo-data/sos";
 import SOSAlertModal from "@/components/sos-alert-modal";
 import { useSidebar } from "@/context/SidebarContext";
+import { usePathname } from "next/navigation";
+import { breadcrumbs } from "@/lib/config/breadcrumbs";
 
 export default function Header() {
   const [isSosAlertModal, setIsSosModal] = useState(false);
   const { openMobile } = useSidebar();
+  const pathname = usePathname();
+  const matched = breadcrumbs.find((b) => pathname.includes(b.href))
   return (
     <>
-      <header className="bg-white py-4 px-4 md:px-10 border-b border-gray-200 flex justify-between items-center h-[92px]">
+      <header className="bg-white py-4 px-4 md:px-10 border-b border-gray-200 flex justify-between items-center h-[92px] sticky top-0 md:static">
         <Heading
           heading="Admin Management"
           subtitle="Welcome back! Here's what's happening today."
           className="hidden md:block"
         />
+        {/* mobile breadcrumb */}
+      <h1 className="block md:hidden text-lg font-bold">{matched?.header}</h1>
         <div className="flex gap-2 md:gap-4 items-center justify-end w-full md:w-fit">
           {/* sos alert */}
           <div

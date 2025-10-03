@@ -20,12 +20,6 @@ export default function OrderDetails() {
   const selectedOrder = orderTableData.find((order) => order.id === orderId);
   if (!selectedOrder) return <div>Not found</div>;
 
-  // for earnings breakdown
-  // const statusCard: Record<string, JSX.Element> = {
-  //   : (
-
-  //   ),
-  // };
   return (
     <>
       <CardComponent>
