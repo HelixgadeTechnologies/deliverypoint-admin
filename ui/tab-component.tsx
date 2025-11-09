@@ -31,7 +31,7 @@ TabProps) {
   return (
     <div className="w-full space-y-6">
       {/* Tabs */}
-      <div className="w-full relative">
+      <div className="w-full relative z-10">
         <div className="bg-[#FAFAFA] pt-2 flex items-center justify-center gap-8 border-b border-[#E5E7EB]">
           {data.map((d) => {
             const isActive = activeTab === d.id;

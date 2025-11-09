@@ -38,7 +38,7 @@ export default function SOSAlertModal({ isOpen, onClose }: Props) {
       </div>
 
       {/* alert list */}
-      <div className="space-y-5 h-[550px] overflow-y-auto">
+      <div className="space-y-5 h-[550px] overflow-y-auto scrollbar-hide">
         {sosData.map((sos, index) => (
           <CardComponent key={index}>
             <div className="space-y-6">
