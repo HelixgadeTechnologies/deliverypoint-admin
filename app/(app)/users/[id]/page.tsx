@@ -15,12 +15,14 @@ import UserActivatedModal from "@/components/users/user-activated-modal";
 import UserDeactivateModal from "@/components/users/user-deactivate-modal";
 import OrderDetailsModal from "@/components/users/user-order-details-modal";
 import { UserOrderDetails } from "@/types/users";
+import { useRoleStore } from "@/store/role-store";
 
 export default function UserDetails() {
   // for order details
   const [selectedOrder, setSelectedOrder] = useState<UserOrderDetails | null>(
     null
   );
+  const { role } = useRoleStore();
 
   const pathname = usePathname();
   const [userActivatedModal, setUserActivatedModal] = useState(false);
@@ -129,7 +131,7 @@ export default function UserDetails() {
             </CardComponent>
 
             {/* order history */}
-            <CardComponent height="100%">
+            {role === "super-admin" && <CardComponent height="100%">
               <Heading xs heading="Order History" />
               <div className="space-y-4">
                 <SummaryRow
@@ -170,10 +172,10 @@ export default function UserDetails() {
                   ))}
                 </div>
               </div>
-            </CardComponent>
+            </CardComponent>}
 
             {/* order summary */}
-            <CardComponent height="100%">
+            {role === "super-admin" && <CardComponent height="100%">
               <Heading xs heading="Order Summary" />
               <SummaryRow
                 icon="mynaui:dollar"
@@ -186,7 +188,7 @@ export default function UserDetails() {
                 <p className="text-[#6E747D]">2024-12-14</p>
               </div>
               <div className="mt-6">{statusCard[selectedUser.status]}</div>
-            </CardComponent>
+            </CardComponent>}
           </div>
         </div>
       </CardComponent>

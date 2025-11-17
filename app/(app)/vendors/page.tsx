@@ -13,9 +13,16 @@ import Image from "next/image";
 import { Icon } from "@iconify/react";
 import { useState } from "react";
 import ViewDetails from "@/ui/table-action";
+import { useRoleStore } from "@/store/role-store";
 
 export default function Vendors() {
   const [activeRowId, setActiveRowId] = useState<string | null>(null);
+  const { role } = useRoleStore();
+
+  const filteredTableData = role === "admin" 
+    ? vendorData.filter(data => data.status === "Active")  // Admin: only active vendors
+    : vendorData;  // Super Admin: all vendors
+
   return (
     <section className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -25,7 +32,7 @@ export default function Vendors() {
         heading="Vendor Management"
         subtitle="Manage and monitor all platform vendors"
         tableHead={vendorHead}
-        tableData={vendorData}
+        tableData={filteredTableData}
         renderRow={(row) => (
           <>
             <td className="px-6 flex items-center gap-2 h-full pt-5">

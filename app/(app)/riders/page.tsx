@@ -4,6 +4,7 @@ import {
   riderTableData,
   riderTableHead,
 } from "@/lib/config/demo-data/riders";
+import { useRoleStore } from "@/store/role-store";
 import SearchInput from "@/ui/forms/search-input";
 import DropDown from "@/ui/forms/select-dropdown";
 import DashboardStatCard from "@/ui/stat-card";
@@ -15,6 +16,11 @@ import Image from "next/image";
 import { useState } from "react";
 export default function Riders() {
   const [activeRowId, setActiveRowId] = useState<string | null>(null);
+   const { role } = useRoleStore();
+  
+    const filteredTableData = role === "admin" 
+      ? riderTableData.filter(data => data.deliveryStatus === "Active")  // Admin: only active riders
+      : riderTableData;  // Super Admin: all riders
   return (
     <section className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -24,7 +30,7 @@ export default function Riders() {
         heading="Rider Management"
         subtitle="Manage and monitor all platform riders"
         tableHead={riderTableHead}
-        tableData={riderTableData}
+        tableData={filteredTableData}
         renderRow={(row) => (
           <>
             <td className="px-6 flex items-center gap-2 h-full pt-5">

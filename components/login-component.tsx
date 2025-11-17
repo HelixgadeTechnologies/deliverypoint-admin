@@ -3,14 +3,19 @@
 import Button from "@/ui/button";
 import EmailInput from "@/ui/forms/email-input";
 import PasswordInput from "@/ui/forms/password-input";
+import RadioInput from "@/ui/forms/radio";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChangeEvent, FormEvent, useState } from "react";
+import { useRoleStore, UserRole } from "@/store/role-store";
+import { toast, Toaster } from "react-hot-toast";
 
 export default function LoginComponent() {
   const router = useRouter();
-  const [error, setError] = useState<string>("");
+  const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
+
+    const { setRole } = useRoleStore();
 
   const [loginData, setLoginData] = useState({
     email: "",
@@ -20,13 +25,28 @@ export default function LoginComponent() {
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setLoginData((prev) => ({ ...prev, [name]: value }));
-    if (error) setError("");
+  };
+
+  const handleRoleChange = (role: UserRole) => {
+    setSelectedRole(role);
   };
 
   const handleLogin = (e: FormEvent) => {
     e.preventDefault();
+    
+    if (!loginData.email || !loginData.password) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    // Save the selected role to Zustand store (persisted in localStorage)
+    if (selectedRole) setRole(selectedRole);
+    
+    // change back later
+    toast.success("Log in successful!");
     router.push("/dashboard");
   };
+
   return (
     <section className="h-screen bg-[#0095DA] relative flex justify-center items-center">
       <Image
@@ -54,7 +74,7 @@ export default function LoginComponent() {
         <p className="text-[#7C7979] text-center text-sm md:text-base font-normal">
           Sign in to continue to dashboard
         </p>
-        <form  onSubmit={handleLogin} className="space-y-6">
+        <form onSubmit={handleLogin} className="space-y-6">
           <EmailInput
             value={loginData.email}
             name="email"
@@ -75,9 +95,27 @@ export default function LoginComponent() {
               Forgot Password?
             </Link>
           </div>
+          <div className="flex gap-3 items-center">
+            <p className="text-sm text-gray-500">View as:</p>
+            <RadioInput
+              label="Super Admin"
+              name="role"
+              value="super admin"
+              onChange={() => handleRoleChange("super-admin")}
+              is_checked={selectedRole === "super-admin"}
+            />
+            <RadioInput
+              label="Admin"
+              name="role"
+              value="admin"
+              onChange={() => handleRoleChange("admin")}
+              is_checked={selectedRole === "admin"}
+            />
+          </div>
           <Button content="Sign In" />
         </form>
       </div>
+      <Toaster position="top-right"/>
     </section>
   );
 }

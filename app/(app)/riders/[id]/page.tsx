@@ -23,12 +23,15 @@ import RiderSuspendedModal from "@/components/riders/rider-suspended-modal";
 import { RiderOrderDetails } from "@/types/riders";
 import OrderDetailsModal from "@/components/riders/rider-order-details-modal";
 import Divider from "@/ui/divider";
+import { useRoleStore } from "@/store/role-store";
 
 export default function RiderDetails() {
   // for order details
   const [selectedOrder, setSelectedOrder] = useState<RiderOrderDetails | null>(
     null
   );
+
+  const { role } = useRoleStore();
 
   // for action modals
   const [riderApprovedModal, setRiderApprovedModal] = useState(false);
@@ -179,7 +182,7 @@ export default function RiderDetails() {
             </CardComponent>
 
             {/* delivery summary */}
-            <CardComponent height="100%">
+            {role === "super-admin" && <CardComponent height="100%">
               <Heading xs heading="Delivery Summary" />
               <div className="space-y-4">
                 {/* icons and text */}
@@ -226,10 +229,10 @@ export default function RiderDetails() {
                   ))}
                 </div>
               </div>
-            </CardComponent>
+            </CardComponent>}
 
             {/* payment summary */}
-            <CardComponent height="100%">
+            {role === "super-admin" && <CardComponent height="100%">
               <Heading xs heading="Payment Summary" />
               <div className="space-y-4 text-sm">
                 {paymentSummary.map((summary, index) => (
@@ -249,7 +252,7 @@ export default function RiderDetails() {
               <div className="mt-6">
                 {statusCard[selectedRider.deliveryStatus]}
               </div>
-            </CardComponent>
+            </CardComponent>}
           </div>
         </div>
       </CardComponent>

@@ -22,12 +22,15 @@ import SummaryRow from "@/ui/summary-row";
 import OrderDetailsModal from "@/components/vendors/vendor-order-details-modal";
 import { VendorOrderDetails } from "@/types/vendors";
 import Divider from "@/ui/divider";
+import { useRoleStore } from "@/store/role-store";
 
 export default function VendorDetails() {
   // for order details
   const [selectedOrder, setSelectedOrder] = useState<VendorOrderDetails | null>(
     null
   );
+
+  const { role } = useRoleStore();
 
   const pathname = usePathname();
   const [vendorApprovedModal, setVendorApprovedModal] = useState(false);
@@ -180,12 +183,61 @@ export default function VendorDetails() {
             </CardComponent>
 
             {/* order summary */}
-            <CardComponent height="100%">
-              <Heading xs heading="Order Summary" />
-              <div className="space-y-4">
-                {/* icons and text */}
+            {role === "super-admin" && (
+              <CardComponent height="100%">
+                <Heading xs heading="Order Summary" />
+                <div className="space-y-4">
+                  {/* icons and text */}
+                  <div className="space-y-4 text-sm">
+                    {orderSummary.map((summary, index) => (
+                      <SummaryRow
+                        key={index}
+                        name={summary.name}
+                        amount={summary.amount}
+                        icon={summary.icon}
+                        color={summary.color}
+                      />
+                    ))}
+                  </div>
+                  <Divider />
+                  <div className="space-y-4 scrollable">
+                    {vendorOderHistory.map((order) => (
+                      <div
+                        key={order.orderId}
+                        className="h-[85px] w-full bg-white p-4 shadow rounded flex justify-between items-center">
+                        <div className="text-sm">
+                          <h4 className="text-[#1F1F1F]">{order.orderId}</h4>
+                          <p className="text-[#6E747D]">{order.date}</p>
+                        </div>
+                        <div className="space-y-1">
+                          <button
+                            onClick={() => setSelectedOrder(order)}
+                            className={`w-20 h-7 rounded-lg text-white flex justify-center items-center text-xs cursor-pointer ${
+                              order.status === "Completed"
+                                ? "bg-[#21C788]"
+                                : order.status === "Cancelled"
+                                ? "bg-[#FF4D4F]"
+                                : "bg-[#FFAC33]"
+                            }`}>
+                            {order.status}
+                          </button>
+                          <p className="text-sm text-[#6E747D]">
+                            ₦ {order.total}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardComponent>
+            )}
+
+            {/* payment summary */}
+            {role === "super-admin" && (
+              <CardComponent height="100%">
+                <Heading xs heading="Payment Summary" />
                 <div className="space-y-4 text-sm">
-                  {orderSummary.map((summary, index) => (
+                  {paymentSummary.map((summary, index) => (
                     <SummaryRow
                       key={index}
                       name={summary.name}
@@ -195,60 +247,13 @@ export default function VendorDetails() {
                     />
                   ))}
                 </div>
-                <Divider />
-                <div className="space-y-4 scrollable">
-                  {vendorOderHistory.map((order) => (
-                    <div
-                      key={order.orderId}
-                      className="h-[85px] w-full bg-white p-4 shadow rounded flex justify-between items-center"
-                    >
-                      <div className="text-sm">
-                        <h4 className="text-[#1F1F1F]">{order.orderId}</h4>
-                        <p className="text-[#6E747D]">{order.date}</p>
-                      </div>
-                      <div className="space-y-1">
-                        <button
-                          onClick={() => setSelectedOrder(order)}
-                          className={`w-20 h-7 rounded-lg text-white flex justify-center items-center text-xs cursor-pointer ${
-                            order.status === "Completed"
-                              ? "bg-[#21C788]"
-                              : order.status === "Cancelled"
-                              ? "bg-[#FF4D4F]"
-                              : "bg-[#FFAC33]"
-                          }`}
-                        >
-                          {order.status}
-                        </button>
-                        <p className="text-sm text-[#6E747D]">
-                          ₦ {order.total}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                <div className="mt-4 text-sm">
+                  <h4 className="text-[#1F1F1F]">Last Withdrawal</h4>
+                  <p className="text-[#6E747D]">2024-12-14</p>
                 </div>
-              </div>
-            </CardComponent>
-
-            {/* payment summary */}
-            <CardComponent height="100%">
-              <Heading xs heading="Payment Summary" />
-              <div className="space-y-4 text-sm">
-                {paymentSummary.map((summary, index) => (
-                  <SummaryRow
-                    key={index}
-                    name={summary.name}
-                    amount={summary.amount}
-                    icon={summary.icon}
-                    color={summary.color}
-                  />
-                ))}
-              </div>
-              <div className="mt-4 text-sm">
-                <h4 className="text-[#1F1F1F]">Last Withdrawal</h4>
-                <p className="text-[#6E747D]">2024-12-14</p>
-              </div>
-              <div className="mt-6">{statusCard[selectedVendor.status]}</div>
-            </CardComponent>
+                <div className="mt-6">{statusCard[selectedVendor.status]}</div>
+              </CardComponent>
+            )}
           </div>
         </div>
       </CardComponent>

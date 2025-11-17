@@ -9,15 +9,22 @@ import ViewDetails from "@/ui/table-action";
 import Image from "next/image";
 import { useState } from "react";
 import { Icon } from "@iconify/react";
+import { useRoleStore } from "@/store/role-store";
 
 export default function Users() {
   const [activeRowId, setActiveRowId] = useState<string | null>(null);
+
+   const { role } = useRoleStore();
+  
+    const filteredTableData = role === "admin" 
+      ? userTableData.filter(data => data.status === "Suspended")  // Admin: only active users
+      : userTableData;  // Super Admin: all users
   return (
     <Table
       heading="User Management"
       subtitle="Manage and monitor user accounts"
       tableHead={userTableHead}
-      tableData={userTableData}
+      tableData={filteredTableData}
       renderRow={(row) => (
         <>
           <td className="px-6 flex items-center gap-2 h-full pt-5">

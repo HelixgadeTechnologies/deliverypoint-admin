@@ -4,15 +4,22 @@ import { useSidebar } from "@/context/SidebarContext";
 import { sidebarData } from "@/lib/config/sidebar";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { redirect, usePathname, useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
+import {toast, Toaster} from "react-hot-toast";
 
 export default function Sidebar() {
   const { mobileOpen, closeMobile } = useSidebar();
   const router = useRouter();
   const pathname = usePathname();
+
+  const handleLogout = () => {
+    toast.success("Logged out successfully!");
+    redirect("/login")
+  }
   return (
     <>
+    <Toaster position="top-right"/>
       {/* overlay for mobile */}
       {mobileOpen && (
         <div
@@ -62,7 +69,7 @@ export default function Sidebar() {
             })}
           </div>
           <div
-            onClick={() => {}}
+            onClick={() => handleLogout()}
             className={`h-10 w-full px-4 py-2.5 rounded-lg flex items-center gap-2 text-[#FF4D4F] cursor-pointer hover:text-red-600 transition-colors duration-300`}
           >
             <Icon
