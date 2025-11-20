@@ -4,19 +4,34 @@ import { useSidebar } from "@/context/SidebarContext";
 import { sidebarData } from "@/lib/config/sidebar";
 import Image from "next/image";
 import Link from "next/link";
-import { redirect, usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
 import {toast, Toaster} from "react-hot-toast";
+import { auth } from "@/app/(app)/firebase/config";
+import { signOut } from "firebase/auth";
 
 export default function Sidebar() {
   const { mobileOpen, closeMobile } = useSidebar();
   const router = useRouter();
   const pathname = usePathname();
 
-  const handleLogout = () => {
+const handleLogout = async () => {
+  try {
+    await signOut(auth);
+    sessionStorage.clear();
+    localStorage.clear(); // Clear localStorage if used
+    
     toast.success("Logged out successfully!");
-    redirect("/login")
+    
+    setTimeout(() => {
+      router.push('/login');
+      router.refresh(); // Refresh the route to ensure clean state
+    }, 1000);
+  } catch (error) {
+    console.error('Logout error:', error);
+    toast.error("Failed to logout");
   }
+}
   return (
     <>
     <Toaster position="top-right"/>

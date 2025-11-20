@@ -18,9 +18,9 @@ export default function Riders() {
   const [activeRowId, setActiveRowId] = useState<string | null>(null);
    const { role } = useRoleStore();
   
-    const filteredTableData = role === "admin" 
-      ? riderTableData.filter(data => data.deliveryStatus === "Active")  // Admin: only active riders
-      : riderTableData;  // Super Admin: all riders
+    // const filteredTableData = role === "admin" 
+    //   ? riderTableData.filter(data => data.deliveryStatus === "Active")  // Admin: only active riders
+    //   : riderTableData;  // Super Admin: all riders
   return (
     <section className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -30,7 +30,7 @@ export default function Riders() {
         heading="Rider Management"
         subtitle="Manage and monitor all platform riders"
         tableHead={riderTableHead}
-        tableData={filteredTableData}
+        tableData={riderTableData}
         renderRow={(row) => (
           <>
             <td className="px-6 flex items-center gap-2 h-full pt-5">

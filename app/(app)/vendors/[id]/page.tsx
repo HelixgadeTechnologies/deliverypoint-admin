@@ -183,7 +183,7 @@ export default function VendorDetails() {
             </CardComponent>
 
             {/* order summary */}
-            {role === "super-admin" && (
+            {role === "super admin" && (
               <CardComponent height="100%">
                 <Heading xs heading="Order Summary" />
                 <div className="space-y-4">
@@ -233,7 +233,7 @@ export default function VendorDetails() {
             )}
 
             {/* payment summary */}
-            {role === "super-admin" && (
+            {role === "super admin" && (
               <CardComponent height="100%">
                 <Heading xs heading="Payment Summary" />
                 <div className="space-y-4 text-sm">

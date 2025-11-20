@@ -64,7 +64,7 @@ export default function DropDown({
   return (
     <div className="space-y-2 relative flex-1" ref={dropdownRef}>
       {label && (
-        <label htmlFor={id} className="text-xs font-medium text-[#242424] block">
+        <label htmlFor={id} className="text-sm font-medium text-[#242424] block">
           {label}
         </label>
       )}
@@ -72,7 +72,7 @@ export default function DropDown({
       {/* Custom dropdown trigger */}
       <div
         onClick={handleToggle}
-        className={`h-10 min-w-full md:w-fit outline-none border border-[#E4E9EF] focus:border-blue-500 hover:border-blue-500 rounded px-2 py-1 text-sm flex items-center justify-between bg-white transition-colors duration-200 ${isDisabled ? 'cursor-not-allowed text-gray-400' : 'cursor-pointer'}`}
+        className={`h-11 min-w-full md:w-fit outline-none border border-[#E4E9EF] focus:border-blue-500 hover:border-blue-500 rounded-lg px-2 py-1 text-sm flex items-center justify-between bg-white transition-colors duration-200 ${isDisabled ? 'cursor-not-allowed text-gray-400' : 'cursor-pointer'}`}
       >
         <span className="text-[#1F1F1F] whitespace-nowrap">{displayValue}</span>
         <Icon
@@ -93,7 +93,7 @@ export default function DropDown({
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2, ease: "linear" }}
-            className="absolute top-full w-full bg-white border border-gray-300 rounded-[6px] shadow-lg z-50 max-h-60 overflow-y-auto"
+            className="absolute top-full w-full bg-white border border-gray-300 shadow-lg z-50 max-h-60 overflow-y-auto"
           >
             {options.length === 0 ? (
               <div className="px-4 py-2 text-xs text-gray-500">
@@ -113,7 +113,7 @@ export default function DropDown({
                   onClick={() => handleOptionSelect(option.value)}
                   className={`px-4 py-2 text-sm cursor-pointer hover:bg-gray-50 transition-colors duration-150 ${
                     value === option.value
-                      ? "bg-[#FFECE5] text-[#D2091E]"
+                      ? "bg-[#e5f2ff] text-[#0095DA]"
                       : "text-gray-500"
                   }`}
                 >

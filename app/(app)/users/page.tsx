@@ -16,15 +16,15 @@ export default function Users() {
 
    const { role } = useRoleStore();
   
-    const filteredTableData = role === "admin" 
-      ? userTableData.filter(data => data.status === "Suspended")  // Admin: only active users
-      : userTableData;  // Super Admin: all users
+    // const filteredTableData = role === "admin" 
+    //   ? userTableData.filter(data => data.status === "Suspended")  // Admin: only active users
+    //   : userTableData;  // Super Admin: all users
   return (
     <Table
       heading="User Management"
       subtitle="Manage and monitor user accounts"
       tableHead={userTableHead}
-      tableData={filteredTableData}
+      tableData={userTableData}
       renderRow={(row) => (
         <>
           <td className="px-6 flex items-center gap-2 h-full pt-5">

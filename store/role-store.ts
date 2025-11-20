@@ -2,7 +2,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export type UserRole = "admin" | "super-admin";
+export type UserRole = "admin" | "super admin";
 
 interface RoleState {
   role: UserRole;

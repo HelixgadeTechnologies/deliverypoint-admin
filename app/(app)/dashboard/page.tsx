@@ -7,12 +7,21 @@ import CardComponent from "@/ui/card-wrapper";
 import LineChartComponent from "@/ui/line-chart";
 import Heading from "@/ui/text-heading";
 import DashboardStatCard from "@/ui/stat-card";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "@/app/(app)/firebase/config";
+import { useRouter } from "next/navigation";
 
 // export const metadata = {
 //   title: "Dashboard - Delivery Point | Admin",
 // };
 
 export default function Dashboard() {
+  const [ user ] = useAuthState(auth);
+  const router = useRouter();
+  const userSession = sessionStorage.getItem('user');
+
+  if (!user && !userSession) router.push("/login") ;
+
   const stats = [
     {
       title: "Vendors",
@@ -81,7 +90,7 @@ export default function Dashboard() {
                 iconColor="#0095DA"
                 sm
               />
-              <div className="h-[320px]">
+              <div className="h-80">
                 <AreaChartComponent
                   data={revenuePayoutData}
                   xKey="month"
@@ -102,7 +111,7 @@ export default function Dashboard() {
                 iconColor="#FFAC33"
                 sm
               />
-              <div className="h-[320px]">
+              <div className="h-80">
                 <LineChartComponent
                   lines={lines}
                   data={orderTrendsData}

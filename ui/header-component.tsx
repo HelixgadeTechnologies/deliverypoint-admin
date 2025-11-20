@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Heading from "./text-heading";
 import { Icon } from "@iconify/react";
 import Avatar from "./avatar";
@@ -10,12 +10,49 @@ import SOSAlertModal from "@/components/sos-alert-modal";
 import { useSidebar } from "@/context/SidebarContext";
 import { usePathname } from "next/navigation";
 import { breadcrumbs } from "@/lib/config/breadcrumbs";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "@/app/(app)/firebase/config";
+import { onAuthStateChanged } from "firebase/auth";
 
 export default function Header() {
   const [isSosAlertModal, setIsSosModal] = useState(false);
+  const [userFullName, setUserFullName] = useState("John Doe"); // Default fallback
   const { openMobile } = useSidebar();
   const pathname = usePathname();
-  const matched = breadcrumbs.find((b) => pathname.includes(b.href))
+  const matched = breadcrumbs.find((b) => pathname.includes(b.href));
+
+  // Fetch super admin data
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user?.email) {
+        await fetchSuperAdminName(user.email);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Function to fetch super admin's full name
+  const fetchSuperAdminName = async (email: string) => {
+    try {
+      const superAdminRef = doc(db, "super_admins", email);
+      const superAdminSnapshot = await getDoc(superAdminRef);
+
+      if (superAdminSnapshot.exists()) {
+        const data = superAdminSnapshot.data();
+        // Extract full name from the document, fallback to email if not available
+        const fullName = data.fullName || data.email || "Super Admin";
+        setUserFullName(fullName);
+      } else {
+        // If no document exists, use email as fallback
+        setUserFullName(email.split('@')[0]); // Use username part of email
+      }
+    } catch (error) {
+      console.error("Error fetching super admin name:", error);
+      // Keep the default fallback name
+    }
+  };
+
   return (
     <>
       <header className="bg-white py-4 px-4 md:px-10 border-b border-gray-200 flex justify-between items-center h-[92px] sticky top-0 md:static">
@@ -25,7 +62,7 @@ export default function Header() {
           className="hidden md:block"
         />
         {/* mobile breadcrumb */}
-      <h1 className="block md:hidden text-lg font-bold">{matched?.header}</h1>
+        <h1 className="block md:hidden text-lg font-bold">{matched?.header}</h1>
         <div className="flex gap-2 md:gap-4 items-center justify-end w-full md:w-fit">
           {/* sos alert */}
           <div
@@ -39,7 +76,7 @@ export default function Header() {
             </div>
           </div>
           <NotificationsTab />
-          <Avatar name="John Doe" />
+          <Avatar name={userFullName} />
           <Icon
             icon={"material-symbols:menu-rounded"}
             height={32}

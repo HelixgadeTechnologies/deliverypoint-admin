@@ -19,9 +19,9 @@ export default function Vendors() {
   const [activeRowId, setActiveRowId] = useState<string | null>(null);
   const { role } = useRoleStore();
 
-  const filteredTableData = role === "admin" 
-    ? vendorData.filter(data => data.status === "Active")  // Admin: only active vendors
-    : vendorData;  // Super Admin: all vendors
+  // const filteredTableData = role === "admin" 
+  //   ? vendorData.filter(data => data.status === "Active")  // Admin: only active vendors
+  //   : vendorData;  // Super Admin: all vendors
 
   return (
     <section className="space-y-6">
@@ -32,7 +32,7 @@ export default function Vendors() {
         heading="Vendor Management"
         subtitle="Manage and monitor all platform vendors"
         tableHead={vendorHead}
-        tableData={filteredTableData}
+        tableData={vendorData}
         renderRow={(row) => (
           <>
             <td className="px-6 flex items-center gap-2 h-full pt-5">

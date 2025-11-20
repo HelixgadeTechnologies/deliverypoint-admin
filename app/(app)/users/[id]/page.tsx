@@ -73,7 +73,7 @@ export default function UserDetails() {
           <BackButton text="Back to Users" />
 
           {/* header */}
-        <div className="flex flex-col md:flex-row items-start justify-between gap-4">
+          <div className="flex flex-col md:flex-row items-start justify-between gap-4">
             <div className="flex flex-col md:flex-row items-start md:items-center relative gap-3">
               <Image
                 src={selectedUser.user.image}
@@ -131,64 +131,66 @@ export default function UserDetails() {
             </CardComponent>
 
             {/* order history */}
-            {role === "super-admin" && <CardComponent height="100%">
-              <Heading xs heading="Order History" />
-              <div className="space-y-4">
-                <SummaryRow
-                  icon="material-symbols-light:package-2-outline"
-                  name="Total Orders"
-                  color="#21C788"
-                  amount={selectedUser.totalOrders}
-                />
-                <Divider />
-                <div className="space-y-4 scrollable">
-                  {userOrderHistory.map((order) => (
-                    <div
-                      key={order.orderId}
-                      className="h-[85px] w-full bg-white p-4 shadow rounded flex justify-between items-center"
-                    >
-                      <div className="text-sm">
-                        <h4 className="text-[#1F1F1F]">{order.orderId}</h4>
-                        <p className="text-[#6E747D]">{order.date}</p>
+            {role === "super admin" && (
+              <CardComponent height="100%">
+                <Heading xs heading="Order History" />
+                <div className="space-y-4">
+                  <SummaryRow
+                    icon="material-symbols-light:package-2-outline"
+                    name="Total Orders"
+                    color="#21C788"
+                    amount={selectedUser.totalOrders}
+                  />
+                  <Divider />
+                  <div className="space-y-4 scrollable">
+                    {userOrderHistory.map((order) => (
+                      <div
+                        key={order.orderId}
+                        className="h-[85px] w-full bg-white p-4 shadow rounded flex justify-between items-center">
+                        <div className="text-sm">
+                          <h4 className="text-[#1F1F1F]">{order.orderId}</h4>
+                          <p className="text-[#6E747D]">{order.date}</p>
+                        </div>
+                        <div className="space-y-1">
+                          <button
+                            onClick={() => setSelectedOrder(order)}
+                            className={`w-20 h-7 rounded-lg text-white flex justify-center items-center text-xs cursor-pointer ${
+                              order.status === "Completed"
+                                ? "bg-[#21C788]"
+                                : order.status === "Cancelled"
+                                ? "bg-[#FF4D4F]"
+                                : "bg-[#FFAC33]"
+                            }`}>
+                            {order.status}
+                          </button>
+                          <p className="text-sm text-[#6E747D]">
+                            ₦ {order.total}
+                          </p>
+                        </div>
                       </div>
-                      <div className="space-y-1">
-                        <button
-                          onClick={() => setSelectedOrder(order)}
-                          className={`w-20 h-7 rounded-lg text-white flex justify-center items-center text-xs cursor-pointer ${
-                            order.status === "Completed"
-                              ? "bg-[#21C788]"
-                              : order.status === "Cancelled"
-                              ? "bg-[#FF4D4F]"
-                              : "bg-[#FFAC33]"
-                          }`}
-                        >
-                          {order.status}
-                        </button>
-                        <p className="text-sm text-[#6E747D]">
-                          ₦ {order.total}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </CardComponent>}
+              </CardComponent>
+            )}
 
             {/* order summary */}
-            {role === "super-admin" && <CardComponent height="100%">
-              <Heading xs heading="Order Summary" />
-              <SummaryRow
-                icon="mynaui:dollar"
-                name="Total Order Summary"
-                color="#21C788"
-                amount="N 18,750.5"
-              />
-              <div className="mt-4 text-sm">
-                <h4 className="text-[#1F1F1F]">Last Order</h4>
-                <p className="text-[#6E747D]">2024-12-14</p>
-              </div>
-              <div className="mt-6">{statusCard[selectedUser.status]}</div>
-            </CardComponent>}
+            {role === "super admin" && (
+              <CardComponent height="100%">
+                <Heading xs heading="Order Summary" />
+                <SummaryRow
+                  icon="mynaui:dollar"
+                  name="Total Order Summary"
+                  color="#21C788"
+                  amount="N 18,750.5"
+                />
+                <div className="mt-4 text-sm">
+                  <h4 className="text-[#1F1F1F]">Last Order</h4>
+                  <p className="text-[#6E747D]">2024-12-14</p>
+                </div>
+                <div className="mt-6">{statusCard[selectedUser.status]}</div>
+              </CardComponent>
+            )}
           </div>
         </div>
       </CardComponent>

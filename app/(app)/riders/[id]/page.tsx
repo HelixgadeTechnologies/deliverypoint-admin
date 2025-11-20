@@ -137,8 +137,7 @@ export default function RiderDetails() {
                     selectedRider.riderStatus === "Online"
                       ? "bg-[#0095DA15] text-[#0095DA]"
                       : "bg-[#C9D1DA66] text-[#1F1F1F]"
-                  }`}
-                >
+                  }`}>
                   {selectedRider.riderStatus}
                 </div>
               </div>
@@ -182,12 +181,61 @@ export default function RiderDetails() {
             </CardComponent>
 
             {/* delivery summary */}
-            {role === "super-admin" && <CardComponent height="100%">
-              <Heading xs heading="Delivery Summary" />
-              <div className="space-y-4">
-                {/* icons and text */}
+            {role === "super admin" && (
+              <CardComponent height="100%">
+                <Heading xs heading="Delivery Summary" />
+                <div className="space-y-4">
+                  {/* icons and text */}
+                  <div className="space-y-4 text-sm">
+                    {deliverySummary.map((summary, index) => (
+                      <SummaryRow
+                        key={index}
+                        name={summary.name}
+                        amount={summary.amount}
+                        icon={summary.icon}
+                        color={summary.color}
+                      />
+                    ))}
+                  </div>
+                  <Divider />
+                  <div className="space-y-4 scrollable">
+                    {riderOrderHistory.map((order) => (
+                      <div
+                        key={order.orderId}
+                        className="h-[85px] w-full bg-white p-4 shadow rounded flex justify-between items-center">
+                        <div className="text-sm">
+                          <h4 className="text-[#1F1F1F]">{order.orderId}</h4>
+                          <p className="text-[#6E747D]">{order.date}</p>
+                        </div>
+                        <div className="space-y-1">
+                          <button
+                            onClick={() => setSelectedOrder(order)}
+                            className={`w-20 h-7 rounded-lg text-white flex justify-center items-center text-xs cursor-pointer ${
+                              order.status === "Completed"
+                                ? "bg-[#21C788]"
+                                : order.status === "Rejected"
+                                ? "bg-[#FF4D4F]"
+                                : "bg-[#FFAC33]"
+                            }`}>
+                            {order.status}
+                          </button>
+                          <p className="text-sm text-[#6E747D]">
+                            ₦ {order.total}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardComponent>
+            )}
+
+            {/* payment summary */}
+            {role === "super admin" && (
+              <CardComponent height="100%">
+                <Heading xs heading="Payment Summary" />
                 <div className="space-y-4 text-sm">
-                  {deliverySummary.map((summary, index) => (
+                  {paymentSummary.map((summary, index) => (
                     <SummaryRow
                       key={index}
                       name={summary.name}
@@ -197,62 +245,15 @@ export default function RiderDetails() {
                     />
                   ))}
                 </div>
-                <Divider/>
-                <div className="space-y-4 scrollable">
-                  {riderOrderHistory.map((order) => (
-                    <div
-                      key={order.orderId}
-                      className="h-[85px] w-full bg-white p-4 shadow rounded flex justify-between items-center"
-                    >
-                      <div className="text-sm">
-                        <h4 className="text-[#1F1F1F]">{order.orderId}</h4>
-                        <p className="text-[#6E747D]">{order.date}</p>
-                      </div>
-                      <div className="space-y-1">
-                        <button
-                          onClick={() => setSelectedOrder(order)}
-                          className={`w-20 h-7 rounded-lg text-white flex justify-center items-center text-xs cursor-pointer ${
-                            order.status === "Completed"
-                              ? "bg-[#21C788]"
-                              : order.status === "Rejected"
-                              ? "bg-[#FF4D4F]"
-                              : "bg-[#FFAC33]"
-                          }`}
-                        >
-                          {order.status}
-                        </button>
-                        <p className="text-sm text-[#6E747D]">
-                          ₦ {order.total}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                <div className="mt-4 text-sm">
+                  <h4 className="text-[#1F1F1F]">Last Withdrawal</h4>
+                  <p className="text-[#6E747D]">2024-12-14</p>
                 </div>
-              </div>
-            </CardComponent>}
-
-            {/* payment summary */}
-            {role === "super-admin" && <CardComponent height="100%">
-              <Heading xs heading="Payment Summary" />
-              <div className="space-y-4 text-sm">
-                {paymentSummary.map((summary, index) => (
-                  <SummaryRow
-                    key={index}
-                    name={summary.name}
-                    amount={summary.amount}
-                    icon={summary.icon}
-                    color={summary.color}
-                  />
-                ))}
-              </div>
-              <div className="mt-4 text-sm">
-                <h4 className="text-[#1F1F1F]">Last Withdrawal</h4>
-                <p className="text-[#6E747D]">2024-12-14</p>
-              </div>
-              <div className="mt-6">
-                {statusCard[selectedRider.deliveryStatus]}
-              </div>
-            </CardComponent>}
+                <div className="mt-6">
+                  {statusCard[selectedRider.deliveryStatus]}
+                </div>
+              </CardComponent>
+            )}
           </div>
         </div>
       </CardComponent>
