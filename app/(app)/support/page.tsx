@@ -4,50 +4,198 @@ import DashboardStatCard from "@/ui/stat-card";
 import StatusTab from "@/ui/status-tab";
 import Table from "@/ui/table";
 import { Icon } from "@iconify/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import SearchInput from "@/ui/forms/search-input";
 import DropDown from "@/ui/forms/select-dropdown";
-import {
-  supportHead,
-  supportStats,
-  supportTickets,
-} from "@/lib/config/demo-data/support";
+import { supportHead, supportStats } from "@/lib/config/demo-data/support";
 import ViewDetails from "@/ui/table-action";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/app/(app)/firebase/config";
+import { toast, Toaster } from "react-hot-toast";
+import { Status } from "@/types/table-data";
+import Loading from "@/app/loading";
+import { timeAgo } from "@/utils/date-utility";
+
+interface SupportTicket {
+  id: string;
+  ticketId: string;
+  subject: string;
+  description: string;
+  status: Status;
+  priority: string;
+  vendorId: string;
+  vendorEmail: string;
+  createdAt: string;
+  updatedAt: string;
+  adminId: string | null;
+  adminResponse: string | null;
+  respondedAt: string | null;
+}
 
 export default function Support() {
   const [activeRowId, setActiveRowId] = useState<string | null>(null);
+  const [supportTickets, setSupportTickets] = useState<SupportTicket[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [priorityFilter, setPriorityFilter] = useState("");
+
+  // Fetch support tickets from Firestore
+  useEffect(() => {
+    const fetchSupportTickets = async () => {
+      try {
+        setLoading(true);
+        const ticketsRef = collection(db, "support_tickets");
+        const ticketsSnapshot = await getDocs(ticketsRef);
+
+        const ticketsData: SupportTicket[] = ticketsSnapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            ticketId: data.ticketId || doc.id,
+            subject: data.subject || "No Subject",
+            description: data.description || "No description",
+            status: data.status || "open",
+            priority: data.priority || "medium",
+            vendorId: data.vendorId || "",
+            vendorEmail: data.vendorEmail || "No email",
+            createdAt: data.createdAt || "",
+            updatedAt: data.updatedAt || "",
+            adminId: data.adminId || null,
+            adminResponse: data.adminResponse || null,
+            respondedAt: data.respondedAt || null,
+          };
+        });
+
+        setSupportTickets(ticketsData);
+      } catch (error) {
+        console.error("Error fetching support tickets:", error);
+        toast.error("Failed to load support tickets");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSupportTickets();
+  }, []);
+
+  // Calculate stats dynamically
+  const dynamicSupportStats = [
+    {
+      ...supportStats[0],
+      amount: supportTickets.length.toString(),
+    },
+    {
+      ...supportStats[1],
+      amount: supportTickets.filter((t) => t.status === "Open").length.toString(),
+    },
+    {
+      ...supportStats[2],
+      amount: supportTickets.filter((t) => t.status === "In Progress").length.toString(),
+    },
+    {
+      ...supportStats[3],
+      amount: supportTickets.filter((t) => t.status === "Resolved").length.toString(),
+    },
+  ];
+
+  // Filter tickets
+  const filteredTickets = supportTickets.filter((ticket) => {
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      const matchesSearch =
+        ticket.ticketId.toLowerCase().includes(searchLower) ||
+        ticket.subject.toLowerCase().includes(searchLower) ||
+        ticket.description.toLowerCase().includes(searchLower) ||
+        ticket.vendorEmail.toLowerCase().includes(searchLower);
+
+      if (!matchesSearch) return false;
+    }
+
+    if (statusFilter && ticket.status !== statusFilter) {
+      return false;
+    }
+
+    if (priorityFilter && ticket.priority !== priorityFilter) {
+      return false;
+    }
+
+    return true;
+  });
+
+  // Status options
+  const statusOptions = [
+    { value: "", label: "All Status" },
+    { value: "open", label: "Open" },
+    { value: "in-progress", label: "In Progress" },
+    { value: "resolved", label: "Resolved" },
+    { value: "closed", label: "Closed" },
+  ];
+
+  // Priority options
+  const priorityOptions = [
+    { value: "", label: "All Priority" },
+    { value: "low", label: "Low" },
+    { value: "medium", label: "Medium" },
+    { value: "high", label: "High" },
+    { value: "urgent", label: "Urgent" },
+  ];
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case "low":
+        return "bg-gray-100 text-gray-600";
+      case "medium":
+        return "bg-blue-100 text-blue-600";
+      case "high":
+        return "bg-orange-100 text-orange-600";
+      case "urgent":
+        return "bg-red-100 text-red-600";
+      default:
+        return "bg-gray-100 text-gray-600";
+    }
+  };
+
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
     <section className="space-y-6">
+      <Toaster position="top-right" />
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <DashboardStatCard data={supportStats} />
+        <DashboardStatCard data={dynamicSupportStats} />
       </div>
+
       <Table
-        heading="Support"
-        subtitle="Manage support tickets from users, vendors, and riders"
+        heading="Support Tickets"
+        subtitle="Manage support tickets from vendors"
         tableHead={supportHead}
-        tableData={supportTickets}
+        tableData={filteredTickets}
         renderRow={(row) => (
           <>
-            <td className="px-6">{row.ticketID}</td>
-            <td className="px-6">{row.submittedBy}</td>
-            <td className="px-6">{row.userType}</td>
-            <td className="px-6 max-w-[220px]">
-              <h4 className="text-sm text-center truncate">
-                {row.subject.title}
-              </h4>
-              <p className="text-xs text-center truncate text-[#7C7979]">
-                {row.subject.description}
-              </p>
+            <td className="px-6 py-4 text-sm">{row.ticketId}</td>
+            <td className="px-6 py-4 max-w-[250px]">
+              <h4 className="text-sm truncate">{row.subject}</h4>
+              <p className="text-xs text-[#7C7979] truncate">{row.description}</p>
             </td>
-            <td className="px-6">{row.dateCreated}</td>
-            <td className="px-6">
+            <td className="px-6 py-4 text-sm">{row.vendorEmail}</td>
+            <td className="px-6 py-4">
+              <span className={`px-3 py-1 rounded-md text-xs capitalize ${getPriorityColor(row.priority)}`}>
+                {row.priority}
+              </span>
+            </td>
+            <td className="px-6 py-4 text-sm text-[#7C7979]">
+              {timeAgo(row.createdAt)}
+            </td>
+            <td className="px-6 py-4 capitalize">
               <StatusTab status={row.status} />
             </td>
-            <td className="px-6 relative">
+            <td className="px-6 py-4 relative">
               <div className="flex justify-center items-center">
                 <Icon
-                  icon={"uiw:more"}
+                  icon="uiw:more"
                   width={22}
                   height={22}
                   className="cursor-pointer"
@@ -64,28 +212,28 @@ export default function Support() {
           </>
         )}
       >
-        <div className="w-full md:w-4/5">
+        <div className="w-full md:w-3/5">
           <SearchInput
             name="search"
-            value=""
+            value={searchTerm}
             placeholder="Search tickets..."
-            onChange={() => {}}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <div className="w-full md:w-1/5 flex items-center gap-2">
+        <div className="w-full md:w-2/5 flex items-center gap-2">
           <DropDown
-            name="userType"
-            value=""
-            placeholder="User Type"
-            options={[]}
-            onChange={() => {}}
+            name="status"
+            value={statusFilter}
+            placeholder="Status"
+            options={statusOptions}
+            onChange={(value) => setStatusFilter(value)}
           />
           <DropDown
-            name="orderStatus"
-            value=""
-            placeholder="Order Status"
-            options={[]}
-            onChange={() => {}}
+            name="priority"
+            value={priorityFilter}
+            placeholder="Priority"
+            options={priorityOptions}
+            onChange={(value) => setPriorityFilter(value)}
           />
         </div>
       </Table>

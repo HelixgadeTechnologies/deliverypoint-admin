@@ -131,7 +131,8 @@ export default function UserDetails() {
             </CardComponent>
 
             {/* order history */}
-            {role === "super admin" && (
+            {/* {role === "super admin" && (
+            )} */}
               <CardComponent height="100%">
                 <Heading xs heading="Order History" />
                 <div className="space-y-4">
@@ -172,10 +173,10 @@ export default function UserDetails() {
                   </div>
                 </div>
               </CardComponent>
-            )}
 
             {/* order summary */}
-            {role === "super admin" && (
+            {/* {role === "super admin" && (
+            )} */}
               <CardComponent height="100%">
                 <Heading xs heading="Order Summary" />
                 <SummaryRow
@@ -190,7 +191,6 @@ export default function UserDetails() {
                 </div>
                 <div className="mt-6">{statusCard[selectedUser.status]}</div>
               </CardComponent>
-            )}
           </div>
         </div>
       </CardComponent>

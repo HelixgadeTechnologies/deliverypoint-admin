@@ -1,13 +1,8 @@
 "use client";
-import { useState } from "react";
-import {
-  deliverySummary,
-  riderOrderHistory,
-  riderTableData,
-} from "@/lib/config/demo-data/riders";
+import { useState, useEffect } from "react";
 import BackButton from "@/ui/back-button";
 import CardComponent from "@/ui/card-wrapper";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
 import StatusTab from "@/ui/status-tab";
@@ -16,92 +11,243 @@ import { JSX } from "react";
 import Heading from "@/ui/text-heading";
 import DocumentPreview from "@/ui/document-preview-modal";
 import SummaryRow from "@/ui/summary-row";
-import { paymentSummary } from "@/lib/config/demo-data/vendors";
-import RiderApprovedModal from "@/components/riders/rider-approved-modal";
-import RiderActivatedModal from "@/components/riders/rider-activated-modal";
-import RiderSuspendedModal from "@/components/riders/rider-suspended-modal";
-import { RiderOrderDetails } from "@/types/riders";
-import OrderDetailsModal from "@/components/riders/rider-order-details-modal";
 import Divider from "@/ui/divider";
-import { useRoleStore } from "@/store/role-store";
+// import { useRoleStore } from "@/store/role-store";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { db } from "@/app/(app)/firebase/config";
+import type { RiderDetails } from "@/types/riders";
+import RiderSuspendedModal from "@/components/riders/rider-suspended-modal";
+import RiderActivatedModal from "@/components/riders/rider-activated-modal";
+import RiderApprovedModal from "@/components/riders/rider-approved-modal";
+import Loading from "@/app/loading";
+import { formatDate, formatDateTime } from "@/utils/date-utility";
+import { toast, Toaster } from "react-hot-toast";
 
 export default function RiderDetails() {
-  // for order details
-  const [selectedOrder, setSelectedOrder] = useState<RiderOrderDetails | null>(
-    null
-  );
+  const [selectedRider, setSelectedRider] = useState<RiderDetails | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
+  // const { role } = useRoleStore();
+  const router = useRouter();
 
-  const { role } = useRoleStore();
+  const pathname = usePathname();
+  const riderId = pathname.split("/").pop();
+
+  // Fetch rider data from Firestore
+  useEffect(() => {
+    const fetchRiderData = async () => {
+      if (!riderId) return;
+
+      try {
+        const riderRef = doc(db, "riders", riderId);
+        const riderSnapshot = await getDoc(riderRef);
+
+        if (riderSnapshot.exists()) {
+          setSelectedRider({
+            id: riderSnapshot.id,
+            ...riderSnapshot.data(),
+          } as RiderDetails);
+        }
+      } catch (error) {
+        console.error("Error fetching rider data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRiderData();
+  }, [riderId]);
 
   // for action modals
   const [riderApprovedModal, setRiderApprovedModal] = useState(false);
   const [riderActivatedModal, setRiderActivatedModal] = useState(false);
   const [riderDeactivatedModal, setRiderDeactivatedModal] = useState(false);
 
-  const pathname = usePathname();
-  const riderId = pathname.split("/").pop();
-  const selectedRider = riderTableData.find((rider) => rider.id === riderId);
-  if (!selectedRider) return <div>Not found.</div>;
+  // Function to update rider status
+  const updateRiderStatus = async (newStatus: string, suspensionReason?: string) => {
+    if (!selectedRider || !riderId) return;
 
-  // for buttons - change onClick functions to api calls that in turn trigger modal later
+    setActionLoading(true);
+    try {
+      const riderRef = doc(db, "riders", riderId);
+      
+      const updateData: any = {
+        accountStatus: newStatus,
+        updatedAt: new Date(),
+      };
+
+      if (suspensionReason) {
+        updateData.suspensionReason = suspensionReason;
+      }
+
+      if (newStatus === "active") {
+        updateData.isOnline = true;
+      } else if (newStatus === "suspended") {
+        updateData.isOnline = false;
+      }
+
+      await updateDoc(riderRef, updateData);
+
+      // Update local state
+      setSelectedRider(prev => prev ? {
+        ...prev,
+        accountStatus: newStatus as any,
+        isOnline: newStatus === "active",
+        ...(suspensionReason && { suspensionReason })
+      } : null);
+
+      toast.success(`Rider ${getStatusActionMessage(newStatus)} successfully!`);
+      
+      // Close modal
+      if (newStatus === "active") {
+        setRiderActivatedModal(false);
+      } else if (newStatus === "suspended") {
+        setRiderDeactivatedModal(false);
+      } else if (newStatus === "approved") {
+        setRiderApprovedModal(false);
+      }
+
+      // Refresh the page after a short delay
+      setTimeout(() => {
+        router.refresh();
+      }, 1000);
+
+    } catch (error) {
+      console.error("Error updating rider status:", error);
+      toast.error("Failed to update rider status");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Helper function for status messages
+  const getStatusActionMessage = (status: string) => {
+    switch (status) {
+      case "active": return "activated";
+      case "suspended": return "suspended";
+      case "approved": return "approved";
+      default: return "updated";
+    }
+  };
+
+  // Action handlers
+  const handleApproveRider = async (reason?: string) => {
+    await updateRiderStatus("active");
+  };
+
+  const handleActivateRider = async () => {
+    await updateRiderStatus("active");
+  };
+
+  const handleSuspendRider = async (reason: string) => {
+    await updateRiderStatus("suspended", reason);
+  };
+
+  if (loading) return <Loading />;
+  if (!selectedRider) return <div>Rider not found.</div>;
+
+  // for buttons - using consistent icons and actions based on status
   const statusActions: Record<string, JSX.Element> = {
-    Active: (
+    active: (
       <Button
         content="Suspend Rider"
         variant="error"
         icon="mynaui:pause"
-        onClick={() => setRiderDeactivatedModal(true)}
+        onClick={() => {handleSuspendRider(""); setRiderDeactivatedModal(true)}}
+        isDisabled={actionLoading}
       />
     ),
-    Pending: (
+    pending: (
       <Button
         content="Approve Rider"
         variant="success"
         icon="material-symbols:check-rounded"
-        onClick={() => setRiderApprovedModal(true)}
+        onClick={() =>{handleApproveRider(); setRiderApprovedModal(true)}}
+        isDisabled={actionLoading}
       />
     ),
-    Suspended: (
+    suspended: (
       <Button
         content="Activate Rider"
         variant="normal"
-        icon="material-symbols:check-rounded"
-        onClick={() => setRiderActivatedModal(true)}
+        icon="material-symbols:play-arrow"
+        onClick={() => {handleActivateRider(); setRiderActivatedModal(true)}}
+        isDisabled={actionLoading}
       />
     ),
   };
 
-  // for card on suspended riders
-  const statusCard: Record<string, JSX.Element> = {
-    Suspended: (
-      <div className="bg-[#FF4D4F15] py-2 px-4 rounded-2xl text-[#FF4D4F] w-full">
-        <h4 className="font-semibold text-base">Reason</h4>
-        <p className="text-sm font-normal">
-          Rider was involved in actions not conforming to company’s policy.
-        </p>
-      </div>
-    ),
-  };
+  // Delivery summary data - using consistent icons
+  const deliverySummaryData = [
+    {
+      name: "Total Deliveries",
+      amount: selectedRider.deliveryStats?.total?.toString() || "0",
+      icon: "material-symbols:package-2-outline",
+      color: "#0095DA",
+    },
+    {
+      name: "Completed",
+      amount: selectedRider.deliveryStats?.completed?.toString() || "0",
+      icon: "material-symbols:check-circle-outline",
+      color: "#21C788",
+    },
+    {
+      name: "Cancelled",
+      amount: selectedRider.deliveryStats?.cancelled?.toString() || "0",
+      icon: "material-symbols:cancel-outline",
+      color: "#FF4D4F",
+    },
+  ];
+
+  // Payment summary data - using consistent icons
+  const paymentSummaryData = [
+    {
+      name: "Total Earnings",
+      amount: `₦${selectedRider.earnings?.total?.toLocaleString() || "0"}`,
+      icon: "material-symbols:attach-money",
+      color: "#21C788",
+    },
+    {
+      name: "This Month",
+      amount: `₦${selectedRider.earnings?.thisMonth?.toLocaleString() || "0"}`,
+      icon: "material-symbols:calendar-month",
+      color: "#0095DA",
+    },
+    {
+      name: "This Week",
+      amount: `₦${selectedRider.earnings?.thisWeek?.toLocaleString() || "0"}`,
+      icon: "material-symbols:calendar-week",
+      color: "#FFAC33",
+    },
+    {
+      name: "Today",
+      amount: `₦${selectedRider.earnings?.today?.toLocaleString() || "0"}`,
+      icon: "material-symbols:today",
+      color: "#FF4D4F",
+    },
+  ];
+
   return (
     <>
       <CardComponent>
         <div className="space-y-6">
           <BackButton text="Back to Riders" />
+
           {/* header */}
           <div className="flex flex-col md:flex-row items-start justify-between gap-4">
             <div className="flex flex-col md:flex-row items-start md:items-center relative gap-3">
-              <Image
-                src={selectedRider.rider.image}
-                alt="Profile Picture"
-                height={50}
-                width={50}
-                className="object-cover"
-              />
+              <div className="relative size-[50px]">
+                <Image
+                  src={selectedRider.profilePhotoUrl || "/placeholder.svg"}
+                  alt="Profile Picture"
+                  fill
+                  priority
+                  className="object-cover rounded-full"
+                />
+              </div>
               <div>
-                <h4 className="text-base">{selectedRider.rider.name}</h4>
-                <p className="text-sm text-[#7C7979]">
-                  {selectedRider.rider.email}
-                </p>
+                <h4 className="text-base capitalize">{selectedRider.fullName}</h4>
+                <p className="text-sm text-[#7C7979]">{selectedRider.email}</p>
                 <div className="flex items-center gap-2 text-sm">
                   <Icon
                     icon={"pepicons-pencil:star-filled"}
@@ -109,19 +255,22 @@ export default function RiderDetails() {
                     width={18}
                     color="#EFB100"
                   />
-                  <span>4.8 ratings (230 Reviews)</span>
+                  <span>
+                    {selectedRider.ratings?.average || 0} ratings (
+                    {selectedRider.ratings?.totalReviews || 0} Reviews)
+                  </span>
                 </div>
               </div>
 
               {/* status */}
               <div className="">
-                <StatusTab status={selectedRider.deliveryStatus} />
+                <StatusTab status={selectedRider.accountStatus} />
               </div>
             </div>
 
             {/* action buttons */}
             <div className="w-full md:w-[200px]">
-              {statusActions[selectedRider.deliveryStatus]}
+              {statusActions[selectedRider.accountStatus]}
             </div>
           </div>
 
@@ -131,34 +280,50 @@ export default function RiderDetails() {
             <CardComponent height="100%">
               <div className="flex justify-between items-start">
                 <Heading xs heading="Profile Information" />
-                {/* status tab */}
+                {/* online status */}
                 <div
                   className={`h-[28px] w-[84px] rounded-lg text-xs flex justify-center items-center ${
-                    selectedRider.riderStatus === "Online"
+                    selectedRider.isOnline
                       ? "bg-[#0095DA15] text-[#0095DA]"
                       : "bg-[#C9D1DA66] text-[#1F1F1F]"
                   }`}>
-                  {selectedRider.riderStatus}
+                  {selectedRider.isOnline ? "Online" : "Offline"}
                 </div>
               </div>
               <div className="space-y-4 text-sm">
                 <div>
                   <h4 className="text-[#1F1F1F]">Phone Number</h4>
-                  <p className="text-[#6E747D]">+1 (555) 123-4567</p>
+                  <p className="text-[#6E747D]">{selectedRider.phoneNumber}</p>
                 </div>
                 <div>
                   <h4 className="text-[#1F1F1F]">Vehicle Type</h4>
-                  <p className="text-[#6E747D]">{selectedRider.vehicleType}</p>
+                  <p className="text-[#6E747D]">
+                    {selectedRider.vehicleInfo?.type || "N/A"}
+                  </p>
                 </div>
                 <div>
-                  <h4 className="text-[#1F1F1F]">Address</h4>
+                  <h4 className="text-[#1F1F1F]">Vehicle Color</h4>
                   <p className="text-[#6E747D]">
-                    Jason jacks street, olufemi drive , Lagos
+                    {selectedRider.vehicleInfo?.color || "N/A"}
+                  </p>
+                </div>
+                <div>
+                  <h4 className="text-[#1F1F1F]">Plate Number</h4>
+                  <p className="text-[#6E747D]">
+                    {selectedRider.vehicleInfo?.plateNumber || "N/A"}
+                  </p>
+                </div>
+                <div>
+                  <h4 className="text-[#1F1F1F]">Location</h4>
+                  <p className="text-[#6E747D]">
+                    {selectedRider.city}, {selectedRider.state}
                   </p>
                 </div>
                 <div>
                   <h4 className="text-[#1F1F1F]">Registration Date</h4>
-                  <p className="text-[#6E747D]">15/01/2025</p>
+                  <p className="text-[#6E747D]">
+                    {formatDateTime(selectedRider.createdAt)}
+                  </p>
                 </div>
 
                 {/* docs */}
@@ -166,76 +331,27 @@ export default function RiderDetails() {
                   <h4 className="text-[#1F1F1F]">Documents</h4>
                   <DocumentPreview
                     title="Driver's License"
-                    size="1.2 MB"
+                    size="Verified"
                     type="JPG"
-                    uploadDate="2024-04-29"
+                    uploadDate={formatDate(selectedRider.createdAt)}
                   />
                   <DocumentPreview
                     title="Government ID"
-                    size="1.2 MB"
+                    size="Verified"
                     type="JPG"
-                    uploadDate="2024-04-29"
+                    uploadDate={formatDate(selectedRider.createdAt)}
                   />
                 </div>
               </div>
             </CardComponent>
 
             {/* delivery summary */}
-            {role === "super admin" && (
-              <CardComponent height="100%">
-                <Heading xs heading="Delivery Summary" />
-                <div className="space-y-4">
-                  {/* icons and text */}
-                  <div className="space-y-4 text-sm">
-                    {deliverySummary.map((summary, index) => (
-                      <SummaryRow
-                        key={index}
-                        name={summary.name}
-                        amount={summary.amount}
-                        icon={summary.icon}
-                        color={summary.color}
-                      />
-                    ))}
-                  </div>
-                  <Divider />
-                  <div className="space-y-4 scrollable">
-                    {riderOrderHistory.map((order) => (
-                      <div
-                        key={order.orderId}
-                        className="h-[85px] w-full bg-white p-4 shadow rounded flex justify-between items-center">
-                        <div className="text-sm">
-                          <h4 className="text-[#1F1F1F]">{order.orderId}</h4>
-                          <p className="text-[#6E747D]">{order.date}</p>
-                        </div>
-                        <div className="space-y-1">
-                          <button
-                            onClick={() => setSelectedOrder(order)}
-                            className={`w-20 h-7 rounded-lg text-white flex justify-center items-center text-xs cursor-pointer ${
-                              order.status === "Completed"
-                                ? "bg-[#21C788]"
-                                : order.status === "Rejected"
-                                ? "bg-[#FF4D4F]"
-                                : "bg-[#FFAC33]"
-                            }`}>
-                            {order.status}
-                          </button>
-                          <p className="text-sm text-[#6E747D]">
-                            ₦ {order.total}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </CardComponent>
-            )}
-
-            {/* payment summary */}
-            {role === "super admin" && (
-              <CardComponent height="100%">
-                <Heading xs heading="Payment Summary" />
+            <CardComponent height="100%">
+              <Heading xs heading="Delivery Summary" />
+              <div className="space-y-4">
+                {/* icons and text */}
                 <div className="space-y-4 text-sm">
-                  {paymentSummary.map((summary, index) => (
+                  {deliverySummaryData.map((summary, index) => (
                     <SummaryRow
                       key={index}
                       name={summary.name}
@@ -245,15 +361,49 @@ export default function RiderDetails() {
                     />
                   ))}
                 </div>
-                <div className="mt-4 text-sm">
-                  <h4 className="text-[#1F1F1F]">Last Withdrawal</h4>
-                  <p className="text-[#6E747D]">2024-12-14</p>
+                <Divider />
+                <div className="text-center py-8 text-[#6E747D]">
+                  <Icon
+                    icon="material-symbols:package-2-outline"
+                    width={48}
+                    height={48}
+                    className="mx-auto mb-2"
+                  />
+                  <p>No recent orders</p>
+                  <p className="text-sm">Order history will appear here</p>
                 </div>
-                <div className="mt-6">
-                  {statusCard[selectedRider.deliveryStatus]}
+              </div>
+            </CardComponent>
+
+            {/* payment summary */}
+            <CardComponent height="100%">
+              <Heading xs heading="Payment Summary" />
+              <div className="space-y-4 text-sm">
+                {paymentSummaryData.map((summary, index) => (
+                  <SummaryRow
+                    key={index}
+                    name={summary.name}
+                    amount={summary.amount}
+                    icon={summary.icon}
+                    color={summary.color}
+                  />
+                ))}
+              </div>
+              <div className="mt-4 text-sm">
+                <h4 className="text-[#1F1F1F]">Last Updated</h4>
+                <p className="text-[#6E747D]">
+                  {formatDate(selectedRider.updatedAt)}
+                </p>
+              </div>
+              {selectedRider.accountStatus === "Suspended" && selectedRider.suspensionInfo && (
+                <div className="mt-6 bg-[#FF4D4F15] py-2 px-4 rounded-2xl text-[#FF4D4F] w-full">
+                  <h4 className="font-semibold text-base">Suspension Reason</h4>
+                  <p className="text-sm font-normal">
+                    {selectedRider.suspensionInfo.suspensionReason}
+                  </p>
                 </div>
-              </CardComponent>
-            )}
+              )}
+            </CardComponent>
           </div>
         </div>
       </CardComponent>
@@ -262,30 +412,29 @@ export default function RiderDetails() {
       <RiderApprovedModal
         isOpen={riderApprovedModal}
         onClose={() => setRiderApprovedModal(false)}
-        rider={selectedRider.rider.name}
+        rider={selectedRider.fullName}
+        // onApprove={handleApproveRider}
+        // isLoading={actionLoading}
       />
 
       {/* rider activated modal */}
       <RiderActivatedModal
         isOpen={riderActivatedModal}
         onClose={() => setRiderActivatedModal(false)}
-        rider={selectedRider.rider.name}
+        rider={selectedRider.fullName}
+        // onActivate={handleActivateRider}
+        // isLoading={actionLoading}
       />
 
       {/* rider suspended modal */}
       <RiderSuspendedModal
         isOpen={riderDeactivatedModal}
         onClose={() => setRiderDeactivatedModal(false)}
+        // onSuspend={handleSuspendRider}
+        // isLoading={actionLoading}
       />
 
-      {/* order details */}
-      {selectedOrder && (
-        <OrderDetailsModal
-          isOpen={!!selectedOrder}
-          onClose={() => setSelectedOrder(null)}
-          orderDetails={selectedOrder}
-        />
-      )}
+      <Toaster position="top-right" />
     </>
   );
 }

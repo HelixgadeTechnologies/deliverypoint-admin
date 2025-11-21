@@ -4,12 +4,14 @@ import Modal from "./popup-modal";
 import Image from "next/image";
 import Heading from "./text-heading";
 import Button from "./button";
+import { formatFileSize } from "@/utils/files-utility";
 
 type Props = {
   title: string;
   type: string;
-  size: string;
+  size: string | number;
   uploadDate: string;
+  docLink?: string;
 };
 
 export default function DocumentPreview({
@@ -17,6 +19,7 @@ export default function DocumentPreview({
   type,
   size,
   uploadDate,
+  docLink
 }: Props) {
   const [isPreviewed, setIsPreviewed] = useState(false);
   return (
@@ -31,11 +34,11 @@ export default function DocumentPreview({
           />
         </div>
         <div>
-          <h5 className="text-sm text-[#1E1E1E] font-normal">{title}</h5>
+          <h5 className="text-sm text-[#1E1E1E] font-normal truncate w-[70%]">{title}</h5>
           <div className="text-xs text-[#7C7979] space-x-1">
             <span>{type}</span>
             <span>•</span>
-            <span>{size}</span>
+            <span>{formatFileSize(typeof size === 'string' ? parseInt(size, 10) : size)}</span>
             <span>•</span>
             <span>Uploaded {uploadDate}</span>
           </div>
@@ -49,7 +52,7 @@ export default function DocumentPreview({
       </div>
 
       <Modal isOpen={isPreviewed} onClose={() => setIsPreviewed(false)}>
-          <Heading heading={title} sm />
+          <Heading heading={title} sm className="truncate w-[90%]" />
           <div
             onClick={() => setIsPreviewed(false)}
             className="absolute top-5 right-5 size-[34px] rounded-full flex justify-center items-center bg-[#F8F9FA99]"
@@ -57,7 +60,7 @@ export default function DocumentPreview({
             <Icon icon={"mingcute:close-line"} height={16} width={16} />
           </div>
         <Image
-          src={"/liscense-template.svg"}
+          src={docLink || "/liscense-template.svg"}
           alt="Liscense Image"
           height={200}
           width={300}

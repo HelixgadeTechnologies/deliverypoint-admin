@@ -29,9 +29,9 @@ export const supportStats = [
 
   export const supportHead = [
     "Ticket ID",
-    "Submitted By",
-    "User Type",
-    "Subject",
+    "Description",
+    "User Email",
+    "Priority",
     "Date Created",
     "Status",
     "Actions",

@@ -4,7 +4,7 @@ export type OrderItems = {
   price: string;
 };
 export type VendorOrderDetails = {
-  orderId: string;
+  id: string;
   status: Status;
   date: string;
   time: string;
@@ -25,3 +25,53 @@ export type VendorOrderDetails = {
   };
   cancellationReason?: string;
 };
+
+export type OperatingHours = {
+  close?: string;
+  isOpen: boolean;
+  open?: string;
+}
+
+export type BusinessAddress = {
+  address: string;
+  city: string;
+  fullAddress: string;
+  state: string;
+}
+
+export interface VendorData {
+  id: string;
+  vendor: {
+    vendorName: string;
+    vendorBusiness: string;
+    image: string;
+    email?: string;
+    phoneNumber?: string;
+    businessAddress?: BusinessAddress;
+    businessCategory?: string;
+    createdAt?: string;
+    operatingHours?: {
+      monday: OperatingHours;
+      tuesday: OperatingHours;
+      wednesday: OperatingHours;
+      thursday: OperatingHours;
+      friday: OperatingHours;
+      saturday: OperatingHours;
+      sunday: OperatingHours;
+    };
+  };
+  status: Status;
+  businessLicenseMetadata?: {
+    fileExtension: string;
+    fileName: string;
+    fileSize: number;
+    uploadedAt: string;
+    url: string;
+  };
+  address?: string;
+  city?: string;
+  state?: string;
+  fullAddress?: string;
+  businessDescription?: string;
+  businessCategory?: string;
+}

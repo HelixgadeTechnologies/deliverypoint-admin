@@ -16,32 +16,32 @@ type StatusProps = {
 };
 
 const DEFAULT_SUCCESS_KEYWORDS = [
-  "Approved", 
-  "Success", 
-  "Resolved", 
-  "Completed", 
-  "Active", 
-  "Verified", 
-  "Confirmed"
+  "approved", 
+  "success", 
+  "resolved", 
+  "completed", 
+  "active", 
+  "verified", 
+  "confirmed"
 ];
 
 const DEFAULT_WARNING_KEYWORDS = [
-  "Pending", 
-  "Open", 
-  "In Progress", 
-  "Processing", 
-  "Review", 
-  "Waiting"
+  "pending", 
+  "open", 
+  "in progress", 
+  "processing", 
+  "review", 
+  "waiting"
 ];
 
 const DEFAULT_ERROR_KEYWORDS = [
-  "Declined", 
-  "Failed", 
-  "Rejected", 
-  "Cancelled", 
-  "Error", 
-  "Suspended", 
-  "Blocked"
+  "declined", 
+  "failed", 
+  "rejected", 
+  "cancelled", 
+  "error", 
+  "suspended", 
+  "blocked"
 ];
 
 // Status styling configurations
@@ -108,6 +108,7 @@ export default function StatusTab({
         items-center 
         transition-all 
         duration-200
+        capitalize
         ${className}
       `.replace(/\s+/g, ' ').trim()}
     >
