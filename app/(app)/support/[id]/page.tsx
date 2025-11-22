@@ -1,3 +1,5 @@
+// @typescript-eslint/no-unused-vars
+
 "use client";
 
 import { usePathname } from "next/navigation";
@@ -14,6 +16,7 @@ import { doc, updateDoc, onSnapshot } from "firebase/firestore";
 import { db } from "@/app/(app)/firebase/config";
 import { toast, Toaster } from "react-hot-toast";
 import { Status } from "@/types/table-data";
+import Loading from "@/app/loading";
 
 interface SupportTicket {
   id: string;
@@ -56,7 +59,8 @@ export default function SupportDetails() {
           if (docSnapshot.exists()) {
             const ticketData = docSnapshot.data() as SupportTicket;
             // remove any existing `id` from the fetched data to avoid duplicate keys
-            const { id: _removedId, ...ticketWithoutId } = ticketData as any;
+            const { id, ...ticketWithoutId } = ticketData as any;
+            console.log(id);
             setSelectedTicket({
               id: docSnapshot.id,
               ...ticketWithoutId,
@@ -145,20 +149,12 @@ export default function SupportDetails() {
         minute: "2-digit",
       });
     } catch (error) {
+      console.log(error)
       return "N/A";
     }
   };
 
-  if (loading) {
-    return (
-      <CardComponent>
-        <div className="flex justify-center items-center h-40">
-          <p>Loading ticket details...</p>
-        </div>
-      </CardComponent>
-    );
-  }
-
+  if (loading) return <Loading/>;
   if (!selectedTicket) {
     return (
       <CardComponent>

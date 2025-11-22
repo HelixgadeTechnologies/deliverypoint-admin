@@ -13,6 +13,13 @@ import { auth, db } from "@/app/(app)/firebase/config";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 
+// Helper function to safely access sessionStorage
+const setSessionItem = (key: string, value: string) => {
+  if (typeof window !== "undefined") {
+    sessionStorage.setItem(key, value);
+  }
+};
+
 export default function LoginComponent() {
   const router = useRouter();
   const [loginData, setLoginData] = useState({
@@ -30,28 +37,26 @@ export default function LoginComponent() {
   // Function to register super admin with Firebase Auth and create Firestore document
   const registerSuperAdmin = async (email: string, password: string) => {
     try {
-      // First create the user in Firebase Authentication
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Then create the super admin document in Firestore
       const superAdminRef = doc(db, "super_admins", email);
       await setDoc(superAdminRef, {
         email: email,
         role: "super admin",
         createdAt: new Date(),
         isActive: true,
-        uid: user.uid // Store the Firebase Auth UID for reference
+        uid: user.uid
       });
       
       toast.success("Super admin account created successfully!");
       console.log("New super admin created:", email);
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const firebaseError = error as { code?: string };
       console.error("Error creating super admin:", error);
       
-      // If user already exists in auth but not in firestore, just create the firestore doc
-      if (error.code === 'auth/email-already-in-use') {
+      if (firebaseError.code === 'auth/email-already-in-use') {
         try {
           const superAdminRef = doc(db, "super_admins", email);
           await setDoc(superAdminRef, {
@@ -59,11 +64,12 @@ export default function LoginComponent() {
             role: "super admin",
             createdAt: new Date(),
             isActive: true,
-            uid: 'existing-user' // Placeholder since we don't have the UID
+            uid: 'existing-user'
           });
           toast.success("Super admin profile created!");
           return true;
-        } catch (firestoreError) {
+        } catch (e) {
+          console.error("Failed to create super admin profile", e);
           toast.error("Failed to create super admin profile");
           return false;
         }
@@ -81,14 +87,13 @@ export default function LoginComponent() {
       const superAdminSnapshot = await getDoc(superAdminRef);
 
       if (!superAdminSnapshot.exists()) {
-        // Super admin doesn't exist in Firestore, register them
         return await registerSuperAdmin(email, password);
       } else {
         console.log("Super admin already exists:", email);
-        toast.success("Account verified successfully!")
+        toast.success("Account verified successfully!");
         return true;
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error checking/creating super admin:", error);
       toast.error("Failed to verify super admin account");
       return false;
@@ -104,17 +109,16 @@ export default function LoginComponent() {
     }
     
     try {
-      // First attempt to login
       const res = await signInWithEmailAndPassword(loginData.email, loginData.password);
-      console.log(res?.user)
+      console.log(res?.user);
+      
       if (res?.user) {
-        // Login successful, check if super admin exists and create if needed
         const superAdminReady = await checkAndCreateSuperAdmin(loginData.email, loginData.password);
         
         if (superAdminReady) {
-          sessionStorage.setItem('user', 'true');
-          sessionStorage.setItem('userEmail', loginData.email);
-          sessionStorage.setItem('userRole', 'super admin');
+          setSessionItem('user', 'true');
+          setSessionItem('userEmail', loginData.email);
+          setSessionItem('userRole', 'super admin');
           
           toast.success("Login successful!");
           setTimeout(() => {
@@ -122,19 +126,17 @@ export default function LoginComponent() {
           }, 1000);
         }
       } else {
-        // Login failed, check if we need to create the account
         toast.error("Invalid email or password. Creating super admin account...");
         
         const superAdminCreated = await registerSuperAdmin(loginData.email, loginData.password);
         
         if (superAdminCreated) {
-          // Now try to login with the newly created account
           const newLoginRes = await signInWithEmailAndPassword(loginData.email, loginData.password);
           
           if (newLoginRes?.user) {
-            sessionStorage.setItem('user', 'true');
-            sessionStorage.setItem('userEmail', loginData.email);
-            sessionStorage.setItem('userRole', 'super admin');
+            setSessionItem('user', 'true');
+            setSessionItem('userEmail', loginData.email);
+            setSessionItem('userRole', 'super admin');
             
             toast.success("Account created and login successful!");
             setTimeout(() => {
@@ -143,36 +145,36 @@ export default function LoginComponent() {
           }
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const firebaseError = error as { code?: string; message?: string };
       console.error("Login error:", error);
       
-      // If login fails due to user not found, try to create the account
-      if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found') {
+      if (firebaseError.code === 'auth/invalid-credential' || firebaseError.code === 'auth/user-not-found') {
         toast.error("Account not found. Creating super admin account...");
         
         const superAdminCreated = await registerSuperAdmin(loginData.email, loginData.password);
         
         if (superAdminCreated) {
-          // Now try to login with the newly created account
           try {
             const newLoginRes = await signInWithEmailAndPassword(loginData.email, loginData.password);
             
             if (newLoginRes?.user) {
-              sessionStorage.setItem('user', 'true');
-              sessionStorage.setItem('userEmail', loginData.email);
-              sessionStorage.setItem('userRole', 'super admin');
+              setSessionItem('user', 'true');
+              setSessionItem('userEmail', loginData.email);
+              setSessionItem('userRole', 'super admin');
               
               toast.success("Account created and login successful!");
               setTimeout(() => {
                 router.push("/dashboard");
               }, 1000);
             }
-          } catch (loginError) {
+          } catch (e) {
+            console.error("Login after account creation failed:", e);
             toast.error("Account created but login failed. Please try again.");
           }
         }
       } else {
-        toast.error(error.message || "Login failed");
+        toast.error(firebaseError.message || "Login failed");
       }
     }
   };
@@ -186,7 +188,6 @@ export default function LoginComponent() {
         className="object-cover"
       />
 
-      {/* logo image */}
       <Image
         src={"/delivery-point-logo-white.svg"}
         alt="Delivery Point 2025"

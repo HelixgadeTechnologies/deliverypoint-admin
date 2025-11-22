@@ -8,38 +8,82 @@ import LineChartComponent from "@/ui/line-chart";
 import Heading from "@/ui/text-heading";
 import DashboardStatCard from "@/ui/stat-card";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "@/app/(app)/firebase/config";
+import { auth, db } from "@/app/(app)/firebase/config";
 import { useRouter } from "next/navigation";
-
-// export const metadata = {
-//   title: "Dashboard - Delivery Point | Admin",
-// };
+import { useEffect, useState } from "react";
+import { collection, getDocs } from "firebase/firestore";
 
 export default function Dashboard() {
-  const [ user ] = useAuthState(auth);
+  const [user, loading] = useAuthState(auth);
   const router = useRouter();
-  const userSession = sessionStorage.getItem('user');
 
-  if (!user && !userSession) router.push("/login") ;
+  // State for counts
+  const [vendorsCount, setVendorsCount] = useState(0);
+  const [ridersCount, setRidersCount] = useState(0);
+  const [customersCount, setCustomersCount] = useState(0);
+  const [dataLoading, setDataLoading] = useState(true);
+
+  // Check auth on client side only
+  useEffect(() => {
+    const userSession = typeof window !== "undefined" 
+      ? sessionStorage.getItem('user') 
+      : null;
+    
+    if (!loading && !user && !userSession) {
+      router.push("/login");
+    }
+  }, [user, loading, router]);
+
+  // Fetch counts from Firestore
+  useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        setDataLoading(true);
+
+        const vendorsRef = collection(db, "vendors");
+        const vendorsSnapshot = await getDocs(vendorsRef);
+        setVendorsCount(vendorsSnapshot.size);
+
+        const ridersRef = collection(db, "riders");
+        const ridersSnapshot = await getDocs(ridersRef);
+        setRidersCount(ridersSnapshot.size);
+
+        const usersRef = collection(db, "customers");
+        const usersSnapshot = await getDocs(usersRef);
+        const customers = usersSnapshot.docs.filter(doc => {
+          const data = doc.data();
+          return data.accountType === "customer";
+        });
+        setCustomersCount(customers.length);
+
+      } catch (error) {
+        console.error("Error fetching counts:", error);
+      } finally {
+        setDataLoading(false);
+      }
+    };
+
+    fetchCounts();
+  }, []);
 
   const stats = [
     {
       title: "Vendors",
-      amount: "0",
+      amount: dataLoading ? "..." : vendorsCount.toString(),
       percent: 0,
       icon: "streamline-plump:store-2",
       iconBg: "#0095DA",
     },
     {
       title: "Riders",
-      amount: "0",
+      amount: dataLoading ? "..." : ridersCount.toString(),
       percent: 0,
       icon: "fluent:vehicle-truck-profile-48-regular",
       iconBg: "#21C788",
     },
     {
       title: "Users",
-      amount: "0",
+      amount: dataLoading ? "..." : customersCount.toString(),
       percent: 0,
       icon: "lucide:users",
       iconBg: "#886CE4",
@@ -79,7 +123,6 @@ export default function Dashboard() {
         <DashboardStatCard data={stats} />
       </div>
       <section className="space-y-6">
-        {/* graphs */}
         <div className="flex flex-col md:flex-row justify-between items-start gap-6">
           <div className="w-full md:w-[65%]">
             <CardComponent>
@@ -123,7 +166,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* recent activities */}
         <div className="bg-[#FAFAFA] rounded-2xl p-6">
           <Heading
             heading="Recent Activities"

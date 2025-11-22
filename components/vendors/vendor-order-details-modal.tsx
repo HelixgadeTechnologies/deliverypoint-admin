@@ -79,7 +79,7 @@ export default function OrderDetailsModal({
       <div className="space-y-3 h-[500px] overflow-y-auto scrollable-modal pr-4">
         {/* header and close icon */}
         <div className="flex justify-between items-start">
-          <Heading heading="Order Details" subtitle={orderDetails.orderId} />
+          <Heading heading="Order Details" subtitle={orderDetails.id} />
           <div
             onClick={onClose}
             className="size-[34px] rounded-full bg-[#F8F9FA99] flex justify-center items-center"

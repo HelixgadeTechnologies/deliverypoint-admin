@@ -21,7 +21,7 @@ import SummaryRow from "@/ui/summary-row";
 import OrderDetailsModal from "@/components/vendors/vendor-order-details-modal";
 import { VendorData, VendorOrderDetails } from "@/types/vendors";
 import Divider from "@/ui/divider";
-import { useRoleStore } from "@/store/role-store";
+// import { useRoleStore } from "@/store/role-store";
 import { doc, getDoc, collection, getDocs } from "firebase/firestore";
 import { db } from "@/app/(app)/firebase/config";
 import { toast, Toaster } from "react-hot-toast";
@@ -33,8 +33,6 @@ export default function VendorDetails() {
   const [selectedOrder, setSelectedOrder] = useState<VendorOrderDetails | null>(
     null
   );
-
-  const { role } = useRoleStore();
   const pathname = usePathname();
   const [vendorApprovedModal, setVendorApprovedModal] = useState(false);
   const [vendorActivatedModal, setVendorActivatedModal] = useState(false);
@@ -107,6 +105,7 @@ export default function VendorDetails() {
 
   // Fetch vendor's foods collection for additional data
   const [vendorFoods, setVendorFoods] = useState<any[]>([]);
+  console.log(vendorFoods);
 
   useEffect(() => {
     const fetchVendorFoods = async () => {
@@ -178,7 +177,7 @@ export default function VendorDetails() {
       <div className="bg-[#FF4D4F15] py-2 px-4 rounded-2xl text-[#FF4D4F] w-full">
         <h4 className="font-semibold text-base">Reason</h4>
         <p className="text-sm font-normal">
-          Vendor was involved in actions not conforming to company's policy.
+          Vendor was involved in actions not conforming to company&apos;s policy.
         </p>
       </div>
     ),
@@ -287,7 +286,7 @@ export default function VendorDetails() {
                             <span>Closed</span>
                           )}
                         </div>
-                      )) : <p className="text-[#6E747D]">This vendor hasn't put up opening hours yet.</p>}
+                      )) : <p className="text-[#6E747D]">This vendor hasn&apos;t put up opening hours yet.</p>}
                   </div>
                 </div>
 

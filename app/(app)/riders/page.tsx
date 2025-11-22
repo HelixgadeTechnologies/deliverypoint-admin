@@ -3,7 +3,7 @@ import {
   riderStats,
   riderTableHead,
 } from "@/lib/config/demo-data/riders";
-import { useRoleStore } from "@/store/role-store";
+// import { useRoleStore } from "@/store/role-store";
 import SearchInput from "@/ui/forms/search-input";
 import DropDown from "@/ui/forms/select-dropdown";
 import DashboardStatCard from "@/ui/stat-card";
@@ -13,7 +13,7 @@ import ViewDetails from "@/ui/table-action";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import { collection, getDocs, onSnapshot } from "firebase/firestore";
+import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "@/app/(app)/firebase/config";
 import { toast, Toaster } from "react-hot-toast";
 import { Status } from "@/types/table-data";
@@ -31,6 +31,7 @@ interface RiderTableRow {
   vehicleType: string;
   riderStatus: "Online" | "Offline";
   deliveryStatus: Status;
+  accountStatus: Status;
   completedDeliveries: number;
   registration: string;
   location: string;
@@ -147,6 +148,7 @@ const dynamicRiderStats = [
       vehicleType: rider.vehicleInfo.type,
       riderStatus: rider.isOnline ? "Online" : "Offline",
       deliveryStatus: mapAccountStatusToDeliveryStatus(rider.accountStatus),
+      accountStatus: rider.accountStatus,
       completedDeliveries: rider.deliveryStats.completed,
       registration: new Date(rider.createdAt?.toDate?.() || rider.createdAt).toLocaleDateString('en-US', {
         year: 'numeric',
@@ -196,11 +198,6 @@ const dynamicRiderStats = [
 
   const tableData = transformRidersToTableData(filteredRiders);
 
-  // Update table head to include new columns if needed
-  const updatedTableHead = [
-    ...riderTableHead,
-  ];
-
   if (loading) {
     return <Loading />;
   }
@@ -229,7 +226,7 @@ const dynamicRiderStats = [
                 />
               </div>
               <div className="text-sm">
-                <h4 className="font-medium">{row.rider.name}</h4>
+                <h4 className="font-medium capitalize">{row.rider.name}</h4>
                 <p className="text-[#7C7979]">{row.rider.email}</p>
               </div>
             </td>
@@ -248,7 +245,7 @@ const dynamicRiderStats = [
               </div>
             </td>
             <td className="px-6">
-              <StatusTab status={row.deliveryStatus} />
+              <StatusTab status={row.accountStatus} />
             </td>
             <td className="px-6 font-medium">{row.completedDeliveries}</td>
             <td className="px-6 text-sm text-[#6E747D]">{row.registration}</td>

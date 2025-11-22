@@ -18,20 +18,24 @@ export default function Sidebar() {
 const handleLogout = async () => {
   try {
     await signOut(auth);
-    sessionStorage.clear();
-    localStorage.clear(); // Clear localStorage if used
+    
+    // Only clear storage on client side
+    if (typeof window !== "undefined") {
+      sessionStorage.clear();
+      localStorage.clear();
+    }
     
     toast.success("Logged out successfully!");
     
     setTimeout(() => {
       router.push('/login');
-      router.refresh(); // Refresh the route to ensure clean state
+      router.refresh();
     }, 1000);
   } catch (error) {
     console.error('Logout error:', error);
     toast.error("Failed to logout");
   }
-}
+};
   return (
     <>
     <Toaster position="top-right"/>

@@ -31,22 +31,22 @@ export default function Button({
       normal: {
         primary: 'bg-[#0095DA] text-white hover:bg-[#0081c9] active:bg-[#006bb8]',
         secondary: 'bg-transparent text-[#0095DA] border border-[#0095DA] hover:bg-[#0095DA]/10 active:bg-[#0095DA]/20',
-        disabled: 'bg-[#94a3b8] text-white cursor-not-allowed'
+        disabled: 'bg-blue-300 text-white cursor-not-allowed'
       },
       success: {
         primary: 'bg-[#21C788] text-white hover:bg-[#1db574] active:bg-[#19a368]',
         secondary: 'bg-transparent text-[#21C788] border border-[#21C788] hover:bg-[#21C788]/10 active:bg-[#21C788]/20',
-        disabled: 'bg-[#94a3b8] text-white cursor-not-allowed'
+        disabled: 'bg-green-300 text-white cursor-not-allowed'
       },
       warning: {
         primary: 'bg-[#FFAC33] text-white hover:bg-[#ff9f1a] active:bg-[#e6900e]',
         secondary: 'bg-transparent text-[#FFAC33] border border-[#FFAC33] hover:bg-[#FFAC33]/10 active:bg-[#FFAC33]/20',
-        disabled: 'bg-[#94a3b8] text-white cursor-not-allowed'
+        disabled: 'bg-yellow-300 text-white cursor-not-allowed'
       },
       error: {
         primary: 'bg-[#FF4D4F] text-white hover:bg-[#ff3538] active:bg-[#e6292c]',
         secondary: 'bg-transparent text-[#FF4D4F] border border-[#FF4D4F] hover:bg-[#FF4D4F]/10 active:bg-[#FF4D4F]/20',
-        disabled: 'bg-[#94a3b8] text-white cursor-not-allowed'
+        disabled: 'bg-red-300 text-white cursor-not-allowed'
       }
     };
 

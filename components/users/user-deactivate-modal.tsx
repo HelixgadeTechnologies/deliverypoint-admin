@@ -7,16 +7,35 @@ import { useState } from "react";
 type Props = {
   isOpen: boolean;
   onClose: () => void;
+  onSuspend: (reason: string) => void;
+  isLoading?: boolean;
 };
 
-export default function UserDeactivateModal({ isOpen, onClose }: Props) {
-  const [query, setQuery] = useState("");
+export default function UserDeactivateModal({ 
+  isOpen, 
+  onClose, 
+  onSuspend, 
+  isLoading = false 
+}: Props) {
+  const [reason, setReason] = useState("");
+
+  const handleSuspend = () => {
+    if (reason.trim()) {
+      onSuspend(reason.trim());
+    }
+  };
+
+  const handleClose = () => {
+    setReason(""); // Clear the reason when closing
+    onClose();
+  };
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={handleClose}>
       <div className="flex flex-col items-center justify-center gap-2">
         <div
-          onClick={onClose}
-          className="absolute top-5 right-5 size-[34px] rounded-full flex justify-center items-center bg-[#F8F9FA99]"
+          onClick={handleClose}
+          className="absolute top-5 right-5 size-[34px] rounded-full flex justify-center items-center bg-[#F8F9FA99] cursor-pointer"
         >
           <Icon icon={"mingcute:close-line"} height={16} width={16} />
         </div>
@@ -29,20 +48,24 @@ export default function UserDeactivateModal({ isOpen, onClose }: Props) {
         <TextareaInput
           label="Reason"
           name="suspensionReason"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          placeholder="Enter reason for suspension..."
         />
         <div className="flex gap-2 items-center w-full">
-            <Button
+          <Button
             content="Cancel"
-            onClick={onClose}
+            onClick={handleClose}
             variant="error"
             isSecondary
-            />
-            <Button
-            content="Suspend User"
+            isDisabled={isLoading}
+          />
+          <Button
+            content={isLoading ? "Suspending..." : "Suspend User"}
             variant="error"
-            />
+            onClick={handleSuspend}
+            isDisabled={isLoading || !reason.trim()}
+          />
         </div>
       </div>
     </Modal>

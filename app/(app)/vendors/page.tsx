@@ -9,7 +9,7 @@ import Image from "next/image";
 import { Icon } from "@iconify/react";
 import { useState, useEffect } from "react";
 import ViewDetails from "@/ui/table-action";
-import { useRoleStore } from "@/store/role-store";
+// import { useRoleStore } from "@/store/role-store";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/app/(app)/firebase/config";
 import { toast, Toaster } from "react-hot-toast";
@@ -39,7 +39,6 @@ export default function Vendors() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const { role } = useRoleStore();
 
   // Fetch vendors from Firestore
   useEffect(() => {

@@ -207,18 +207,26 @@ export default function ProfileSettings() {
 
   // Handle logout
   const handleLogout = async () => {
-    try {
-      await signOut(auth);
+  try {
+    await signOut(auth);
+    
+    // Only clear storage on client side
+    if (typeof window !== "undefined") {
       sessionStorage.clear();
       localStorage.clear();
-      toast.success("Logged out successfully!");
-      setTimeout(() => {
-        router.push("/login");
-      }, 1000);
-    } catch (error) {
-      toast.error("Logout failed");
     }
-  };
+    
+    toast.success("Logged out successfully!");
+    
+    setTimeout(() => {
+      router.push('/login');
+      router.refresh();
+    }, 1000);
+  } catch (error) {
+    console.error('Logout error:', error);
+    toast.error("Failed to logout");
+  }
+};
 
   // Handle input changes for personal information
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

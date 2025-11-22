@@ -1,51 +1,136 @@
 "use client";
 
-import { userTableData, userTableHead } from "@/lib/config/demo-data/users";
+import { userTableHead } from "@/lib/config/demo-data/users";
 import SearchInput from "@/ui/forms/search-input";
 import DropDown from "@/ui/forms/select-dropdown";
 import StatusTab from "@/ui/status-tab";
 import Table from "@/ui/table";
 import ViewDetails from "@/ui/table-action";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect, ChangeEvent } from "react";
 import { Icon } from "@iconify/react";
-import { useRoleStore } from "@/store/role-store";
+// import { useRoleStore } from "@/store/role-store";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/app/(app)/firebase/config";
+import { timeAgo } from "@/utils/date-utility";
+import Loading from "@/app/loading";
+
+interface Customer {
+  id: string;
+  uid: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  accountType: string;
+  address: string;
+  city: string;
+  state: string;
+  createdAt: string;
+  updatedAt: string;
+  profileCompleted: boolean;
+  onboardingStatus: {
+    currentStep: number;
+    onboardingComplete: boolean;
+  };
+}
 
 export default function Users() {
   const [activeRowId, setActiveRowId] = useState<string | null>(null);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
 
-   const { role } = useRoleStore();
-  
-    // const filteredTableData = role === "admin" 
-    //   ? userTableData.filter(data => data.status === "Suspended")  // Admin: only active users
-    //   : userTableData;  // Super Admin: all users
+  // const { role } = useRoleStore();
+
+  // Fetch customers from Firestore
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      try {
+        setLoading(true);
+        const customersRef = collection(db, "customers");
+        const customersSnapshot = await getDocs(customersRef);
+
+        const customersData = customersSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Customer[];
+
+        setCustomers(customersData);
+      } catch (error) {
+        console.error("Error fetching customers:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCustomers();
+  }, []);
+
+  // Filter customers based on search and status
+  const filteredCustomers = customers.filter((customer) => {
+    const fullName = `${customer.firstName} ${customer.lastName}`.toLowerCase();
+    const matchesSearch =
+      fullName.includes(searchTerm.toLowerCase()) ||
+      customer.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.phoneNumber?.includes(searchTerm);
+
+    // Since there's no accountStatus field, we'll use onboarding status
+    const matchesStatus =
+      statusFilter === "" ||
+      (statusFilter === "completed" &&
+        customer.onboardingStatus?.onboardingComplete) ||
+      (statusFilter === "pending" &&
+        !customer.onboardingStatus?.onboardingComplete);
+
+    return matchesSearch && matchesStatus;
+  });
+
+  // Status options for dropdown - using onboarding status since no accountStatus field
+  const statusOptions = [
+    { value: "", label: "All Status" },
+    { value: "completed", label: "Completed" },
+    { value: "pending", label: "Pending" },
+  ];
+
+  // Get status for display - using onboarding completion as status
+  const getDisplayStatus = (customer: Customer) => {
+    return customer.onboardingStatus?.onboardingComplete ? "Active" : "Pending";
+  };
+
+  if (loading) return <Loading />
+
   return (
     <Table
       heading="User Management"
       subtitle="Manage and monitor user accounts"
       tableHead={userTableHead}
-      tableData={userTableData}
+      tableData={filteredCustomers}
       renderRow={(row) => (
         <>
           <td className="px-6 flex items-center gap-2 h-full pt-5">
             <Image
-              src={row.user.image}
+              src="/placeholder.svg"
               alt="Profile Picture"
               height={50}
               width={50}
-              className="object-cover"
+              className="object-cover rounded-full"
             />
             <div className="text-sm">
-              <h4>{row.user.name}</h4>
-              <p className="text-[#7C7979]">{row.user.email}</p>
+              <h4 className="capitalize">
+                {row.firstName} {row.lastName}
+              </h4>
+              <p className="text-[#7C7979]">{row.email}</p>
             </div>
           </td>
           <td className="px-6">{row.phoneNumber}</td>
           <td className="px-6">
-            <StatusTab status={row.status} />
+            <StatusTab status={getDisplayStatus(row)} />
           </td>
-          <td className="px-6">{row.totalOrders}</td>
-          <td className="px-6">{row.registration}</td>
+          <td className="px-6">0</td>{" "}
+          {/* Total Orders - hardcoded as 0 since not in data */}
+          <td className="px-6">{timeAgo(row.createdAt)}</td>
           <td className="px-6 relative">
             <div className="flex justify-center items-center">
               <Icon
@@ -64,23 +149,24 @@ export default function Users() {
             )}
           </td>
         </>
-      )}
-    >
+      )}>
       <div className="w-full md:w-[90%]">
         <SearchInput
           name="search"
-          value=""
-          placeholder="Search rider..."
-          onChange={() => {}}
+          value={searchTerm}
+          placeholder="Search customers..."
+          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+            setSearchTerm(e.target.value)
+          }
         />
       </div>
       <div className="w-full md:w-[10%]">
         <DropDown
-          name="riderStatus"
-          value=""
-          placeholder="Rider Status"
-          options={[]}
-          onChange={() => {}}
+          name="status"
+          value={statusFilter}
+          placeholder="Status"
+          options={statusOptions}
+          onChange={(value) => setStatusFilter(value)}
         />
       </div>
     </Table>

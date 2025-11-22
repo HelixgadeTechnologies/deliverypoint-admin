@@ -127,7 +127,7 @@ export const paymentSummary = [
 
 export const vendorOderHistory: VendorOrderDetails[] = [
   {
-    orderId: "ORD0001",
+    id: "ORD0001",
     date: "2025/04/29",
     status: "Completed",
     total: "18, 705.5",
@@ -151,7 +151,7 @@ export const vendorOderHistory: VendorOrderDetails[] = [
     },
   },
   {
-    orderId: "ORD0002",
+    id: "ORD0002",
     date: "2025/04/29",
     status: "In Progress",
     total: "18, 705.5",
@@ -167,7 +167,7 @@ export const vendorOderHistory: VendorOrderDetails[] = [
     },
   },
   {
-    orderId: "ORD0003",
+    id: "ORD0003",
     date: "2025/04/29",
     status: "Cancelled",
     total: "18, 705.5",

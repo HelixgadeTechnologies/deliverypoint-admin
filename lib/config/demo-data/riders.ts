@@ -1,4 +1,3 @@
-import { RiderDetails } from "@/types/riders";
 import { Riders } from "@/types/table-data";
 
 export const riderStats = [
@@ -36,7 +35,7 @@ export const riderTableHead = [
     "Rider",
     "Vehicle Type",
     "Rider Status",
-    "Delivery Status",
+    "Account Status",
     "Completed Deliveries",
     "Registration",
     "Actions",

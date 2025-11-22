@@ -1,6 +1,32 @@
-export function formatDateTime(dateString: string): string {
-  if (!dateString) return "N/A"
-  const date = new Date(dateString);
+import { Timestamp } from "firebase/firestore";
+
+type DateInput = string | Timestamp | { seconds: number; nanoseconds: number } | Date | null | undefined;
+
+// Helper to convert any date input to Date object
+function toDate(input: DateInput): Date | null {
+  if (!input) return null;
+  
+  // Already a Date
+  if (input instanceof Date) return input;
+  
+  // Firebase Timestamp
+  if (input instanceof Timestamp) return input.toDate();
+  
+  // Plain object with seconds/nanoseconds (Firebase Timestamp from JSON)
+  if (typeof input === "object" && "seconds" in input) {
+    return new Date(input.seconds * 1000);
+  }
+  
+  // String
+  if (typeof input === "string") return new Date(input);
+  
+  return null;
+}
+
+export function formatDateTime(dateInput: DateInput): string {
+  const date = toDate(dateInput);
+  if (!date) return "N/A";
+  
   return date.toLocaleString('en-US', {
     year: 'numeric',
     month: 'long',
@@ -10,11 +36,11 @@ export function formatDateTime(dateString: string): string {
     hour12: true,
   });
 }
-// Output: "November 20, 2025, 11:38 AM"
 
-export function timeAgo(dateString: string): string {
-  if (!dateString) return "N/A"
-  const date = new Date(dateString);
+export function timeAgo(dateInput: DateInput): string {
+  const date = toDate(dateInput);
+  if (!date) return "N/A";
+  
   const now = new Date();
   const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
@@ -36,18 +62,16 @@ export function timeAgo(dateString: string): string {
 
   return 'Just now';
 }
-// Output: "1 day ago"
 
-export function formatDate(dateString: string, format: 'short' | 'long' | 'full' = 'long'): string {
-  const date = new Date(dateString);
-  // if (!dateString) return "N/A"
+export function formatDate(dateInput: DateInput, format: 'short' | 'long' | 'full' = 'long'): string {
+  const date = toDate(dateInput);
+  if (!date) return "N/A";
+  
   switch (format) {
     case 'short':
-      // Output: "11/20/2025"
       return date.toLocaleDateString('en-US');
     
     case 'long':
-      // Output: "November 20, 2025"
       return date.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
@@ -55,7 +79,6 @@ export function formatDate(dateString: string, format: 'short' | 'long' | 'full'
       });
     
     case 'full':
-      // Output: "Thursday, November 20, 2025"
       return date.toLocaleDateString('en-US', {
         weekday: 'long',
         year: 'numeric',

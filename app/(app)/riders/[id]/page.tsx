@@ -131,7 +131,7 @@ export default function RiderDetails() {
   };
 
   // Action handlers
-  const handleApproveRider = async (reason?: string) => {
+  const handleApproveRider = async () => {
     await updateRiderStatus("active");
   };
 
@@ -182,20 +182,20 @@ export default function RiderDetails() {
     {
       name: "Total Deliveries",
       amount: selectedRider.deliveryStats?.total?.toString() || "0",
-      icon: "material-symbols:package-2-outline",
-      color: "#0095DA",
+      icon: "majesticons:box-line",
+      color: "#21C788",
     },
     {
       name: "Completed",
       amount: selectedRider.deliveryStats?.completed?.toString() || "0",
-      icon: "material-symbols:check-circle-outline",
-      color: "#21C788",
+       icon: "mdi-light:clock",
+    color: "#FFAC33",
     },
     {
       name: "Cancelled",
       amount: selectedRider.deliveryStats?.cancelled?.toString() || "0",
-      icon: "material-symbols:cancel-outline",
-      color: "#FF4D4F",
+      icon: "streamline:graph-arrow-increase",
+    color: "#FF4D4F",
     },
   ];
 
@@ -204,27 +204,27 @@ export default function RiderDetails() {
     {
       name: "Total Earnings",
       amount: `₦${selectedRider.earnings?.total?.toLocaleString() || "0"}`,
-      icon: "material-symbols:attach-money",
-      color: "#21C788",
+      icon: "mynaui:dollar-solid",
+      color: "#16A271",
     },
     {
       name: "This Month",
       amount: `₦${selectedRider.earnings?.thisMonth?.toLocaleString() || "0"}`,
-      icon: "material-symbols:calendar-month",
-      color: "#0095DA",
+      icon: "streamline:graph-arrow-increase",
+      color: "#21C788",
     },
-    {
-      name: "This Week",
-      amount: `₦${selectedRider.earnings?.thisWeek?.toLocaleString() || "0"}`,
-      icon: "material-symbols:calendar-week",
-      color: "#FFAC33",
-    },
-    {
-      name: "Today",
-      amount: `₦${selectedRider.earnings?.today?.toLocaleString() || "0"}`,
-      icon: "material-symbols:today",
-      color: "#FF4D4F",
-    },
+    // {
+    //   name: "This Week",
+    //   amount: `₦${selectedRider.earnings?.thisWeek?.toLocaleString() || "0"}`,
+    //   icon: "material-symbols:calendar-week",
+    //   color: "#FFAC33",
+    // },
+    // {
+    //   name: "Today",
+    //   amount: `₦${selectedRider.earnings?.today?.toLocaleString() || "0"}`,
+    //   icon: "material-symbols:today",
+    //   color: "#FF4D4F",
+    // },
   ];
 
   return (
