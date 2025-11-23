@@ -48,7 +48,7 @@ export default function Vendors() {
         const vendorsRef = collection(db, "vendors");
         const vendorsSnapshot = await getDocs(vendorsRef);
         console.log(vendorsRef)
-        
+
         const vendorsData: Vendor[] = vendorsSnapshot.docs.map(doc => {
           const data = doc.data();
           return {
@@ -92,12 +92,12 @@ export default function Vendors() {
     // Search term filtering
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
-      const matchesSearch = 
+      const matchesSearch =
         vendor.vendor.vendorName.toLowerCase().includes(searchLower) ||
         vendor.vendor.vendorBusiness.toLowerCase().includes(searchLower) ||
         vendor.contact.email.toLowerCase().includes(searchLower) ||
         vendor.contact.phone.includes(searchTerm);
-      
+
       if (!matchesSearch) return false;
     }
 
@@ -145,6 +145,14 @@ export default function Vendors() {
     setStatusFilter(value);
   };
 
+  const truncate = (text: string, max = 120) => {
+    if (!text) return "";
+    if (text.length <= max) return text;
+    const slice = text.slice(0, max);
+    const lastSpace = slice.lastIndexOf(" ");
+    return (lastSpace > 0 ? slice.slice(0, lastSpace) : slice) + "...";
+  };
+
   if (loading) {
     return <Loading />;
   }
@@ -152,11 +160,11 @@ export default function Vendors() {
   return (
     <section className="space-y-6">
       <Toaster position="top-right" />
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <DashboardStatCard data={dynamicVendorStats} />
       </div>
-      
+
       <Table
         heading="Vendor Management"
         subtitle="Manage and monitor all platform vendors"
@@ -164,7 +172,7 @@ export default function Vendors() {
         tableData={filteredVendors}
         renderRow={(row) => (
           <>
-            <td className="px-6 flex items-center gap-2 h-full pt-5">
+            <td className="px-6 flex items-center gap-2 h-full pt-5 min-w-0">
               <div className="size-[50px] relative">
                 <Image
                   src={row.vendor.image}
@@ -173,12 +181,12 @@ export default function Vendors() {
                   className="object-cover rounded-full"
                 />
               </div>
-              <div className="text-sm w-4/5">
+              <div className="text-sm w-4/5 min-w-0">
                 <h4 className="truncate">{row.vendor.vendorName}</h4>
-                <p className="text-[#7C7979] truncate">{row.vendor.vendorBusiness}</p>
+                <p className="text-[#7C7979] whitespace-normal break-words max-w-full">{truncate(row.vendor.vendorBusiness)}</p>
               </div>
             </td>
-            <td className="px-6 text-sm">
+            <td className="px-6 text-sm min-w-0">
               <h4>{row.contact.email}</h4>
               <p className="text-[#7C7979]">{row.contact.phone}</p>
             </td>

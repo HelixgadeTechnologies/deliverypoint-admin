@@ -194,7 +194,7 @@ export default function VendorDetails() {
           <BackButton text="Back to Vendors" />
 
           {/* header */}
-          <div className="flex flex-col md:flex-row items-start justify-between gap-4">
+          {/*<div className="flex flex-col md:flex-row items-start justify-between gap-4">
             <div className="flex flex-col md:flex-row items-start md:items-center relative gap-3">
               <div className="relative size-[50px]">
                 <Image
@@ -208,7 +208,7 @@ export default function VendorDetails() {
                 <h4 className="text-base">
                   {selectedVendor.vendor.vendorName}
                 </h4>
-                <p className="text-sm text-[#7C7979]">
+                <p className="text-sm text-[#7C7979] whitespace-normal break-words max-w-full">
                   {selectedVendor.vendor.vendorBusiness}
                 </p>
                 <div className="flex items-center gap-2 text-sm">
@@ -222,17 +222,66 @@ export default function VendorDetails() {
                 </div>
               </div>
 
-              {/* status */}
+              
               <div className="">
                 <StatusTab status={selectedVendor.status} />
               </div>
             </div>
 
-            {/* action buttons */}
             <div className="w-full md:w-[200px]">
               {statusActions[selectedVendor.status]}
             </div>
+          </div>*/}
+
+          {/* header */}
+          <div className="flex flex-col md:flex-row items-start justify-between gap-4">
+            <div className="flex items-start gap-4 min-w-0">
+              <div className="w-16 h-16 relative flex-shrink-0">
+                <Image
+                  src={selectedVendor.vendor.image}
+                  alt="Profile Picture"
+                  fill
+                  className="object-cover rounded-full"
+                />
+              </div>
+
+              <div className="min-w-0">
+                <h4 className="text-base font-semibold truncate">
+                  {selectedVendor.vendor.vendorName}
+                </h4>
+
+                <p
+                  className="text-sm text-[#7C7979] mt-1 overflow-hidden"
+                  title={selectedVendor.vendor.vendorBusiness}
+                  style={{
+                    display: "-webkit-box",
+                    WebkitLineClamp: 4,
+                    WebkitBoxOrient: "vertical",
+                  }}
+                >
+                  {selectedVendor.vendor.vendorBusiness}
+                </p>
+
+                <div className="flex items-center gap-2 text-sm mt-2">
+                  <Icon
+                    icon={"pepicons-pencil:star-filled"}
+                    height={18}
+                    width={18}
+                    color="#EFB100"
+                  />
+                  <span>4.8 ratings (230 Reviews)</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 w-full md:w-auto ml-0 md:ml-auto">
+              <div className="hidden md:block">
+                <StatusTab status={selectedVendor.status} />
+              </div>
+              <div className="w-full md:w-[200px]">{statusActions[selectedVendor.status]}</div>
+            </div>
           </div>
+
 
           {/* details */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -304,7 +353,7 @@ export default function VendorDetails() {
                       uploadDate={timeAgo(selectedVendor.businessLicenseMetadata.uploadedAt)}
                       docLink={selectedVendor.businessLicenseMetadata.url}
                     />
-                  ) :  <p className="text-[#6E747D] -mt-4">No Documents available.</p>}
+                  ) : <p className="text-[#6E747D] -mt-4">No Documents available.</p>}
                 </div>
               </div>
             </CardComponent>
@@ -338,13 +387,12 @@ export default function VendorDetails() {
                       <div className="space-y-1">
                         <button
                           onClick={() => setSelectedOrder(order)}
-                          className={`w-20 h-7 rounded-lg text-white flex justify-center items-center text-xs cursor-pointer ${
-                            order.status === "Completed"
-                              ? "bg-[#21C788]"
-                              : order.status === "Cancelled"
+                          className={`w-20 h-7 rounded-lg text-white flex justify-center items-center text-xs cursor-pointer ${order.status === "Completed"
+                            ? "bg-[#21C788]"
+                            : order.status === "Cancelled"
                               ? "bg-[#FF4D4F]"
                               : "bg-[#FFAC33]"
-                          }`}>
+                            }`}>
                           {order.status}
                         </button>
                         <p className="text-sm text-[#6E747D]">
@@ -385,14 +433,14 @@ export default function VendorDetails() {
       <VendorApprovedModal
         isOpen={vendorApprovedModal}
         onClose={() => setVendorApprovedModal(false)}
-        vendor={selectedVendor.vendor.vendorBusiness}
+        vendor={selectedVendor.vendor.vendorName}
       />
 
       {/* vendor activated modal */}
       <VendorActivatedModal
         isOpen={vendorActivatedModal}
         onClose={() => setVendorActivatedModal(false)}
-        vendor={selectedVendor.vendor.vendorBusiness}
+        vendor={selectedVendor.vendor.vendorName}
       />
 
       {/* vendor suspended modal */}
