@@ -145,7 +145,7 @@ export default function Vendors() {
     setStatusFilter(value);
   };
 
-  const truncate = (text: string, max = 40) => {
+  const truncate = (text: string, max = 20) => {
     if (!text) return "";
     if (text.length <= max) return text;
     const slice = text.slice(0, max);
