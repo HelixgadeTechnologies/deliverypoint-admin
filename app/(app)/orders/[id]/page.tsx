@@ -51,7 +51,7 @@ export default function OrderDetails() {
               </div>
             </div>
             {/* track order button for pending screen */}
-            {selectedOrder.status === "In Progress" && (
+            {selectedOrder.status === "in progress" && (
               <div className="w-full md:w-[150px]">
                 <Button
                   content="Track Order"
@@ -153,7 +153,7 @@ export default function OrderDetails() {
                   <span>N 350</span>
                 </p>
                 {/* conditional earning breakdown */}
-                {selectedOrder.status === "Declined" ? (
+                {selectedOrder.status === "declined" ? (
                   <div className="space-y-3">
                     <p className="flex justify-between items-center">
                       <span>Rider Payout</span>
@@ -167,7 +167,7 @@ export default function OrderDetails() {
                     <Divider />
                     <p className="flex justify-between items-center">
                       <span className="text-[#1F1F1F]">Commission Status</span>
-                      <StatusTab successKeywords={["Paid"]} status="Paid" />
+                      <StatusTab successKeywords={["paid"]} status="paid" />
                     </p>
                   </div>
                 ) : (

@@ -6,9 +6,11 @@ type Props = {
     rider:  string;
     isOpen: boolean;
     onClose: () => void;
+    onActivate: () => Promise<void>;
+    isLoading?: boolean;
 }
 
-export default function RiderActivatedModal({ rider, isOpen, onClose, }: Props) {
+export default function RiderActivatedModal({ rider, isOpen, onClose, onActivate, isLoading }: Props) {
     return (
         <Modal
         isOpen={isOpen}
@@ -33,7 +35,7 @@ export default function RiderActivatedModal({ rider, isOpen, onClose, }: Props) 
             has been activated and they will be notified via
             email to Sign in.
           </p>
-          <Button content="Close" onClick={onClose} />
+          <Button content="Close" onClick={onActivate} isLoading={isLoading} />
         </div>
       </Modal>
     )

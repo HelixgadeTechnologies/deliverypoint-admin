@@ -57,7 +57,7 @@ export const logisticsData: Logistics[] = [
     pickupLocation: "123 Main St, Apt 4B",
     dropoffLocation: "456 Residential St",
     paymentType: "Card",
-    status: "Completed",
+    status: "completed",
     earnings: {
       main:  "2,600",
       platform: "250",
@@ -76,7 +76,7 @@ export const logisticsData: Logistics[] = [
     pickupLocation: "123 Main St, Apt 4B",
     dropoffLocation: "456 Residential St",
     paymentType: "Cash",
-    status: "In Progress",
+    status: "in progress",
     earnings: {
       main:  "2,600",
       platform: "250",
@@ -95,7 +95,7 @@ export const logisticsData: Logistics[] = [
     pickupLocation: "123 Main St, Apt 4B",
     dropoffLocation: "456 Residential St",
     paymentType: "Wallet",
-    status: "Declined",
+    status: "declined",
     earnings: {
       main:  "2,600",
       platform: "250",

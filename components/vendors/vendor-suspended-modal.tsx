@@ -2,7 +2,6 @@ import Button from "@/ui/button";
 import TextareaInput from "@/ui/forms/textarea";
 import Modal from "@/ui/popup-modal";
 import { Icon } from "@iconify/react";
-import { on } from "events";
 import { useState } from "react";
 
 type Props = {

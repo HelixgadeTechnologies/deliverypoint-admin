@@ -10,8 +10,7 @@ import { ChangeEvent, FormEvent, useState } from "react";
 import { toast, Toaster } from "react-hot-toast";
 import { useSignInWithEmailAndPassword } from "react-firebase-hooks/auth";
 import { auth, db } from "@/app/(app)/firebase/config";
-import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 
 // Helper function to safely access sessionStorage
 const setSessionItem = (key: string, value: string) => {

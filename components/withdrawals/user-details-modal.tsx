@@ -78,7 +78,7 @@ export default function UserDetailsModal({
               <p>N 3, 000</p>
             </div>
           </div>
-          {user.status === "Pending" && (
+          {user.status === "pending" && (
             <div className="flex items-center justify-end mt-2.5">
               <div className="flex flex-col md:flex-row items-center gap-2 w-[400px]">
                 <Button

@@ -7,9 +7,11 @@ import { useState } from "react";
 type Props = {
   isOpen: boolean;
   onClose: () => void;
+  onSuspend: (reason: string) => void;
+  isLoading?: boolean;
 };
 
-export default function RiderSuspendedModal({ isOpen, onClose }: Props) {
+export default function RiderSuspendedModal({ isOpen, onClose, onSuspend, isLoading }: Props) {
   const [query, setQuery] = useState("");
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -32,7 +34,7 @@ export default function RiderSuspendedModal({ isOpen, onClose }: Props) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
-        <div className="flex gap-2 items-center w-full">
+        <div className="flex gap-2 items-center w/full">
             <Button
             content="Cancel"
             onClick={onClose}
@@ -42,6 +44,8 @@ export default function RiderSuspendedModal({ isOpen, onClose }: Props) {
             <Button
             content="Suspend Rider"
             variant="error"
+            onClick={() => onSuspend(query)}
+            isLoading={isLoading}
             />
         </div>
       </div>

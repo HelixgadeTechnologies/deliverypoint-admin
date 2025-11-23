@@ -87,15 +87,15 @@ export default function Support() {
     },
     {
       ...supportStats[1],
-      amount: supportTickets.filter((t) => t.status === "Open").length.toString(),
+      amount: supportTickets.filter((t) => t.status === "open").length.toString(),
     },
     {
       ...supportStats[2],
-      amount: supportTickets.filter((t) => t.status === "In Progress").length.toString(),
+      amount: supportTickets.filter((t) => t.status === "in progress").length.toString(),
     },
     {
       ...supportStats[3],
-      amount: supportTickets.filter((t) => t.status === "Resolved").length.toString(),
+      amount: supportTickets.filter((t) => t.status === "resolved").length.toString(),
     },
   ];
 

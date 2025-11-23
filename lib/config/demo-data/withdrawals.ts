@@ -50,7 +50,7 @@ export const withdrawalData: Withdrawal[] = [
     walletBalance: "30, 000",
     lastPayoutDate: "14 Mar, 2025",
     withdrawal: 200,
-    status: "Approved",
+    status: "approved",
   },
     {
         id: "2",
@@ -62,7 +62,7 @@ export const withdrawalData: Withdrawal[] = [
     walletBalance: "30, 000",
     lastPayoutDate: "14 Mar, 2025",
     withdrawal: 200,
-    status: "Pending",
+    status: "pending",
   },
     {
     id: "3",
@@ -74,7 +74,7 @@ export const withdrawalData: Withdrawal[] = [
     walletBalance: "30, 000",
     lastPayoutDate: "14 Mar, 2025",
     withdrawal: 200,
-    status: "Approved",
+    status: "approved",
   },
     {
         id: "4",
@@ -86,6 +86,6 @@ export const withdrawalData: Withdrawal[] = [
     walletBalance: "30, 000",
     lastPayoutDate: "14 Mar, 2025",
     withdrawal: 200,
-    status: "Pending",
+    status: "pending",
   },
 ];

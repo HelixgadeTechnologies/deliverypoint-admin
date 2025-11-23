@@ -124,6 +124,7 @@ export default function SOSAlertModal({ isOpen, onClose }: Props) {
       await markAsResolved(alertId);
     } catch (error) {
       // Error is handled by the context and toast will show
+      console.error("Error resolving alert:", error);
     } finally {
       setResolvingAlerts((prev) => {
         const newSet = new Set(prev);

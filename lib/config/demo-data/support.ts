@@ -48,7 +48,7 @@ export const supportStats = [
         description: "The rider app keeps crashing when I try to mark ...",
       },
       dateCreated: "14 Mar, 2025	",
-      status: "In Progress",
+      status: "in progress",
       email: "john.doe@example.com",
     },
     {
@@ -62,7 +62,7 @@ export const supportStats = [
           "My order #ORD-12345 was marked as delivered but I never received it. The rider said they left it at my door but nothing was there.",
       },
       dateCreated: "14 Mar, 2025	",
-      status: "Resolved",
+      status: "resolved",
       email: "john.doe@example.com",
     },
     {
@@ -75,7 +75,7 @@ export const supportStats = [
         description: "My weekly settlement is 3 days late. Usually receiv...",
       },
       dateCreated: "14 Mar, 2025	",
-      status: "Open",
+      status: "open",
       email: "john.doe@example.com",
     },
   ];

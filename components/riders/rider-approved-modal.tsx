@@ -6,9 +6,11 @@ type Props = {
     rider:  string;
     isOpen: boolean;
     onClose: () => void;
+    onApprove: () => void;
+    isLoading?: boolean;
 }
 
-export default function RiderApprovedModal({ rider, isOpen, onClose, }: Props) {
+export default function RiderApprovedModal({ rider, isOpen, onClose, onApprove, isLoading}: Props) {
     return (
         <Modal
         isOpen={isOpen}
@@ -33,7 +35,7 @@ export default function RiderApprovedModal({ rider, isOpen, onClose, }: Props) {
             registration request has been approved and they will be notified via
             email to Sign in.
           </p>
-          <Button content="Close" onClick={onClose} />
+          <Button content="Close" onClick={onApprove} isLoading={isLoading} />
         </div>
       </Modal>
     )

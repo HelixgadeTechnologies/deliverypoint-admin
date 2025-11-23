@@ -145,14 +145,6 @@ export default function Vendors() {
     setStatusFilter(value);
   };
 
-  const truncate = (text: string, max = 20) => {
-    if (!text) return "";
-    if (text.length <= max) return text;
-    const slice = text.slice(0, max);
-    const lastSpace = slice.lastIndexOf(" ");
-    return (lastSpace > 0 ? slice.slice(0, lastSpace) : slice) + "...";
-  };
-
   if (loading) {
     return <Loading />;
   }

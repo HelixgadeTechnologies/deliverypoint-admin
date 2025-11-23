@@ -54,7 +54,7 @@ export const orderTableData: Orders[] = [
     dropOffLocation: "123 Main St, Apt 4B",
     riderName: "John Rider",
     vendorName: "McDonald's",
-    status: "Completed",
+    status: "completed",
     earnings: {
       main: "2,600",
       platform: 250,
@@ -70,7 +70,7 @@ export const orderTableData: Orders[] = [
     dropOffLocation: "123 Main St, Apt 4B",
     riderName: "John Rider",
     vendorName: "McDonald's",
-    status: "Cancelled",
+    status: "cancelled",
     earnings: {
       main: "2,600",
       platform: 250,
@@ -86,7 +86,7 @@ export const orderTableData: Orders[] = [
     dropOffLocation: "123 Main St, Apt 4B",
     riderName: "John Rider",
     vendorName: "McDonald's",
-    status: "In Progress",
+    status: "in progress",
     earnings: {
       main: "2,600",
       platform: 250,
@@ -102,7 +102,7 @@ export const orderTableData: Orders[] = [
     dropOffLocation: "123 Main St, Apt 4B",
     riderName: "John Rider",
     vendorName: "McDonald's",
-    status: "Declined",
+    status: "declined",
     earnings: {
       main: "2,600",
       platform: 250,

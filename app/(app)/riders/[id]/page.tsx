@@ -142,7 +142,7 @@ export default function RiderDetails() {
     }
   };
 
-  // Action handlers
+  // // Action handlers
   const handleApproveRider = async () => {
     await updateRiderStatus("active");
   };
@@ -438,8 +438,8 @@ export default function RiderDetails() {
         isOpen={riderApprovedModal}
         onClose={() => setRiderApprovedModal(false)}
         rider={selectedRider.fullName}
-        // onApprove={handleApproveRider}
-        // isLoading={actionLoading}
+        onApprove={handleApproveRider}
+        isLoading={actionLoading}
       />
 
       {/* rider activated modal */}
@@ -447,16 +447,16 @@ export default function RiderDetails() {
         isOpen={riderActivatedModal}
         onClose={() => setRiderActivatedModal(false)}
         rider={selectedRider.fullName}
-        // onActivate={handleActivateRider}
-        // isLoading={actionLoading}
+        onActivate={handleActivateRider}
+        isLoading={actionLoading}
       />
 
       {/* rider suspended modal */}
       <RiderSuspendedModal
         isOpen={riderDeactivatedModal}
         onClose={() => setRiderDeactivatedModal(false)}
-        // onSuspend={handleSuspendRider}
-        // isLoading={actionLoading}
+        onSuspend={handleSuspendRider}
+        isLoading={actionLoading}
       />
 
       <Toaster position="top-right" />

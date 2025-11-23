@@ -97,9 +97,9 @@ export default function Users() {
   ];
 
   // Get status for display - using onboarding completion as status
-  const getDisplayStatus = (customer: Customer) => {
-    return customer.accountStatus ? "active" : "pending";
-  };
+  // const getDisplayStatus = (customer: Customer) => {
+  //   return customer.accountStatus ? "active" : "pending";
+  // };
 
   if (loading) return <Loading />
 

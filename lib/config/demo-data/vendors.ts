@@ -53,7 +53,7 @@ export const vendorData: Vendor[] = [
       email: "maria@pizzapalace.com",
       phone: "+1 (555) 123-4567",
     },
-    status: "Active",
+    status: "active",
     totalOrders: "1,247",
     registration: "14 Mar, 2025	",
   },
@@ -68,7 +68,7 @@ export const vendorData: Vendor[] = [
       email: "maria@pizzapalace.com",
       phone: "+1 (555) 123-4567",
     },
-    status: "Suspended",
+    status: "suspended",
     totalOrders: "1,247",
     registration: "14 Mar, 2025	",
   },
@@ -83,7 +83,7 @@ export const vendorData: Vendor[] = [
       email: "maria@pizzapalace.com",
       phone: "+1 (555) 123-4567",
     },
-    status: "Pending",
+    status: "pending",
     totalOrders: "1,247",
     registration: "14 Mar, 2025	",
   },
@@ -129,7 +129,7 @@ export const vendorOderHistory: VendorOrderDetails[] = [
   {
     id: "ORD0001",
     date: "2025/04/29",
-    status: "Completed",
+    status: "completed",
     total: "18, 705.5",
     time: "2 hours ago",
     items: [
@@ -153,7 +153,7 @@ export const vendorOderHistory: VendorOrderDetails[] = [
   {
     id: "ORD0002",
     date: "2025/04/29",
-    status: "In Progress",
+    status: "in progress",
     total: "18, 705.5",
     time: "2 hours ago",
     items: [
@@ -169,7 +169,7 @@ export const vendorOderHistory: VendorOrderDetails[] = [
   {
     id: "ORD0003",
     date: "2025/04/29",
-    status: "Cancelled",
+    status: "cancelled",
     total: "18, 705.5",
     time: "2 hours ago",
     items: [

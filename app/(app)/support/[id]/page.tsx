@@ -18,6 +18,8 @@ import { toast, Toaster } from "react-hot-toast";
 import { Status } from "@/types/table-data";
 import Loading from "@/app/loading";
 import { formatDate } from "@/utils/date-utility";
+import { useCallback } from "react";
+
 
 interface SupportTicket {
   id: string;
@@ -59,104 +61,108 @@ export default function SupportDetails() {
   );
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
-  const [userLoading, setUserLoading] = useState(false);
+  // const [userLoading, setUserLoading] = useState(false);
   const [updating, setUpdating] = useState(false);
 
   const ticketId = pathname.split("/").pop();
 
-  // Fetch support ticket data from Firestore
-  useEffect(() => {
-    if (!ticketId) return;
+// Move fetchUserInfo outside useEffect and wrap in useCallback
+const fetchUserInfo = useCallback(async (ticket: SupportTicket) => {
+  if (!ticket.vendorId) return;
 
-    const fetchSupportTicket = async () => {
-      try {
-        const ticketRef = doc(db, "support_tickets", ticketId);
-
-        // Real-time listener for ticket updates
-        const unsubscribe = onSnapshot(ticketRef, async (docSnapshot) => {
-          if (docSnapshot.exists()) {
-            const ticketData = docSnapshot.data() as SupportTicket;
-            // remove any existing `id` from the fetched data to avoid duplicate keys
-            const { id, ...ticketWithoutId } = ticketData as any;
-            console.log(id);
-            const updatedTicket = {
-              id: docSnapshot.id,
-              ...ticketWithoutId,
-            };
-            setSelectedTicket(updatedTicket);
-            setAdminResponse(ticketData.adminResponse || "");
-
-            // Fetch additional user info from vendors collection
-            await fetchUserInfo(updatedTicket);
-          } else {
-            setSelectedTicket(null);
-            setUserInfo(null);
-          }
-          setLoading(false);
+  try {
+    // Try to fetch from vendors collection first
+    const vendorRef = doc(db, "vendors", ticket.vendorId);
+    const vendorSnapshot = await getDoc(vendorRef);
+    
+    if (vendorSnapshot.exists()) {
+      const vendorData = vendorSnapshot.data() as UserInfo;
+      setUserInfo({
+        ...vendorData,
+        accountType: "vendor"
+      });
+    } else {
+      // If vendor not found, try other collections
+      const collections = ["riders", "customers"];
+      let found = false;
+      
+      for (const collectionName of collections) {
+        const userRef = doc(db, collectionName, ticket.vendorId);
+        const userSnapshot = await getDoc(userRef);
+        if (userSnapshot.exists()) {
+          const userData = userSnapshot.data() as UserInfo;
+          setUserInfo({
+            ...userData,
+            accountType: collectionName === "riders" ? "rider" : "customer"
+          });
+          found = true;
+          break;
+        }
+      }
+      
+      // If still not found, set basic info from ticket
+      if (!found) {
+        setUserInfo({
+          email: ticket.vendorEmail,
+          accountType: "vendor",
         });
+      }
+    }
+  } catch (error) {
+    console.error("Error fetching user info:", error);
+    // Fallback to ticket data
+    setUserInfo({
+      email: ticket.vendorEmail,
+      accountType: "vendor",
+    });
+  }
+}, []);
 
-        return unsubscribe;
+// Fetch support ticket data from Firestore
+useEffect(() => {
+  if (!ticketId) return;
+
+  const ticketRef = doc(db, "support_tickets", ticketId);
+
+  // Set up real-time listener
+  const unsubscribe = onSnapshot(
+    ticketRef,
+    async (docSnapshot) => {
+      try {
+        if (docSnapshot.exists()) {
+          const ticketData = docSnapshot.data();
+          
+          const updatedTicket = {
+            id: docSnapshot.id,
+            ...ticketData,
+          } as SupportTicket;
+
+          setSelectedTicket(updatedTicket);
+          setAdminResponse(ticketData.adminResponse || "");
+
+          // Fetch additional user info
+          await fetchUserInfo(updatedTicket);
+        } else {
+          setSelectedTicket(null);
+          setUserInfo(null);
+        }
       } catch (error) {
-        console.error("Error fetching support ticket:", error);
+        console.error("Error in ticket snapshot:", error);
         toast.error("Failed to load ticket details");
+      } finally {
         setLoading(false);
       }
-    };
-
-    fetchSupportTicket();
-  }, [ticketId]);
-
-  // Function to fetch vendor information
-  const fetchUserInfo = async (ticket: SupportTicket) => {
-    if (!ticket.vendorId) return;
-
-    setUserLoading(true);
-    try {
-      // Try to fetch from vendors collection first
-      const vendorRef = doc(db, "vendors", ticket.vendorId);
-      const vendorSnapshot = await getDoc(vendorRef);
-      
-      if (vendorSnapshot.exists()) {
-        const vendorData = vendorSnapshot.data() as UserInfo;
-        setUserInfo({
-          ...vendorData,
-          accountType: "vendor"
-        });
-      } else {
-        // If vendor not found, try other collections
-        const collections = ["riders", "customers"];
-        for (const collectionName of collections) {
-          const userRef = doc(db, collectionName, ticket.vendorId);
-          const userSnapshot = await getDoc(userRef);
-          if (userSnapshot.exists()) {
-            const userData = userSnapshot.data() as UserInfo;
-            setUserInfo({
-              ...userData,
-              accountType: collectionName === "riders" ? "rider" : "customer"
-            });
-            break;
-          }
-        }
-        
-        // If still not found, set basic info from ticket
-        if (!userInfo) {
-          setUserInfo({
-            email: ticket.vendorEmail,
-            accountType: "vendor", // default to vendor since your data shows vendor fields
-          });
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching user info:", error);
-      // Fallback to ticket data
-      setUserInfo({
-        email: ticket.vendorEmail,
-        accountType: "vendor",
-      });
-    } finally {
-      setUserLoading(false);
+    },
+    (error) => {
+      console.error("Error fetching support ticket:", error);
+      toast.error("Failed to load ticket details");
+      setLoading(false);
     }
-  };
+  );
+
+  // Cleanup function
+  return () => unsubscribe();
+}, [ticketId, fetchUserInfo]);
 
   // Function to get display name from user info
   const getDisplayName = (): string => {

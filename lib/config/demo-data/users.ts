@@ -19,7 +19,7 @@ export const userTableData: Users[] = [
       email: "john@gmail.com",
     },
     phoneNumber: "+23490395543",
-    status: "Active",
+    status: "active",
     totalOrders: "0",
     registration: "29 Apr 2025",
   },
@@ -31,7 +31,7 @@ export const userTableData: Users[] = [
       email: "john@gmail.com",
     },
     phoneNumber: "+23490395543",
-    status: "Suspended",
+    status: "suspended",
     totalOrders: "0",
     registration: "29 Apr 2025",
   },
@@ -41,7 +41,7 @@ export const userOrderHistory: UserOrderDetails[] = [
   {
     orderId: "ORD0001",
     date: "2025/04/29",
-    status: "Completed",
+    status: "completed",
     total: "18, 705.5",
     time: "2 hours ago",
     items: [
@@ -65,7 +65,7 @@ export const userOrderHistory: UserOrderDetails[] = [
   {
     orderId: "ORD0002",
     date: "2025/04/29",
-    status: "In Progress",
+    status: "in progress",
     total: "18, 705.5",
     time: "2 hours ago",
     items: [
@@ -81,7 +81,7 @@ export const userOrderHistory: UserOrderDetails[] = [
   {
     orderId: "ORD0003",
     date: "2025/04/29",
-    status: "Cancelled",
+    status: "cancelled",
     total: "18, 705.5",
     time: "2 hours ago",
     items: [

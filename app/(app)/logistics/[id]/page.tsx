@@ -169,7 +169,7 @@ export default function LogisticsDetails() {
                 <Divider />
                 <p className="flex justify-between items-center">
                   <span className="text-[#1F1F1F]">Commission Status</span>
-                  <StatusTab successKeywords={["Paid"]} status="Paid" />
+                  <StatusTab successKeywords={["paid"]} status="paid" />
                 </p>
               </div>
             </CardComponent>
