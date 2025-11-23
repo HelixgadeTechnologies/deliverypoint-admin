@@ -117,15 +117,15 @@ export default function Vendors() {
     },
     {
       ...vendorStats[1],
-      amount: vendors.filter(v => v.status === "Active").length.toString(),
+      amount: vendors.filter(v => v.status === "active").length.toString(),
     },
     {
       ...vendorStats[2],
-      amount: vendors.filter(v => v.status === "Pending").length.toString(),
+      amount: vendors.filter(v => v.status === "pending").length.toString(),
     },
     {
       ...vendorStats[3],
-      amount: vendors.filter(v => v.status === "Suspended").length.toString(),
+      amount: vendors.filter(v => v.status === "suspended").length.toString(),
     },
   ];
 
@@ -143,14 +143,6 @@ export default function Vendors() {
 
   const handleStatusChange = (value: string) => {
     setStatusFilter(value);
-  };
-
-  const truncate = (text: string, max = 120) => {
-    if (!text) return "";
-    if (text.length <= max) return text;
-    const slice = text.slice(0, max);
-    const lastSpace = slice.lastIndexOf(" ");
-    return (lastSpace > 0 ? slice.slice(0, lastSpace) : slice) + "...";
   };
 
   if (loading) {
@@ -183,7 +175,7 @@ export default function Vendors() {
               </div>
               <div className="text-sm w-4/5 min-w-0">
                 <h4 className="truncate">{row.vendor.vendorName}</h4>
-                <p className="text-[#7C7979] whitespace-normal break-words max-w-full">{truncate(row.vendor.vendorBusiness)}</p>
+                <p className="text-[#7C7979] truncate">{row.vendor.vendorBusiness.substring(0, 40)}</p>
               </div>
             </td>
             <td className="px-6 text-sm min-w-0">

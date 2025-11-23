@@ -21,6 +21,7 @@ const poppins = Poppins({
 })
 
 import { Plus_Jakarta_Sans } from 'next/font/google';
+import { SOSAlertsProvider } from "@/context/SOSContext";
 
 const plusJakarta = Plus_Jakarta_Sans({ 
   subsets: ['latin'],
@@ -44,7 +45,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${poppins.className} ${plusJakarta.variable} antialiased`}
       >
         <SidebarProvider>
-          {children}
+          <SOSAlertsProvider>
+            {children}
+          </SOSAlertsProvider>
         </SidebarProvider>
       </body>
     </html>

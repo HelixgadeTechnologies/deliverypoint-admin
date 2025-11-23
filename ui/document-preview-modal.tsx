@@ -52,7 +52,7 @@ export default function DocumentPreview({
       </div>
 
       <Modal isOpen={isPreviewed} onClose={() => setIsPreviewed(false)}>
-          <Heading heading={title} sm className="truncate w-[90%]" />
+          <Heading heading={title} sm className="truncate w-[95%] capitalize" />
           <div
             onClick={() => setIsPreviewed(false)}
             className="absolute top-5 right-5 size-[34px] rounded-full flex justify-center items-center bg-[#F8F9FA99]"

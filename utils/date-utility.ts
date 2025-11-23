@@ -37,6 +37,17 @@ export function formatDateTime(dateInput: DateInput): string {
   });
 }
 
+// format time
+export const formatTriggerTime = (timestamp: any) => {
+    if (!timestamp) return "Unknown time";
+    try {
+      const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+      return formatDateTime(date) || "Unknown time";
+    } catch (error) {
+      return "Unknown time";
+    }
+  };
+
 export function timeAgo(dateInput: DateInput): string {
   const date = toDate(dateInput);
   if (!date) return "N/A";
@@ -90,3 +101,31 @@ export function formatDate(dateInput: DateInput, format: 'short' | 'long' | 'ful
       return date.toLocaleDateString();
   }
 }
+
+// Helper function to extract file type from URL
+export const getFileTypeFromUrl = (url: string): string => {
+  try {
+    // Remove query parameters
+    const urlWithoutParams = url.split('?')[0];
+    
+    // Get extension
+    const parts = urlWithoutParams.split('.');
+    const extension = parts.length > 1 ? parts.pop()?.toUpperCase() : null;
+    
+    return extension || 'FILE';
+  } catch (error) {
+    return 'FILE';
+  }
+};
+
+// Helper function to get file size (you might want to fetch this from storage metadata)
+export const getFileSize = (url: string): string => {
+  // Since we don't have file size in the data, we'll use a placeholder
+  // In a real app, you'd fetch this from Firebase Storage metadata
+  return "1.2 MB"; // Placeholder
+};
+
+// Helper function to get upload date (using rider's creation date as fallback)
+export const getUploadDate = (riderCreatedAt: any): string => {
+  return formatDate(riderCreatedAt) || "N/A";
+};

@@ -194,7 +194,7 @@ export default function VendorDetails() {
           <BackButton text="Back to Vendors" />
 
           {/* header */}
-          {/*<div className="flex flex-col md:flex-row items-start justify-between gap-4">
+          <div className="flex flex-col md:flex-row items-start justify-between gap-4">
             <div className="flex flex-col md:flex-row items-start md:items-center relative gap-3">
               <div className="relative size-[50px]">
                 <Image
@@ -208,8 +208,8 @@ export default function VendorDetails() {
                 <h4 className="text-base">
                   {selectedVendor.vendor.vendorName}
                 </h4>
-                <p className="text-sm text-[#7C7979] whitespace-normal break-words max-w-full">
-                  {selectedVendor.vendor.vendorBusiness}
+                <p className="text-sm text-[#7C7979] truncate">
+                  {selectedVendor.vendor.vendorBusiness.substring(0, 40) + "..."}
                 </p>
                 <div className="flex items-center gap-2 text-sm">
                   <Icon
@@ -231,10 +231,10 @@ export default function VendorDetails() {
             <div className="w-full md:w-[200px]">
               {statusActions[selectedVendor.status]}
             </div>
-          </div>*/}
+          </div>
 
           {/* header */}
-          <div className="flex flex-col md:flex-row items-start justify-between gap-4">
+          {/* <div className="flex flex-col md:flex-row items-start justify-between gap-4">
             <div className="flex items-start gap-4 min-w-0">
               <div className="w-16 h-16 relative flex-shrink-0">
                 <Image
@@ -251,7 +251,7 @@ export default function VendorDetails() {
                 </h4>
 
                 <p
-                  className="text-sm text-[#7C7979] mt-1 overflow-hidden"
+                  className="text-sm text-[#7C7979] mt-1 overflow-truncate"
                   title={selectedVendor.vendor.vendorBusiness}
                   style={{
                     display: "-webkit-box",
@@ -280,7 +280,7 @@ export default function VendorDetails() {
               </div>
               <div className="w-full md:w-[200px]">{statusActions[selectedVendor.status]}</div>
             </div>
-          </div>
+          </div> */}
 
 
           {/* details */}
@@ -318,6 +318,12 @@ export default function VendorDetails() {
                   <h4 className="text-[#1F1F1F]">Registration Date</h4>
                   <p className="text-[#6E747D]">
                     {formatDateTime(selectedVendor.vendor.createdAt || "")}
+                  </p>
+                </div>
+                <div>
+                  <h4 className="text-[#1F1F1F]">Vendor Business Description</h4>
+                  <p className="text-[#6E747D]">
+                    {selectedVendor.vendor.vendorBusiness || ""}
                   </p>
                 </div>
                 <div>
@@ -387,9 +393,9 @@ export default function VendorDetails() {
                       <div className="space-y-1">
                         <button
                           onClick={() => setSelectedOrder(order)}
-                          className={`w-20 h-7 rounded-lg text-white flex justify-center items-center text-xs cursor-pointer ${order.status === "Completed"
+                          className={`w-20 h-7 rounded-lg text-white flex justify-center items-center text-xs cursor-pointer ${order.status === "completed"
                             ? "bg-[#21C788]"
-                            : order.status === "Cancelled"
+                            : order.status === "cancelled"
                               ? "bg-[#FF4D4F]"
                               : "bg-[#FFAC33]"
                             }`}>

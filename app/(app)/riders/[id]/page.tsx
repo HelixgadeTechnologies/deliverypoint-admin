@@ -20,8 +20,9 @@ import RiderSuspendedModal from "@/components/riders/rider-suspended-modal";
 import RiderActivatedModal from "@/components/riders/rider-activated-modal";
 import RiderApprovedModal from "@/components/riders/rider-approved-modal";
 import Loading from "@/app/loading";
-import { formatDate, formatDateTime } from "@/utils/date-utility";
+import { formatDate, formatDateTime, getFileSize, getFileTypeFromUrl } from "@/utils/date-utility";
 import { toast, Toaster } from "react-hot-toast";
+
 
 export default function RiderDetails() {
   const [selectedRider, setSelectedRider] = useState<RiderDetails | null>(null);
@@ -43,9 +44,10 @@ export default function RiderDetails() {
         const riderSnapshot = await getDoc(riderRef);
 
         if (riderSnapshot.exists()) {
+          const riderData = riderSnapshot.data();
           setSelectedRider({
             id: riderSnapshot.id,
-            ...riderSnapshot.data(),
+            ...riderData,
           } as RiderDetails);
         }
       } catch (error) {
@@ -64,13 +66,16 @@ export default function RiderDetails() {
   const [riderDeactivatedModal, setRiderDeactivatedModal] = useState(false);
 
   // Function to update rider status
-  const updateRiderStatus = async (newStatus: string, suspensionReason?: string) => {
+  const updateRiderStatus = async (
+    newStatus: string,
+    suspensionReason?: string
+  ) => {
     if (!selectedRider || !riderId) return;
 
     setActionLoading(true);
     try {
       const riderRef = doc(db, "riders", riderId);
-      
+
       const updateData: any = {
         accountStatus: newStatus,
         updatedAt: new Date(),
@@ -89,15 +94,19 @@ export default function RiderDetails() {
       await updateDoc(riderRef, updateData);
 
       // Update local state
-      setSelectedRider(prev => prev ? {
-        ...prev,
-        accountStatus: newStatus as any,
-        isOnline: newStatus === "active",
-        ...(suspensionReason && { suspensionReason })
-      } : null);
+      setSelectedRider((prev) =>
+        prev
+          ? {
+              ...prev,
+              accountStatus: newStatus as any,
+              isOnline: newStatus === "active",
+              ...(suspensionReason && { suspensionReason }),
+            }
+          : null
+      );
 
       toast.success(`Rider ${getStatusActionMessage(newStatus)} successfully!`);
-      
+
       // Close modal
       if (newStatus === "active") {
         setRiderActivatedModal(false);
@@ -111,7 +120,6 @@ export default function RiderDetails() {
       setTimeout(() => {
         router.refresh();
       }, 1000);
-
     } catch (error) {
       console.error("Error updating rider status:", error);
       toast.error("Failed to update rider status");
@@ -123,10 +131,14 @@ export default function RiderDetails() {
   // Helper function for status messages
   const getStatusActionMessage = (status: string) => {
     switch (status) {
-      case "active": return "activated";
-      case "suspended": return "suspended";
-      case "approved": return "approved";
-      default: return "updated";
+      case "active":
+        return "activated";
+      case "suspended":
+        return "suspended";
+      case "approved":
+        return "approved";
+      default:
+        return "updated";
     }
   };
 
@@ -153,7 +165,9 @@ export default function RiderDetails() {
         content="Suspend Rider"
         variant="error"
         icon="mynaui:pause"
-        onClick={() => {handleSuspendRider(""); setRiderDeactivatedModal(true)}}
+        onClick={() => {
+          setRiderDeactivatedModal(true);
+        }}
         isDisabled={actionLoading}
       />
     ),
@@ -162,7 +176,9 @@ export default function RiderDetails() {
         content="Approve Rider"
         variant="success"
         icon="material-symbols:check-rounded"
-        onClick={() =>{handleApproveRider(); setRiderApprovedModal(true)}}
+        onClick={() => {
+          setRiderApprovedModal(true);
+        }}
         isDisabled={actionLoading}
       />
     ),
@@ -171,7 +187,9 @@ export default function RiderDetails() {
         content="Activate Rider"
         variant="normal"
         icon="material-symbols:play-arrow"
-        onClick={() => {handleActivateRider(); setRiderActivatedModal(true)}}
+        onClick={() => {
+          setRiderActivatedModal(true);
+        }}
         isDisabled={actionLoading}
       />
     ),
@@ -188,14 +206,14 @@ export default function RiderDetails() {
     {
       name: "Completed",
       amount: selectedRider.deliveryStats?.completed?.toString() || "0",
-       icon: "mdi-light:clock",
-    color: "#FFAC33",
+      icon: "mdi-light:clock",
+      color: "#FFAC33",
     },
     {
       name: "Cancelled",
       amount: selectedRider.deliveryStats?.cancelled?.toString() || "0",
       icon: "streamline:graph-arrow-increase",
-    color: "#FF4D4F",
+      color: "#FF4D4F",
     },
   ];
 
@@ -213,18 +231,6 @@ export default function RiderDetails() {
       icon: "streamline:graph-arrow-increase",
       color: "#21C788",
     },
-    // {
-    //   name: "This Week",
-    //   amount: `₦${selectedRider.earnings?.thisWeek?.toLocaleString() || "0"}`,
-    //   icon: "material-symbols:calendar-week",
-    //   color: "#FFAC33",
-    // },
-    // {
-    //   name: "Today",
-    //   amount: `₦${selectedRider.earnings?.today?.toLocaleString() || "0"}`,
-    //   icon: "material-symbols:today",
-    //   color: "#FF4D4F",
-    // },
   ];
 
   return (
@@ -246,7 +252,9 @@ export default function RiderDetails() {
                 />
               </div>
               <div>
-                <h4 className="text-base capitalize">{selectedRider.fullName}</h4>
+                <h4 className="text-base capitalize">
+                  {selectedRider.fullName}
+                </h4>
                 <p className="text-sm text-[#7C7979]">{selectedRider.email}</p>
                 <div className="flex items-center gap-2 text-sm">
                   <Icon
@@ -303,7 +311,7 @@ export default function RiderDetails() {
                 </div>
                 <div>
                   <h4 className="text-[#1F1F1F]">Vehicle Color</h4>
-                  <p className="text-[#6E747D]">
+                  <p className="text-[#6E747D] capitalize">
                     {selectedRider.vehicleInfo?.color || "N/A"}
                   </p>
                 </div>
@@ -329,18 +337,32 @@ export default function RiderDetails() {
                 {/* docs */}
                 <div className="space-y-4">
                   <h4 className="text-[#1F1F1F]">Documents</h4>
-                  <DocumentPreview
-                    title="Driver's License"
-                    size="Verified"
-                    type="JPG"
-                    uploadDate={formatDate(selectedRider.createdAt)}
-                  />
-                  <DocumentPreview
-                    title="Government ID"
-                    size="Verified"
-                    type="JPG"
-                    uploadDate={formatDate(selectedRider.createdAt)}
-                  />
+                  {selectedRider.documents ? (
+                    <>
+                      {selectedRider.documents.driversLicense && (
+                        <DocumentPreview
+                          title="Driver's License"
+                          size={getFileSize(selectedRider.documents.driversLicense)}
+                          type={getFileTypeFromUrl(selectedRider.documents.driversLicense)}
+                          uploadDate={formatDate(selectedRider.createdAt, "short")}
+                          docLink={selectedRider.documents.driversLicense}
+                        />
+                      )}
+                      {selectedRider.documents.governmentId && (
+                        <DocumentPreview
+                          title="Government ID"
+                          size={getFileSize(selectedRider.documents.governmentId)}
+                          type={getFileTypeFromUrl(selectedRider.documents.governmentId)}
+                          uploadDate={formatDate(selectedRider.createdAt, "short")}
+                          docLink={selectedRider.documents.governmentId}
+                        />
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-[#6E747D] -mt-4">
+                      No Documents available.
+                    </p>
+                  )}
                 </div>
               </div>
             </CardComponent>
@@ -395,14 +417,17 @@ export default function RiderDetails() {
                   {formatDate(selectedRider.updatedAt)}
                 </p>
               </div>
-              {selectedRider.accountStatus === "Suspended" && selectedRider.suspensionInfo && (
-                <div className="mt-6 bg-[#FF4D4F15] py-2 px-4 rounded-2xl text-[#FF4D4F] w-full">
-                  <h4 className="font-semibold text-base">Suspension Reason</h4>
-                  <p className="text-sm font-normal">
-                    {selectedRider.suspensionInfo.suspensionReason}
-                  </p>
-                </div>
-              )}
+              {selectedRider.accountStatus === "suspended" &&
+                selectedRider.suspensionInfo && (
+                  <div className="mt-6 bg-[#FF4D4F15] py-2 px-4 rounded-2xl text-[#FF4D4F] w-full">
+                    <h4 className="font-semibold text-base">
+                      Suspension Reason
+                    </h4>
+                    <p className="text-sm font-normal">
+                      {selectedRider.suspensionInfo?.suspensionReason}
+                    </p>
+                  </div>
+                )}
             </CardComponent>
           </div>
         </div>

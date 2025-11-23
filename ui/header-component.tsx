@@ -13,6 +13,7 @@ import { breadcrumbs } from "@/lib/config/breadcrumbs";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/app/(app)/firebase/config";
 import { onAuthStateChanged } from "firebase/auth";
+import { useSOSAlerts } from "@/context/SOSContext";
 
 export default function Header() {
   const [isSosAlertModal, setIsSosModal] = useState(false);
@@ -53,6 +54,8 @@ export default function Header() {
     }
   };
 
+  const { activeAlerts } = useSOSAlerts();
+
   return (
     <>
       <header className="bg-white py-4 px-4 md:px-10 border-b border-gray-200 flex justify-between items-center h-[92px] sticky top-0 md:static">
@@ -72,7 +75,7 @@ export default function Header() {
             <Icon icon="fa:warning" color="#FF4D4F" />
             <span className="text-sm text-[#FF4D4F]">SOS Alert</span>
             <div className="size-5 rounded-full p-2 bg-[#FF4D4F] text-white text-sm font-bold flex justify-center items-center">
-              {sosData.length}
+              {activeAlerts.length}
             </div>
           </div>
           <NotificationsTab />

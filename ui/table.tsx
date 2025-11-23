@@ -52,7 +52,7 @@ export default function Table<T>({
                 })
               ) : (
                 <tr>
-                  <td colSpan={tableHead.length} className="py-4">
+                  <td colSpan={tableHead.length} className="py-8">
                     <div className="flex flex-col items-center gap-2">
                       <Icon
                       icon={"iconoir:glass-empty"}
@@ -64,8 +64,7 @@ export default function Table<T>({
                         No Items to Display
                       </p>
                       <p className="text-gray-500 text-base font-normal leading-normal w-2/4 text-center">
-                        Get started by adding your first item or refresh the
-                        data to see if anything new has appeared.
+                        Refresh the data to see if anything new has appeared.
                       </p>
                     </div>
                   </td>

@@ -1,17 +1,17 @@
 // for all table datas
 
 export type Status =
-  | "In Progress"
-  | "Open"
-  | "Resolved"
-  | "Approved"
-  | "Pending"
-  | "Active"
-  | "Suspended"
-  | "Completed"
-  | "Cancelled"
-  | "Declined"
-  | "Rejected" | "Paid";
+  | "in progress"
+  | "open"
+  | "resolved"
+  | "approved"
+  | "pending"
+  | "active"
+  | "suspended"
+  | "completed"
+  | "cancelled"
+  | "declined"
+  | "rejected" | "paid";
 
 export type Ticket = {
   id: string;

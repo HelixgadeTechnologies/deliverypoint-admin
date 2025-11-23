@@ -124,15 +124,15 @@ const dynamicRiderStats = [
   },
   {
     ...riderStats[1],
-    amount: riders.filter((r) => r.accountStatus === "Active").length.toString(),
+    amount: riders.filter((r) => r.accountStatus === "active").length.toString(),
   },
   {
     ...riderStats[2],
-    amount: riders.filter((r) => r.accountStatus === "Suspended").length.toString(),
+    amount: riders.filter((r) => r.accountStatus === "suspended").length.toString(),
   },
   {
     ...riderStats[3],
-    amount: riders.filter((r) => r.accountStatus === "Pending").length.toString(),
+    amount: riders.filter((r) => r.accountStatus === "pending").length.toString(),
   },
 ];
 

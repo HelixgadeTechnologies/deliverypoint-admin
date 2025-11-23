@@ -41,22 +41,8 @@ export type RiderDetails = {
   
   // Documents
   documents: {
-    driversLicense: {
-      url: string;
-      title: string;
-      size: string;
-      type: string;
-      uploadDate: string;
-      verified: boolean;
-    };
-    governmentId: {
-      url: string;
-      title: string;
-      size: string;
-      type: string;
-      uploadDate: string;
-      verified: boolean;
-    };
+    driversLicense: string;
+    governmentId: string;
     vehicleInsurance?: {
       url: string;
       title: string;
