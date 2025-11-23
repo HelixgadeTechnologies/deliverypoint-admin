@@ -12,26 +12,42 @@ import Modal from "@/ui/popup-modal";
 import Heading from "@/ui/text-heading";
 import TextareaInput from "@/ui/forms/textarea";
 import BackButton from "@/ui/back-button";
-import { doc, updateDoc, onSnapshot } from "firebase/firestore";
+import { doc, updateDoc, onSnapshot, getDoc } from "firebase/firestore";
 import { db } from "@/app/(app)/firebase/config";
 import { toast, Toaster } from "react-hot-toast";
 import { Status } from "@/types/table-data";
 import Loading from "@/app/loading";
+import { formatDate } from "@/utils/date-utility";
 
 interface SupportTicket {
   id: string;
   ticketId: string;
+  vendorId: string;
   vendorName: string;
   vendorEmail: string;
-  vendorId: string;
+  adminId: string | null;
+  adminResponse: string | null;
   subject: string;
   description: string;
   priority: "high" | "medium" | "low";
   status: Status;
-  adminResponse: string | null;
   createdAt: string;
   updatedAt: string;
   respondedAt: string | null;
+}
+
+interface UserInfo {
+  fullName?: string;
+  firstName?: string;
+  lastName?: string;
+  email: string;
+  phoneNumber?: string;
+  accountType?: string;
+  profilePhotoUrl?: string;
+  city?: string;
+  state?: string;
+  address?: string;
+  businessName?: string;
 }
 
 export default function SupportDetails() {
@@ -41,7 +57,9 @@ export default function SupportDetails() {
   const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(
     null
   );
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
+  const [userLoading, setUserLoading] = useState(false);
   const [updating, setUpdating] = useState(false);
 
   const ticketId = pathname.split("/").pop();
@@ -55,19 +73,24 @@ export default function SupportDetails() {
         const ticketRef = doc(db, "support_tickets", ticketId);
 
         // Real-time listener for ticket updates
-        const unsubscribe = onSnapshot(ticketRef, (docSnapshot) => {
+        const unsubscribe = onSnapshot(ticketRef, async (docSnapshot) => {
           if (docSnapshot.exists()) {
             const ticketData = docSnapshot.data() as SupportTicket;
             // remove any existing `id` from the fetched data to avoid duplicate keys
             const { id, ...ticketWithoutId } = ticketData as any;
             console.log(id);
-            setSelectedTicket({
+            const updatedTicket = {
               id: docSnapshot.id,
               ...ticketWithoutId,
-            });
+            };
+            setSelectedTicket(updatedTicket);
             setAdminResponse(ticketData.adminResponse || "");
+
+            // Fetch additional user info from vendors collection
+            await fetchUserInfo(updatedTicket);
           } else {
             setSelectedTicket(null);
+            setUserInfo(null);
           }
           setLoading(false);
         });
@@ -82,6 +105,81 @@ export default function SupportDetails() {
 
     fetchSupportTicket();
   }, [ticketId]);
+
+  // Function to fetch vendor information
+  const fetchUserInfo = async (ticket: SupportTicket) => {
+    if (!ticket.vendorId) return;
+
+    setUserLoading(true);
+    try {
+      // Try to fetch from vendors collection first
+      const vendorRef = doc(db, "vendors", ticket.vendorId);
+      const vendorSnapshot = await getDoc(vendorRef);
+      
+      if (vendorSnapshot.exists()) {
+        const vendorData = vendorSnapshot.data() as UserInfo;
+        setUserInfo({
+          ...vendorData,
+          accountType: "vendor"
+        });
+      } else {
+        // If vendor not found, try other collections
+        const collections = ["riders", "customers"];
+        for (const collectionName of collections) {
+          const userRef = doc(db, collectionName, ticket.vendorId);
+          const userSnapshot = await getDoc(userRef);
+          if (userSnapshot.exists()) {
+            const userData = userSnapshot.data() as UserInfo;
+            setUserInfo({
+              ...userData,
+              accountType: collectionName === "riders" ? "rider" : "customer"
+            });
+            break;
+          }
+        }
+        
+        // If still not found, set basic info from ticket
+        if (!userInfo) {
+          setUserInfo({
+            email: ticket.vendorEmail,
+            accountType: "vendor", // default to vendor since your data shows vendor fields
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching user info:", error);
+      // Fallback to ticket data
+      setUserInfo({
+        email: ticket.vendorEmail,
+        accountType: "vendor",
+      });
+    } finally {
+      setUserLoading(false);
+    }
+  };
+
+  // Function to get display name from user info
+  const getDisplayName = (): string => {
+    if (userInfo?.businessName) return userInfo.businessName;
+    if (userInfo?.fullName) return userInfo.fullName;
+    if (userInfo?.firstName && userInfo?.lastName) {
+      return `${userInfo.firstName} ${userInfo.lastName}`;
+    }
+    return selectedTicket?.vendorName || "N/A";
+  };
+
+  // Function to get account type display name
+  const getAccountTypeDisplay = (): string => {
+    if (userInfo?.accountType) {
+      switch (userInfo.accountType) {
+        case "vendor": return "Vendor";
+        case "rider": return "Rider";
+        case "customer": return "Customer";
+        default: return userInfo.accountType;
+      }
+    }
+    return "Vendor"; // default based on your data structure
+  };
 
   // Function to update ticket status
   const updateTicketStatus = async (
@@ -102,6 +200,8 @@ export default function SupportDetails() {
         updateData.adminResponse =
           adminResponse || selectedTicket.adminResponse;
         updateData.respondedAt = new Date().toISOString();
+        // You might want to set adminId here if you have admin authentication
+        // updateData.adminId = currentAdminUser.uid;
       }
 
       await updateDoc(ticketRef, updateData);
@@ -136,22 +236,6 @@ export default function SupportDetails() {
     e: React.ChangeEvent<HTMLTextAreaElement>
   ) => {
     setAdminResponse(e.target.value);
-  };
-
-  // Format date for display
-  const formatDate = (dateString: string) => {
-    try {
-      return new Date(dateString).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    } catch (error) {
-      console.log(error)
-      return "N/A";
-    }
   };
 
   if (loading) return <Loading/>;
@@ -260,7 +344,10 @@ export default function SupportDetails() {
                   {selectedTicket.ticketId || "N/A"}
                 </h4>
                 <p className="text-sm truncate text-[#7C7979]">
-                  {selectedTicket.vendorName || "N/A"}
+                  {getDisplayName()}
+                </p>
+                <p className="text-xs text-[#7C7979] capitalize">
+                  {getAccountTypeDisplay()}
                 </p>
               </div>
               <StatusTab status={selectedTicket.status} />
@@ -298,6 +385,13 @@ export default function SupportDetails() {
                       {selectedTicket.priority || "N/A"}
                     </p>
                   </div>
+                  {/* user type */}
+                  <div className="text-sm">
+                    <p className="font-medium">User Type</p>
+                    <p className="text-[#6E747D] mt-1 capitalize">
+                      {getAccountTypeDisplay()}
+                    </p>
+                  </div>
                   {/* status based card */}
                   {statusCard[selectedTicket.status]}
                 </div>
@@ -307,32 +401,57 @@ export default function SupportDetails() {
               <CardComponent>
                 <div className="space-y-4">
                   <h4 className="text-base font-bold text-[#1F1F1F]">
-                    Vendor Information
+                    User Information
                   </h4>
-                  {/* vendor name */}
+                  {/* user name */}
                   <div className="text-sm">
-                    <p className="font-medium">Vendor Name</p>
-                    <p className="text-[#6E747D] mt-1">
-                      {selectedTicket.vendorName || "N/A"}
+                    <p className="font-medium">Name</p>
+                    <p className="text-[#6E747D] mt-1 capitalize">
+                      {getDisplayName()}
                     </p>
                   </div>
-                  {/* vendor email */}
+                  {/* user email */}
                   <div className="text-sm">
-                    <p className="font-medium">Vendor Email</p>
+                    <p className="font-medium">Email Address</p>
                     <p className="text-[#6E747D] mt-1">
                       {selectedTicket.vendorEmail || "N/A"}
                     </p>
                   </div>
-                  {/* vendor ID */}
+                  {/* user ID */}
                   <div className="text-sm">
-                    <p className="font-medium">Vendor ID</p>
+                    <p className="font-medium">User ID</p>
                     <p className="text-[#6E747D] mt-1 font-mono text-xs">
                       {selectedTicket.vendorId || "N/A"}
                     </p>
                   </div>
+                  {/* account type */}
+                  <div className="text-sm">
+                    <p className="font-medium">Account Type</p>
+                    <p className="text-[#6E747D] mt-1 capitalize">
+                      {getAccountTypeDisplay()}
+                    </p>
+                  </div>
+                  {/* phone number (if available) */}
+                  {userInfo?.phoneNumber && (
+                    <div className="text-sm">
+                      <p className="font-medium">Phone Number</p>
+                      <p className="text-[#6E747D] mt-1">
+                        {userInfo.phoneNumber}
+                      </p>
+                    </div>
+                  )}
+                  {/* location (if available) */}
+                  {(userInfo?.city || userInfo?.state) && (
+                    <div className="text-sm">
+                      <p className="font-medium">Location</p>
+                      <p className="text-[#6E747D] mt-1 capitalize">
+                        {[userInfo.city, userInfo.state].filter(Boolean).join(", ") || "N/A"}
+                      </p>
+                    </div>
+                  )}
                   {/* created date */}
                   <div className="text-sm">
-                    <p className="font-medium">Created Date</p>
+                    <p className="font-medium">Ticket Created</p>
                     <p className="text-[#6E747D] mt-1">
                       {formatDate(selectedTicket.createdAt)}
                     </p>
@@ -363,7 +482,7 @@ export default function SupportDetails() {
           <TextareaInput
             label="Admin Response"
             value={adminResponse}
-            placeholder="Add your response to the vendor..."
+            placeholder="Add your response to the user..."
             name="adminResponse"
             onChange={handleAdminResponseChange}
           />

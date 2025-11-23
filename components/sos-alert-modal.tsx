@@ -17,6 +17,7 @@ import Button from "@/ui/button";
 interface Customer {
   id: string;
   phoneNumber?: string;
+  phone_number?: string;
 }
 
 type Props = {
@@ -135,7 +136,7 @@ export default function SOSAlertModal({ isOpen, onClose }: Props) {
 
   // Get phone number from customer data
   const getPhoneNumber = (userId: string): string => {
-    return customerData[userId]?.phoneNumber || "N/A";
+    return customerData[userId]?.phoneNumber || customerData[userId]?.phone_number || "N/A";
   };
 
   // Get coordinates for map

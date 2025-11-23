@@ -143,7 +143,7 @@ const updateUserStatus = async (newStatus: string, suspensionReason?: string) =>
     switch (status) {
       case "active":
         return "activated";
-      case "Suspended":
+      case "suspended":
         return "Suspended";
       default:
         return "updated";
@@ -163,12 +163,12 @@ const updateUserStatus = async (newStatus: string, suspensionReason?: string) =>
   const getDisplayStatus = (user: Customer) => {
     if (user.accountStatus) {
       return user.accountStatus === "active"
-        ? "Active"
+        ? "active"
         : user.accountStatus === "suspended"
-        ? "Suspended"
-        : "Pending";
+        ? "suspended"
+        : "pending";
     }
-    return user.onboardingStatus?.onboardingComplete ? "Active" : "Pending";
+    return user.onboardingStatus?.onboardingComplete ? "active" : "pending";
   };
 
   if (loading) return <Loading />;
@@ -178,7 +178,7 @@ const updateUserStatus = async (newStatus: string, suspensionReason?: string) =>
 
   // for buttons - change onClick functions to api calls that in turn trigger modal later
   const statusActions: Record<string, JSX.Element> = {
-    Active: (
+    active: (
       <Button
         content="Suspend User"
         variant="error"
@@ -187,7 +187,7 @@ const updateUserStatus = async (newStatus: string, suspensionReason?: string) =>
         isDisabled={actionLoading}
       />
     ),
-    Pending: (
+    pending: (
       <Button
         content="Activate User"
         variant="normal"
@@ -196,7 +196,7 @@ const updateUserStatus = async (newStatus: string, suspensionReason?: string) =>
         isDisabled={actionLoading}
       />
     ),
-    Suspended: (
+    suspended: (
       <Button
         content="Activate User"
         variant="normal"
@@ -334,9 +334,9 @@ const updateUserStatus = async (newStatus: string, suspensionReason?: string) =>
                         <button
                           onClick={() => setSelectedOrder(order)}
                           className={`w-20 h-7 rounded-lg text-white flex justify-center items-center text-xs cursor-pointer ${
-                            order.status === "Completed"
+                            order.status === "completed"
                               ? "bg-[#21C788]"
-                              : order.status === "Cancelled"
+                              : order.status === "cancelled"
                               ? "bg-[#FF4D4F]"
                               : "bg-[#FFAC33]"
                           }`}>

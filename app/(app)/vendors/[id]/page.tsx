@@ -4,7 +4,7 @@ import {
   orderSummary,
   paymentSummary,
 } from "@/lib/config/demo-data/vendors";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
 import { JSX, useState, useEffect } from "react";
 import BackButton from "@/ui/back-button";
@@ -22,11 +22,12 @@ import OrderDetailsModal from "@/components/vendors/vendor-order-details-modal";
 import { VendorData, VendorOrderDetails } from "@/types/vendors";
 import Divider from "@/ui/divider";
 // import { useRoleStore } from "@/store/role-store";
-import { doc, getDoc, collection, getDocs } from "firebase/firestore";
+import { doc, getDoc, collection, getDocs, updateDoc } from "firebase/firestore";
 import { db } from "@/app/(app)/firebase/config";
 import { toast, Toaster } from "react-hot-toast";
 import Loading from "@/app/loading";
 import { formatDateTime, timeAgo } from "@/utils/date-utility";
+import { Status } from "@/types/table-data";
 
 export default function VendorDetails() {
   // for order details
@@ -34,11 +35,13 @@ export default function VendorDetails() {
     null
   );
   const pathname = usePathname();
+  const router = useRouter();
   const [vendorApprovedModal, setVendorApprovedModal] = useState(false);
   const [vendorActivatedModal, setVendorActivatedModal] = useState(false);
   const [vendorDeactivatedModal, setVendorDeactivatedModal] = useState(false);
   const [selectedVendor, setSelectedVendor] = useState<VendorData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
 
   const vendorId = pathname.split("/").pop();
 
@@ -78,7 +81,7 @@ export default function VendorDetails() {
                 vendorData.createdAt,
               operatingHours: vendorData.operatingHours,
             },
-            status: vendorData.status || "Pending",
+            status: vendorData.status || "active",
             businessLicenseMetadata: vendorData.businessLicenseMetadata,
             address: vendorData.address,
             city: vendorData.city,
@@ -129,6 +132,86 @@ export default function VendorDetails() {
     }
   }, [vendorId]);
 
+  // Function to update vendor status
+    const updateVendorStatus = async (newStatus: Status, suspensionReason?: string) => {
+      if (!selectedVendor || !vendorId) return;
+  
+      setActionLoading(true);
+      try {
+        const vendorRef = doc(db, "vendors", vendorId);
+  
+        const updateData: any = {
+          status: newStatus,
+          updatedAt: new Date(),
+        };
+  
+        if (suspensionReason) {
+          updateData.suspensionReason = suspensionReason;
+        }
+  
+        await updateDoc(vendorRef, updateData);
+  
+        // Update local state
+        setSelectedVendor((prev) =>
+          prev
+            ? ({
+                ...prev,
+                status: newStatus,
+                ...(suspensionReason ? { suspensionReason } : {}),
+              } as VendorData)
+            : null
+        );
+  
+        toast.success(`Vendor ${getStatusActionMessage(newStatus)} successfully!`);
+  
+        // Close modal
+        if (newStatus === "active") {
+          setVendorActivatedModal(false);
+        } else if (newStatus === "suspended") {
+          setVendorDeactivatedModal(false);
+        } else if (newStatus === "approved") {
+          setVendorApprovedModal(false);
+        }
+  
+        // Refresh the page after a short delay
+        setTimeout(() => {
+          router.refresh();
+        }, 1000);
+      } catch (error) {
+        console.error("Error updating vendor status:", error);
+        toast.error("Failed to update vendor status");
+      } finally {
+        setActionLoading(false);
+      }
+    };
+  
+    // Helper function for status messages
+    const getStatusActionMessage = (status: Status) => {
+      switch (status) {
+        case "active":
+          return "activated";
+        case "suspended":
+          return "suspended";
+        case "approved":
+          return "approved";
+        default:
+          return "updated";
+      }
+    };
+
+  // Action handlers
+  const handleApproveVendor = async () => {
+    await updateVendorStatus("active");
+  };
+
+  const handleActivateVendor = async () => {
+    await updateVendorStatus("active");
+  };
+
+  const handleSuspendVendor = async (reason: string) => {
+    await updateVendorStatus("suspended", reason);
+  };
+
   if (loading) {
     return <Loading />;
   }
@@ -145,28 +228,31 @@ export default function VendorDetails() {
 
   // for buttons - change onClick functions to api calls that in turn trigger modal later
   const statusActions: Record<string, JSX.Element> = {
-    Active: (
+    active: (
       <Button
         content="Suspend Vendor"
         variant="error"
         icon="mynaui:pause"
         onClick={() => setVendorDeactivatedModal(true)}
+        isDisabled={actionLoading}
       />
     ),
-    Pending: (
+    pending: (
       <Button
         content="Approve Vendor"
         variant="success"
         icon="material-symbols:check-rounded"
         onClick={() => setVendorApprovedModal(true)}
+        isDisabled={actionLoading}
       />
     ),
-    Suspended: (
+    suspended: (
       <Button
         content="Activate Vendor"
         variant="normal"
         icon="material-symbols:check-rounded"
         onClick={() => setVendorActivatedModal(true)}
+        isDisabled={actionLoading}
       />
     ),
   };
@@ -232,56 +318,6 @@ export default function VendorDetails() {
               {statusActions[selectedVendor.status]}
             </div>
           </div>
-
-          {/* header */}
-          {/* <div className="flex flex-col md:flex-row items-start justify-between gap-4">
-            <div className="flex items-start gap-4 min-w-0">
-              <div className="w-16 h-16 relative flex-shrink-0">
-                <Image
-                  src={selectedVendor.vendor.image}
-                  alt="Profile Picture"
-                  fill
-                  className="object-cover rounded-full"
-                />
-              </div>
-
-              <div className="min-w-0">
-                <h4 className="text-base font-semibold truncate">
-                  {selectedVendor.vendor.vendorName}
-                </h4>
-
-                <p
-                  className="text-sm text-[#7C7979] mt-1 overflow-truncate"
-                  title={selectedVendor.vendor.vendorBusiness}
-                  style={{
-                    display: "-webkit-box",
-                    WebkitLineClamp: 4,
-                    WebkitBoxOrient: "vertical",
-                  }}
-                >
-                  {selectedVendor.vendor.vendorBusiness}
-                </p>
-
-                <div className="flex items-center gap-2 text-sm mt-2">
-                  <Icon
-                    icon={"pepicons-pencil:star-filled"}
-                    height={18}
-                    width={18}
-                    color="#EFB100"
-                  />
-                  <span>4.8 ratings (230 Reviews)</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 w-full md:w-auto ml-0 md:ml-auto">
-              <div className="hidden md:block">
-                <StatusTab status={selectedVendor.status} />
-              </div>
-              <div className="w-full md:w-[200px]">{statusActions[selectedVendor.status]}</div>
-            </div>
-          </div> */}
-
 
           {/* details */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -440,6 +476,8 @@ export default function VendorDetails() {
         isOpen={vendorApprovedModal}
         onClose={() => setVendorApprovedModal(false)}
         vendor={selectedVendor.vendor.vendorName}
+        onApprove={handleApproveVendor}
+        isLoading={actionLoading}
       />
 
       {/* vendor activated modal */}
@@ -447,12 +485,16 @@ export default function VendorDetails() {
         isOpen={vendorActivatedModal}
         onClose={() => setVendorActivatedModal(false)}
         vendor={selectedVendor.vendor.vendorName}
+        onActivate={handleActivateVendor}
+        isLoading={actionLoading}
       />
 
       {/* vendor suspended modal */}
       <VendorSuspendedModal
         isOpen={vendorDeactivatedModal}
         onClose={() => setVendorDeactivatedModal(false)}
+        onSuspend={handleSuspendVendor}
+        isLoading={actionLoading}
       />
 
       {/* order details */}

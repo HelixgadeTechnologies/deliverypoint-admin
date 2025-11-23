@@ -62,7 +62,7 @@ export default function Vendors() {
               email: data.email || "No email",
               phone: data.phoneNumber || "No phone",
             },
-            status: data.status || "Active",
+            status: data.status || "active",
             totalOrders: data.totalOrders || 0,
             createdAt: data.createdAt,
           };
@@ -117,11 +117,11 @@ export default function Vendors() {
     },
     {
       ...vendorStats[1],
-      amount: vendors.filter(v => v.status === "active").length.toString(),
+      amount: vendors.filter(v => v.status === "pending").length.toString(),
     },
     {
       ...vendorStats[2],
-      amount: vendors.filter(v => v.status === "pending").length.toString(),
+      amount: vendors.filter(v => v.status === "active").length.toString(),
     },
     {
       ...vendorStats[3],

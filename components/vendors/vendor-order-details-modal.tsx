@@ -92,9 +92,9 @@ export default function OrderDetailsModal({
           <h3 className="font-semibold text-base">Order Details</h3>
           <div
             className={`w-20 h-7 rounded-lg text-white flex justify-center items-center text-xs ${
-              orderDetails.status === "Completed"
+              orderDetails.status === "completed"
                 ? "bg-[#21C788]"
-                : orderDetails.status === "Cancelled"
+                : orderDetails.status === "cancelled"
                 ? "bg-[#FF4D4F]"
                 : "bg-[#FFAC33]"
             }`}

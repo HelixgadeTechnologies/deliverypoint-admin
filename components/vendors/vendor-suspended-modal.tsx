@@ -2,14 +2,17 @@ import Button from "@/ui/button";
 import TextareaInput from "@/ui/forms/textarea";
 import Modal from "@/ui/popup-modal";
 import { Icon } from "@iconify/react";
+import { on } from "events";
 import { useState } from "react";
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
+  onSuspend: (reason: string) => void;
+  isLoading?: boolean;
 };
 
-export default function VendorSuspendedModal({ isOpen, onClose }: Props) {
+export default function VendorSuspendedModal({ isOpen, onClose, onSuspend, isLoading }: Props) {
   const [query, setQuery] = useState("");
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -40,8 +43,10 @@ export default function VendorSuspendedModal({ isOpen, onClose }: Props) {
             isSecondary
             />
             <Button
-            content="Suspend User"
+            content="Suspend Vendor"
             variant="error"
+            onClick={onSuspend.bind(null, query)}
+            isLoading={isLoading}
             />
         </div>
       </div>

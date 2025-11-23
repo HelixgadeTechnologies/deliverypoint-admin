@@ -6,9 +6,11 @@ type Props = {
     vendor:  string;
     isOpen: boolean;
     onClose: () => void;
+    onActivate?: () => void;
+    isLoading?: boolean;
 }
 
-export default function VendorActivatedModal({ vendor, isOpen, onClose, }: Props) {
+export default function VendorActivatedModal({ vendor, isOpen, onClose, onActivate, isLoading }: Props) {
     return (
         <Modal
         isOpen={isOpen}
@@ -33,7 +35,7 @@ export default function VendorActivatedModal({ vendor, isOpen, onClose, }: Props
             registration request has been activated and they will be notified via
             email to Sign in.
           </p>
-          <Button content="Close" onClick={onClose} />
+          <Button content="Close" onClick={onActivate} isLoading={isLoading} />
         </div>
       </Modal>
     )

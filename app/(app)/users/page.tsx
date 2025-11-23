@@ -14,6 +14,7 @@ import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/app/(app)/firebase/config";
 import { timeAgo } from "@/utils/date-utility";
 import Loading from "@/app/loading";
+import { Status } from "@/types/table-data";
 
 interface Customer {
   id: string;
@@ -33,6 +34,7 @@ interface Customer {
     currentStep: number;
     onboardingComplete: boolean;
   };
+  accountStatus: Status; // Added for status management
 }
 
 export default function Users() {
@@ -96,7 +98,7 @@ export default function Users() {
 
   // Get status for display - using onboarding completion as status
   const getDisplayStatus = (customer: Customer) => {
-    return customer.onboardingStatus?.onboardingComplete ? "Active" : "Pending";
+    return customer.accountStatus ? "active" : "pending";
   };
 
   if (loading) return <Loading />
@@ -126,7 +128,7 @@ export default function Users() {
           </td>
           <td className="px-6">{row.phoneNumber}</td>
           <td className="px-6">
-            <StatusTab status={getDisplayStatus(row)} />
+            <StatusTab status={row.accountStatus} />
           </td>
           <td className="px-6">0</td>{" "}
           {/* Total Orders - hardcoded as 0 since not in data */}

@@ -40,7 +40,7 @@ export default function RiderSuspendedModal({ isOpen, onClose }: Props) {
             isSecondary
             />
             <Button
-            content="Suspend User"
+            content="Suspend Rider"
             variant="error"
             />
         </div>
