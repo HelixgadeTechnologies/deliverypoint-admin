@@ -9,16 +9,79 @@ import StatusTab from "@/ui/status-tab";
 import Heading from "@/ui/text-heading";
 import Divider from "@/ui/divider";
 import Button from "@/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Modal from "@/ui/popup-modal";
 import MapView from "@/ui/map";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/app/(app)/firebase/config";
+import { Order } from "@/types/order";
 
 export default function OrderDetails() {
   const [isMapOpen, setIsMapOpen] = useState(false);
   const pathname = usePathname();
   const orderId = pathname.split("/").pop();
-  const selectedOrder = orderTableData.find((order) => order.id === orderId);
-  if (!selectedOrder) return <div>Not found</div>;
+  const [order, setOrder] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchOrder = async () => {
+      if (!orderId) return;
+      try {
+        setLoading(true);
+        const docRef = doc(db, "orders", orderId);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const d = docSnap.data() as Order;
+          // Infer vendor name
+          let vendorName = d.vendorId === "multiple" ? "Multiple Vendors" : "";
+          if (!vendorName && d.items) {
+            const firstItem = Object.values(d.items)[0];
+            if (firstItem) {
+              vendorName = firstItem.vendor;
+            }
+          }
+
+          setOrder({
+            id: docSnap.id,
+            orderId: d.orderId || docSnap.id,
+            customerDetails: {
+              name: d.customerName || "Unknown",
+              phoneNumber: "", // Not in data
+            },
+            pickupLocation: "", // Not in data
+            dropOffLocation: d.deliveryAddress || "",
+            riderName: d.riderId || "searching",
+            vendorName: vendorName || "Unknown",
+            status: d.status || "pending",
+            earnings: {
+              main: d.totalAmount ?? 0,
+              platform: 0, // Not in data
+            },
+            items: d.items || {},
+            createdAt: d.createdAt,
+            raw: d,
+          });
+        } else {
+          console.log("No such document!");
+        }
+      } catch (err) {
+        console.error("Error fetching order:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrder();
+  }, [orderId]);
+
+  if (loading) {
+    return <div className="p-6">Loading...</div>;
+  }
+
+  if (!order) {
+    return <div className="p-6">Order not found</div>;
+  }
 
   return (
     <>
@@ -39,19 +102,19 @@ export default function OrderDetails() {
                 />
               </div>
               <div>
-                <h4 className="text-base">{selectedOrder.id}</h4>
+                <h4 className="text-base">{order.orderId}</h4>
                 <p className="text-sm text-[#7C7979]">
-                  {selectedOrder.customerDetails.name}
+                  {order.customerDetails.name}
                 </p>
               </div>
 
               {/* status */}
               <div className="">
-                <StatusTab status={selectedOrder.status} />
+                <StatusTab status={order.status} />
               </div>
             </div>
             {/* track order button for pending screen */}
-            {selectedOrder.status === "in progress" && (
+            {order.status === "in progress" && (
               <div className="w-full md:w-[150px]">
                 <Button
                   content="Track Order"
@@ -64,56 +127,60 @@ export default function OrderDetails() {
 
           {/* details */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* order summary (PS. for 'items', write functionality to map through items and display the first two then minus 2 from the more items) */}
+            {/* order summary */}
             <CardComponent height="100%">
               <Heading xs heading="Order Summary" />
               <div className="space-y-4 text-sm srcollable">
                 {/* order id */}
                 <div>
                   <h4 className="text-[#1F1F1F]">Order ID</h4>
-                  <p className="text-[#6E747D]">{selectedOrder.id}</p>
+                  <p className="text-[#6E747D]">{order.orderId}</p>
                 </div>
                 {/* items */}
                 <div>
                   <h4 className="text-[#1F1F1F]">Items</h4>
-                  <p className="text-[#6E747D] flex justify-between items-start gap-2.5">
-                    <span>2x Chicken Burgers with extra cheese and bacon</span>
-                    <span className="text-[#1F1F1F] whitespace-nowrap">
-                      N 3,500
-                    </span>
-                  </p>
+                  <div className="text-[#6E747D] space-y-2">
+                    {Object.values(order.items || {}).map((item: any, index: number) => (
+                      <p key={index} className="flex justify-between items-start gap-2.5">
+                        <span>{item.quantity}x {item.name}</span>
+                        <span className="text-[#1F1F1F] whitespace-nowrap">
+                          N {item.price}
+                        </span>
+                      </p>
+                    ))}
+                  </div>
                 </div>
                 {/* customer details */}
                 <div>
                   <h4 className="text-[#1F1F1F]">Customer Details</h4>
                   <p className="text-[#6E747D]">
-                    {selectedOrder.customerDetails.name} <br />
-                    {selectedOrder.customerDetails.phoneNumber}
+                    {order.customerDetails.name} <br />
+                    {order.customerDetails.phoneNumber}
                   </p>
                 </div>
                 {/* pickup location */}
                 <div>
                   <h4 className="text-[#1F1F1F]">Pickup Location</h4>
                   <p className="text-[#6E747D]">
-                    {selectedOrder.pickupLocation}
+                    {order.pickupLocation}
                   </p>
                 </div>
                 {/* drop off location */}
                 <div>
                   <h4 className="text-[#1F1F1F]">Drop-off Location</h4>
                   <p className="text-[#6E747D]">
-                    {selectedOrder.dropOffLocation}
+                    {order.dropOffLocation}
                   </p>
                 </div>
                 {/* assigned rider */}
                 <div>
                   <h4 className="text-[#1F1F1F]">Assigned Rider</h4>
-                  <p className="text-[#6E747D]">{selectedOrder.riderName}</p>
+                  <p className="text-[#6E747D]">{order.riderName}</p>
                 </div>
                 {/* vendor */}
                 <div>
                   <h4 className="text-[#1F1F1F]">Vendor</h4>
-                  <p className="text-[#6E747D]">{selectedOrder.vendorName}</p>
+                  <p className="text-[#6E747D]">{order.vendorName}</p>
                 </div>
               </div>
             </CardComponent>
@@ -125,23 +192,36 @@ export default function OrderDetails() {
                   status="Success"
                   title="Order Created"
                   subtitle="Order placed by customer"
-                  date="22/12/2024"
-                  time="11:30:00"
+                  date={order.createdAt ? new Date(order.createdAt).toLocaleDateString() : ""}
+                  time={order.createdAt ? new Date(order.createdAt).toLocaleTimeString() : ""}
                 />
                 <StatusTimeline
-                  status="Pending"
+                  status={order.isDelivered ? "Success" : "Pending"}
                   title="Picked Up"
                   subtitle="Pending rider confirmation"
-                  date="22/12/2024"
-                  time="11:30:00"
+                  date={order.createdAt ? new Date(order.createdAt).toLocaleDateString() : ""}
+                  time={order.createdAt ? new Date(order.createdAt).toLocaleTimeString() : ""}
                 />
-                <StatusTimeline
-                  status="Inactive"
-                  title="Delivered"
-                  subtitle="Order delivered to customer"
-                  date="22/12/2024"
-                  time="11:30:00"
-                />
+
+                {order.isCanceled ? (
+                  <StatusTimeline
+                    status="Failed"
+                    title="Order Canceled"
+                    subtitle="Order was cancelled by customer"
+                    date={order.canceledDate ? new Date(order.canceledDate).toLocaleDateString() : ""}
+                    time={order.canceledDate ? new Date(order.canceledDate).toLocaleTimeString() : ""}
+                  />
+                ) : (
+                  <StatusTimeline
+                    status={order.isDelivered ? "Success" : "Inactive"}
+                    title="Order Delivered"
+                    subtitle={order.isDelivered ? "Order was delivered by rider" : "Order delivered to customer"}
+                    date={order.deliveryDate ? new Date(order.deliveryDate).toLocaleDateString() : ""}
+                    time={order.deliveryDate ? new Date(order.deliveryDate).toLocaleTimeString() : ""}
+                  />
+                )}
+
+                {/* Add more timeline items based on status if needed, currently static or based on single date */}
               </div>
             </CardComponent>
             {/* earnings breakdown */}
@@ -150,19 +230,19 @@ export default function OrderDetails() {
               <div className="space-y-3 text-[#7C7979] text-sm">
                 <p className="flex justify-between items-center">
                   <span>Platform Fee</span>
-                  <span>N 350</span>
+                  <span>N {order.earnings.platform}</span>
                 </p>
                 {/* conditional earning breakdown */}
-                {selectedOrder.status === "declined" ? (
+                {order.status === "declined" ? (
                   <div className="space-y-3">
                     <p className="flex justify-between items-center">
                       <span>Rider Payout</span>
-                      <span>N 350</span>
+                      <span>N 0</span>
                     </p>
                     <Divider />
                     <p className="flex justify-between items-center">
                       <span className="text-[#1F1F1F]">Total Order Value</span>
-                      <span>N 4200</span>
+                      <span>N {order.earnings.main}</span>
                     </p>
                     <Divider />
                     <p className="flex justify-between items-center">
@@ -174,16 +254,16 @@ export default function OrderDetails() {
                   <div className="space-y-3">
                     <p className="flex justify-between items-center">
                       <span>Rider Payout</span>
-                      <span>N 350</span>
+                      <span>N 0</span>
                     </p>
                     <p className="flex justify-between items-center">
                       <span>Vendor Payout</span>
-                      <span>N 3500</span>
+                      <span>N {order.earnings.main}</span>
                     </p>
                     <Divider />
                     <p className="flex justify-between items-center">
                       <span className="text-[#1F1F1F]">Total Order Value</span>
-                      <span>N 4200</span>
+                      <span>N {order.earnings.main}</span>
                     </p>
                   </div>
                 )}
@@ -221,12 +301,12 @@ export default function OrderDetails() {
           </div>
           <Heading
             sm
-            heading={selectedOrder.id}
-            subtitle={selectedOrder.customerDetails.name}
+            heading={order.orderId}
+            subtitle={order.customerDetails.name}
           />
           {/* status */}
           <div className="">
-            <StatusTab status={selectedOrder.status} />
+            <StatusTab status={order.status} />
           </div>
         </div>
         <MapView
