@@ -50,9 +50,21 @@ export default function LogisticsDetails() {
     return <div className="p-6 text-center text-red-500">{error || "Not found"}</div>;
   }
 
+  // Helper function to format currency with thousand separators and 2 decimal places
+  const formatCurrency = (amount: number): string => {
+    return amount.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  };
+
   // Calculate earnings
-  const platformFee = (selectedData.totalAmount * 0.1).toFixed(2);
-  const mainEarnings = (selectedData.totalAmount - parseFloat(platformFee)).toFixed(2);
+  const platformFeeAmount = selectedData.totalAmount * 0.1;
+  const mainEarningsAmount = selectedData.totalAmount - platformFeeAmount;
+
+  const platformFee = formatCurrency(platformFeeAmount);
+  const mainEarnings = formatCurrency(mainEarningsAmount);
+  const totalAmount = formatCurrency(selectedData.totalAmount);
 
   // Map payment method to display format
   const paymentTypeMap: Record<string, string> = {
@@ -198,7 +210,7 @@ export default function LogisticsDetails() {
                 <Divider />
                 <p className="flex justify-between items-center">
                   <span className="text-[#1F1F1F]">Total Order Value</span>
-                  <span>N {selectedData.totalAmount}</span>
+                  <span>N {totalAmount}</span>
                 </p>
                 <Divider />
                 <p className="flex justify-between items-center">
