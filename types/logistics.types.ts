@@ -11,6 +11,8 @@ export interface FirebaseLogistics {
     createdAt: Timestamp;
     customerId: string;
     deliveryAddress: string;
+    deliveryLat: number;
+    deliveryLng: number;
     deliveryCity: string;
     deliveryContactName: string;
     deliveryContactPhone: string;
@@ -23,8 +25,10 @@ export interface FirebaseLogistics {
     noteToVendor: string;
     parcelDescription: string;
     paymentMethod: "wallet" | "card" | "cash";
-    paymentStatus: "pending" | "completed" | "in progress" | "cancelled" | "declined" | "open" | "resolved" | "approved" | "active" | "suspended" | "rejected" | "paid";
+    paymentStatus: "pending" | "paid" | "failed";
     pickupAddress: string;
+    pickupLat: number;
+    pickupLng: number;
     pickupCity: string;
     pickupContactName: string;
     pickupContactPhone: string;

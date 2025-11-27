@@ -192,21 +192,21 @@ export default function Logistics() {
           <DropDown
             name="status"
             value={statusFilter}
-            placeholder="Status"
+            placeholder="All Status"
             options={[
+              { label: "All", value: "" },
               { label: "Pending", value: "pending" },
-              { label: "In Progress", value: "in progress" },
-              { label: "Completed", value: "completed" },
-              { label: "Cancelled", value: "cancelled" },
-              { label: "Declined", value: "declined" },
+              { label: "Paid", value: "paid" },
+              { label: "Failed", value: "failed" },
             ]}
             onChange={(value) => setStatusFilter(value)}
           />
           <DropDown
             name="paymentType"
             value={paymentFilter}
-            placeholder="Payment Type"
+            placeholder="All Payment Types"
             options={[
+              { label: "All", value: "" },
               { label: "Card", value: "card" },
               { label: "Wallet", value: "wallet" },
               { label: "Cash", value: "cash" },
@@ -216,8 +216,9 @@ export default function Logistics() {
           <DropDown
             name="vehicleType"
             value={vehicleFilter}
-            placeholder="Vehicle Type"
+            placeholder="All Vehicle Types"
             options={[
+              { label: "All", value: "" },
               { label: "Bicycle", value: "bicycle" },
               { label: "Motorcycle", value: "motorcycle" },
               { label: "Van", value: "van" },

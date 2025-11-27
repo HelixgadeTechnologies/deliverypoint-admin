@@ -27,13 +27,6 @@ export default function DropDown({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const id = `select-${name}`;
 
-  // ensure first option is always selected
-  useEffect(() => {
-    if (!value && options.length > 0) {
-      onChange(options[0].value);
-    }
-  }, [options, value, onChange]);
-
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -80,9 +73,8 @@ export default function DropDown({
           width={25}
           height={25}
           color="#1F1F1F"
-          className={`transition-transform duration-200 ${
-            isOpen ? "rotate-180" : ""
-          }`}
+          className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""
+            }`}
         />
       </div>
 
@@ -111,11 +103,10 @@ export default function DropDown({
                     ease: "linear",
                   }}
                   onClick={() => handleOptionSelect(option.value)}
-                  className={`px-4 py-2 text-sm cursor-pointer hover:bg-gray-50 transition-colors duration-150 ${
-                    value === option.value
+                  className={`px-4 py-2 text-sm cursor-pointer hover:bg-gray-50 transition-colors duration-150 ${value === option.value
                       ? "bg-[#e5f2ff] text-[#0095DA]"
                       : "text-gray-500"
-                  }`}
+                    }`}
                 >
                   {option.label}
                 </motion.div>

@@ -12,6 +12,7 @@ export type Status =
   | "cancelled"
   | "declined"
   | "rejected" | "paid";
+export type Status2 = "paid" | "pending" | "failed";
 
 export type Ticket = {
   id: string;

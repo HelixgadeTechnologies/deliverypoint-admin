@@ -3,7 +3,7 @@ import { Icon } from "@iconify/react";
 import BackButton from "@/ui/back-button";
 import Button from "@/ui/button";
 import CardComponent from "@/ui/card-wrapper";
-import StatusTab from "@/ui/status-tab";
+import StatusTab, { StatusTab2 } from "@/ui/status-tab";
 import { fetchLogisticsById } from "@/lib/services/logisticsservice";
 import { FirebaseLogistics } from "@/types/logistics.types";
 import { useEffect, useState } from "react";
@@ -203,7 +203,7 @@ export default function LogisticsDetails() {
                 <Divider />
                 <p className="flex justify-between items-center">
                   <span className="text-[#1F1F1F]">Commission Status</span>
-                  <StatusTab successKeywords={["completed"]} status={selectedData.paymentStatus} />
+                  <StatusTab2 successKeywords={["completed"]} status={selectedData.paymentStatus} />
                 </p>
               </div>
             </CardComponent>
@@ -249,15 +249,15 @@ export default function LogisticsDetails() {
         </div>
         <MapView
           currentLocation={{
-            label: "Current Location",
-            description: "Approaching GRA Junction",
-            x: 10,
-            y: 40,
+            label: "Pickup Location",
+            description: selectedData.pickupAddress,
+            x: selectedData.pickupLng,
+            y: selectedData.pickupLat,
           }}
           destination={{
             label: "Destination",
-            x: 90,
-            y: 50,
+            x: selectedData.deliveryLng,
+            y: selectedData.deliveryLat,
           }}
           showPath={true}
         />

@@ -1,9 +1,21 @@
 "use client";
 
-import { Status } from "@/types/table-data";
+import { Status, Status2 } from "@/types/table-data";
 
 type StatusProps = {
   status: Status;
+
+  // Optional custom keyword arrays to override defaults
+  successKeywords?: string[];
+  warningKeywords?: string[];
+  errorKeywords?: string[];
+
+  // Custom styling options
+  className?: string;
+  size?: "sm" | "md" | "lg";
+};
+type StatusProps2 = {
+  status: Status2;
 
   // Optional custom keyword arrays to override defaults
   successKeywords?: string[];
@@ -23,6 +35,9 @@ const DEFAULT_SUCCESS_KEYWORDS = [
   "active", 
   "verified", 
   "confirmed"
+];
+const DEFAULT_SUCCESS_KEYWORDS2 = [
+  "pending", "paid", "failed"
 ];
 
 const DEFAULT_WARNING_KEYWORDS = [
@@ -83,6 +98,47 @@ export default function StatusTab({
   className = "",
   size = "md"
 }: StatusProps) {
+  
+  // Determine status type based on keyword arrays
+  const getStatusType = (): keyof typeof statusStyles => {
+    if (successKeywords.includes(status)) return "success";
+    if (warningKeywords.includes(status)) return "warning";  
+    if (errorKeywords.includes(status)) return "error";
+    return "default";
+  };
+
+  const statusType = getStatusType();
+  const styles = statusStyles[statusType];
+  const sizeStyle = sizeStyles[size];
+
+  return (
+    <span
+      className={`
+        ${sizeStyle}
+        ${styles.bg} 
+        ${styles.text} 
+        rounded-lg 
+        flex 
+        justify-center 
+        items-center 
+        transition-all 
+        duration-200
+        capitalize
+        ${className}
+      `.replace(/\s+/g, ' ').trim()}
+    >
+      {status}
+    </span>
+  );
+}
+export function StatusTab2({ 
+  status, 
+  successKeywords = DEFAULT_SUCCESS_KEYWORDS2,
+  warningKeywords = DEFAULT_WARNING_KEYWORDS,
+  errorKeywords = DEFAULT_ERROR_KEYWORDS,
+  className = "",
+  size = "md"
+}: StatusProps2) {
   
   // Determine status type based on keyword arrays
   const getStatusType = (): keyof typeof statusStyles => {
