@@ -24,9 +24,10 @@ import { useCallback } from "react";
 interface SupportTicket {
   id: string;
   ticketId: string;
-  vendorId: string;
-  vendorName: string;
-  vendorEmail: string;
+  userId: string;
+  name: string;
+  email: string;
+  role: string;
   adminId: string | null;
   adminResponse: string | null;
   subject: string;
@@ -66,103 +67,103 @@ export default function SupportDetails() {
 
   const ticketId = pathname.split("/").pop();
 
-// Move fetchUserInfo outside useEffect and wrap in useCallback
-const fetchUserInfo = useCallback(async (ticket: SupportTicket) => {
-  if (!ticket.vendorId) return;
+  // Move fetchUserInfo outside useEffect and wrap in useCallback
+  const fetchUserInfo = useCallback(async (ticket: SupportTicket) => {
+    if (!ticket.userId) return;
 
-  try {
-    // Try to fetch from vendors collection first
-    const vendorRef = doc(db, "vendors", ticket.vendorId);
-    const vendorSnapshot = await getDoc(vendorRef);
-    
-    if (vendorSnapshot.exists()) {
-      const vendorData = vendorSnapshot.data() as UserInfo;
-      setUserInfo({
-        ...vendorData,
-        accountType: "vendor"
-      });
-    } else {
-      // If vendor not found, try other collections
-      const collections = ["riders", "customers"];
-      let found = false;
-      
-      for (const collectionName of collections) {
-        const userRef = doc(db, collectionName, ticket.vendorId);
-        const userSnapshot = await getDoc(userRef);
-        if (userSnapshot.exists()) {
-          const userData = userSnapshot.data() as UserInfo;
-          setUserInfo({
-            ...userData,
-            accountType: collectionName === "riders" ? "rider" : "customer"
-          });
-          found = true;
-          break;
-        }
-      }
-      
-      // If still not found, set basic info from ticket
-      if (!found) {
+    try {
+      // Try to fetch from vendors collection first
+      const vendorRef = doc(db, "vendors", ticket.userId);
+      const vendorSnapshot = await getDoc(vendorRef);
+
+      if (vendorSnapshot.exists()) {
+        const vendorData = vendorSnapshot.data() as UserInfo;
         setUserInfo({
-          email: ticket.vendorEmail,
-          accountType: "vendor",
+          ...vendorData,
+          accountType: "vendor"
         });
-      }
-    }
-  } catch (error) {
-    console.error("Error fetching user info:", error);
-    // Fallback to ticket data
-    setUserInfo({
-      email: ticket.vendorEmail,
-      accountType: "vendor",
-    });
-  }
-}, []);
+      } else {
+        // If vendor not found, try other collections
+        const collections = ["riders", "customers"];
+        let found = false;
 
-// Fetch support ticket data from Firestore
-useEffect(() => {
-  if (!ticketId) return;
-
-  const ticketRef = doc(db, "support_tickets", ticketId);
-
-  // Set up real-time listener
-  const unsubscribe = onSnapshot(
-    ticketRef,
-    async (docSnapshot) => {
-      try {
-        if (docSnapshot.exists()) {
-          const ticketData = docSnapshot.data();
-          
-          const updatedTicket = {
-            id: docSnapshot.id,
-            ...ticketData,
-          } as SupportTicket;
-
-          setSelectedTicket(updatedTicket);
-          setAdminResponse(ticketData.adminResponse || "");
-
-          // Fetch additional user info
-          await fetchUserInfo(updatedTicket);
-        } else {
-          setSelectedTicket(null);
-          setUserInfo(null);
+        for (const collectionName of collections) {
+          const userRef = doc(db, collectionName, ticket.userId);
+          const userSnapshot = await getDoc(userRef);
+          if (userSnapshot.exists()) {
+            const userData = userSnapshot.data() as UserInfo;
+            setUserInfo({
+              ...userData,
+              accountType: collectionName === "riders" ? "rider" : "customer"
+            });
+            found = true;
+            break;
+          }
         }
-      } catch (error) {
-        console.error("Error in ticket snapshot:", error);
+
+        // If still not found, set basic info from ticket
+        if (!found) {
+          setUserInfo({
+            email: ticket.email,
+            accountType: "vendor",
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching user info:", error);
+      // Fallback to ticket data
+      setUserInfo({
+        email: ticket.email,
+        accountType: "vendor",
+      });
+    }
+  }, []);
+
+  // Fetch support ticket data from Firestore
+  useEffect(() => {
+    if (!ticketId) return;
+
+    const ticketRef = doc(db, "support_tickets", ticketId);
+
+    // Set up real-time listener
+    const unsubscribe = onSnapshot(
+      ticketRef,
+      async (docSnapshot) => {
+        try {
+          if (docSnapshot.exists()) {
+            const ticketData = docSnapshot.data();
+
+            const updatedTicket = {
+              id: docSnapshot.id,
+              ...ticketData,
+            } as SupportTicket;
+
+            setSelectedTicket(updatedTicket);
+            setAdminResponse(ticketData.adminResponse || "");
+
+            // Fetch additional user info
+            await fetchUserInfo(updatedTicket);
+          } else {
+            setSelectedTicket(null);
+            setUserInfo(null);
+          }
+        } catch (error) {
+          console.error("Error in ticket snapshot:", error);
+          toast.error("Failed to load ticket details");
+        } finally {
+          setLoading(false);
+        }
+      },
+      (error) => {
+        console.error("Error fetching support ticket:", error);
         toast.error("Failed to load ticket details");
-      } finally {
         setLoading(false);
       }
-    },
-    (error) => {
-      console.error("Error fetching support ticket:", error);
-      toast.error("Failed to load ticket details");
-      setLoading(false);
-    }
-  );
+    );
 
-  // Cleanup function
-  return () => unsubscribe();
-}, [ticketId, fetchUserInfo]);
+    // Cleanup function
+    return () => unsubscribe();
+  }, [ticketId, fetchUserInfo]);
 
   // Function to get display name from user info
   const getDisplayName = (): string => {
@@ -171,7 +172,7 @@ useEffect(() => {
     if (userInfo?.firstName && userInfo?.lastName) {
       return `${userInfo.firstName} ${userInfo.lastName}`;
     }
-    return selectedTicket?.vendorName || "N/A";
+    return selectedTicket?.name || "N/A";
   };
 
   // Function to get account type display name
@@ -244,7 +245,7 @@ useEffect(() => {
     setAdminResponse(e.target.value);
   };
 
-  if (loading) return <Loading/>;
+  if (loading) return <Loading />;
   if (!selectedTicket) {
     return (
       <CardComponent>
@@ -420,21 +421,21 @@ useEffect(() => {
                   <div className="text-sm">
                     <p className="font-medium">Email Address</p>
                     <p className="text-[#6E747D] mt-1">
-                      {selectedTicket.vendorEmail || "N/A"}
+                      {selectedTicket.email || "N/A"}
                     </p>
                   </div>
                   {/* user ID */}
                   <div className="text-sm">
                     <p className="font-medium">User ID</p>
                     <p className="text-[#6E747D] mt-1 font-mono text-xs">
-                      {selectedTicket.vendorId || "N/A"}
+                      {selectedTicket.userId || "N/A"}
                     </p>
                   </div>
                   {/* account type */}
                   <div className="text-sm">
                     <p className="font-medium">Account Type</p>
                     <p className="text-[#6E747D] mt-1 capitalize">
-                      {getAccountTypeDisplay()}
+                      {selectedTicket.role}
                     </p>
                   </div>
                   {/* phone number (if available) */}

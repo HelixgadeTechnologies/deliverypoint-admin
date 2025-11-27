@@ -23,8 +23,10 @@ interface SupportTicket {
   description: string;
   status: Status;
   priority: string;
-  vendorId: string;
-  vendorEmail: string;
+  userId: string;
+  email: string;
+  name: string;
+  role: string;
   createdAt: string;
   updatedAt: string;
   adminId: string | null;
@@ -57,8 +59,10 @@ export default function Support() {
             description: data.description || "No description",
             status: data.status || "open",
             priority: data.priority || "medium",
-            vendorId: data.vendorId || "",
-            vendorEmail: data.vendorEmail || "No email",
+            userId: data.userId || "",
+            email: data.email || "No email",
+            name: data.name || "No name",
+            role: data.role || "",
             createdAt: data.createdAt || "",
             updatedAt: data.updatedAt || "",
             adminId: data.adminId || null,
@@ -107,7 +111,7 @@ export default function Support() {
         ticket.ticketId.toLowerCase().includes(searchLower) ||
         ticket.subject.toLowerCase().includes(searchLower) ||
         ticket.description.toLowerCase().includes(searchLower) ||
-        ticket.vendorEmail.toLowerCase().includes(searchLower);
+        ticket.email.toLowerCase().includes(searchLower);
 
       if (!matchesSearch) return false;
     }
@@ -180,7 +184,7 @@ export default function Support() {
               <h4 className="text-sm truncate">{row.subject}</h4>
               <p className="text-xs text-[#7C7979] truncate">{row.description}</p>
             </td>
-            <td className="px-6 py-4 text-sm">{row.vendorEmail}</td>
+            <td className="px-6 py-4 text-sm">{row.email}</td>
             <td className="px-6 py-4">
               <span className={`px-3 py-1 rounded-md text-xs capitalize ${getPriorityColor(row.priority)}`}>
                 {row.priority}
