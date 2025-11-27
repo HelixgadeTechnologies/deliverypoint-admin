@@ -4,21 +4,69 @@ import BackButton from "@/ui/back-button";
 import Button from "@/ui/button";
 import CardComponent from "@/ui/card-wrapper";
 import StatusTab from "@/ui/status-tab";
-import { useState } from "react";
-import { usePathname } from "next/navigation";
-import { logisticsData } from "@/lib/config/demo-data/logistics";
+import { fetchLogisticsById } from "@/lib/services/logisticsservice";
+import { FirebaseLogistics } from "@/types/logistics.types";
+import { useEffect, useState } from "react";
 import Heading from "@/ui/text-heading";
 import Divider from "@/ui/divider";
 import StatusTimeline from "@/ui/status-timeline";
 import MapView from "@/ui/map";
 import Modal from "@/ui/popup-modal";
+import { usePathname } from "next/navigation";
 
 export default function LogisticsDetails() {
   const [isMapOpen, setIsMapOpen] = useState(false);
   const pathname = usePathname();
   const logisticsId = pathname.split("/").pop();
-  const selectedData = logisticsData.find((order) => order.id === logisticsId);
-  if (!selectedData) return <div>Not found</div>;
+  const [selectedData, setSelectedData] = useState<FirebaseLogistics | null>(
+    null
+  );
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadData = async () => {
+      if (!logisticsId) return;
+      try {
+        setLoading(true);
+        const data = await fetchLogisticsById(logisticsId);
+        setSelectedData(data);
+      } catch (err) {
+        console.error("Failed to load logistics details", err);
+        setError("Failed to load logistics details");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [logisticsId]);
+
+  if (loading) {
+    return <div className="p-6 text-center">Loading details...</div>;
+  }
+
+  if (error || !selectedData) {
+    return <div className="p-6 text-center text-red-500">{error || "Not found"}</div>;
+  }
+
+  // Calculate earnings
+  const platformFee = (selectedData.totalAmount * 0.1).toFixed(2);
+  const mainEarnings = (selectedData.totalAmount - parseFloat(platformFee)).toFixed(2);
+
+  // Map payment method to display format
+  const paymentTypeMap: Record<string, string> = {
+    card: "Card",
+    wallet: "Wallet",
+    cash: "Cash",
+  };
+  const paymentTypeDisplay = paymentTypeMap[selectedData.paymentMethod] || "Wallet";
+
+  // Map vehicle type to display format
+  const vehicleTypeDisplay = selectedData.deliveryType
+    ? selectedData.deliveryType.charAt(0).toUpperCase() + selectedData.deliveryType.slice(1)
+    : "Vehicle";
+
   return (
     <>
       <CardComponent>
@@ -38,7 +86,7 @@ export default function LogisticsDetails() {
               <div>
                 <h4 className="text-base">{selectedData.id}</h4>
                 <p className="text-sm text-[#7C7979]">
-                  {selectedData.sender.name}
+                  {selectedData.pickupContactName}
                 </p>
               </div>
 
@@ -69,55 +117,54 @@ export default function LogisticsDetails() {
                     <p className="text-[#6E747D]">{selectedData.id}</p>
                   </div>
                   <div
-                    className={`h-[28px] px-3 text-xs w-[90px] min-w-[80px] rounded-lg flex justify-center items-center  ${
-                      selectedData.paymentType === "Card"
-                        ? "bg-[#FB923C1A] text-[#92400E]"
-                        : selectedData.paymentType === "Cash"
+                    className={`h-[28px] px-3 text-xs w-[90px] min-w-[80px] rounded-lg flex justify-center items-center  ${paymentTypeDisplay === "Card"
+                      ? "bg-[#FB923C1A] text-[#92400E]"
+                      : paymentTypeDisplay === "Cash"
                         ? "bg-[#C9D1DA66] text-[#1F1F1F]"
                         : "bg-[#0095DA1A] text-[#0095DA]"
-                    }`}
+                      }`}
                   >
-                    {selectedData.paymentType}
+                    {paymentTypeDisplay}
                   </div>
                 </div>
                 <div>
                   <h4 className="text-[#1F1F1F]">Sender Number</h4>
                   <p className="text-[#6E747D]">
-                    {selectedData.sender.phoneNumber}
+                    {selectedData.pickupContactPhone}
                   </p>
                 </div>
                 <div>
                   <h4 className="text-[#1F1F1F]">Recipient Name</h4>
-                  <p className="text-[#6E747D]">Favour Johnson</p>
+                  <p className="text-[#6E747D]">{selectedData.deliveryContactName}</p>
                 </div>
                 <div>
                   <h4 className="text-[#1F1F1F]">Description</h4>
                   <p className="text-[#6E747D]">
-                    Legal documents for client meeting
+                    {selectedData.parcelDescription}
                   </p>
                 </div>
                 <div>
                   <h4 className="text-[#1F1F1F]">Phone Number</h4>
                   <p className="text-[#6E747D]">
-                    {selectedData.sender.phoneNumber}
+                    {selectedData.deliveryContactPhone}
                   </p>
                 </div>
                 <div>
                   <h4 className="text-[#1F1F1F]">Pickup Location</h4>
                   <p className="text-[#6E747D]">
-                    {selectedData.pickupLocation}
+                    {selectedData.pickupAddress}, {selectedData.pickupCity}, {selectedData.pickupState}
                   </p>
                 </div>
                 <div>
                   <h4 className="text-[#1F1F1F]">Assigned Rider</h4>
                   <p className="text-[#6E747D]">
-                    {selectedData.riderAssigned.name}
+                    {selectedData.riderId || "Not Assigned"}
                   </p>
                 </div>
                 <div>
                   <h4 className="text-[#1F1F1F]">Vehicle Type</h4>
                   <p className="text-[#6E747D]">
-                    {selectedData.riderAssigned.vehicle}
+                    {vehicleTypeDisplay}
                   </p>
                 </div>
               </div>
@@ -130,23 +177,10 @@ export default function LogisticsDetails() {
                   status="Success"
                   title="Order Created"
                   subtitle="Order placed by customer"
-                  date="22/12/2024"
-                  time="11:30:00"
+                  date={selectedData.createdAt ? new Date(selectedData.createdAt.seconds * 1000).toLocaleDateString() : "N/A"}
+                  time={selectedData.createdAt ? new Date(selectedData.createdAt.seconds * 1000).toLocaleTimeString() : "N/A"}
                 />
-                <StatusTimeline
-                  status="Pending"
-                  title="Picked Up"
-                  subtitle="Pending rider confirmation"
-                  date="22/12/2024"
-                  time="11:30:00"
-                />
-                <StatusTimeline
-                  status="Inactive"
-                  title="Delivered"
-                  subtitle="Order delivered to customer"
-                  date="22/12/2024"
-                  time="11:30:00"
-                />
+                {/* Add more timeline items based on status if needed */}
               </div>
             </CardComponent>
             {/* earnings breakdown */}
@@ -155,21 +189,21 @@ export default function LogisticsDetails() {
               <div className="space-y-3 text-sm text-[#7C7979]">
                 <p className="flex justify-between items-center">
                   <span>Platform Fee</span>
-                  <span>N 350</span>
+                  <span>N {platformFee}</span>
                 </p>
                 <p className="flex justify-between items-center">
                   <span>Rider Payout</span>
-                  <span>N 350</span>
+                  <span>N {mainEarnings}</span>
                 </p>
                 <Divider />
                 <p className="flex justify-between items-center">
                   <span className="text-[#1F1F1F]">Total Order Value</span>
-                  <span>N 4200</span>
+                  <span>N {selectedData.totalAmount}</span>
                 </p>
                 <Divider />
                 <p className="flex justify-between items-center">
                   <span className="text-[#1F1F1F]">Commission Status</span>
-                  <StatusTab successKeywords={["paid"]} status="paid" />
+                  <StatusTab successKeywords={["completed"]} status={selectedData.paymentStatus} />
                 </p>
               </div>
             </CardComponent>
@@ -205,8 +239,8 @@ export default function LogisticsDetails() {
           </div>
           <Heading
             sm
-            heading={selectedData.id}
-            subtitle={selectedData.sender.name}
+            heading={selectedData.id || ""}
+            subtitle={selectedData.pickupContactName}
           />
           {/* status */}
           <div className="">
