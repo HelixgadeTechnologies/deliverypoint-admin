@@ -1,6 +1,5 @@
 "use client";
 
-import { recentActivities } from "@/lib/config/demo-data/recent-activities";
 import ActivityRow from "@/ui/activity-row";
 import AreaChartComponent from "@/ui/area-chart";
 import CardComponent from "@/ui/card-wrapper";
@@ -11,7 +10,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "@/app/(app)/firebase/config";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
 
 export default function Dashboard() {
   const [user, loading] = useAuthState(auth);
@@ -21,14 +20,22 @@ export default function Dashboard() {
   const [vendorsCount, setVendorsCount] = useState(0);
   const [ridersCount, setRidersCount] = useState(0);
   const [customersCount, setCustomersCount] = useState(0);
+  const [ordersCount, setOrdersCount] = useState(0);
   const [dataLoading, setDataLoading] = useState(true);
+  const [orderTrendsData, setOrderTrendsData] = useState<Array<{ name: string; value: number }>>([]);
+  const [recentActivities, setRecentActivities] = useState<Array<{
+    message: string;
+    time: string;
+    icon: string;
+    themeColor: string;
+  }>>([]);
 
   // Check auth on client side only
   useEffect(() => {
-    const userSession = typeof window !== "undefined" 
-      ? sessionStorage.getItem('user') 
+    const userSession = typeof window !== "undefined"
+      ? sessionStorage.getItem('user')
       : null;
-    
+
     if (!loading && !user && !userSession) {
       router.push("/login");
     }
@@ -66,6 +73,211 @@ export default function Dashboard() {
     fetchCounts();
   }, []);
 
+  // Fetch orders data and calculate monthly trends
+  useEffect(() => {
+    const fetchOrdersData = async () => {
+      try {
+        // Fetch from orders collection
+        const ordersRef = collection(db, "orders");
+        const q = query(ordersRef, orderBy("createdAt", "desc"));
+        const querySnapshot = await getDocs(q);
+
+        const orders: any[] = [];
+        querySnapshot.forEach((doc) => {
+          orders.push({
+            id: doc.id,
+            ...doc.data(),
+          });
+        });
+
+        setOrdersCount(orders.length);
+
+        // Group orders by month
+        const monthlyOrders: Record<string, number> = {};
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+        // Initialize all months with 0
+        monthNames.forEach(month => {
+          monthlyOrders[month] = 0;
+        });
+
+        // Count orders per month
+        orders.forEach((order: any) => {
+          if (order.createdAt) {
+            // Handle ISO string format like "2025-11-28T17:06:48.006369"
+            let date: Date;
+
+            if (typeof order.createdAt === 'string') {
+              // Parse ISO string directly
+              date = new Date(order.createdAt);
+            } else if (order.createdAt.seconds) {
+              // Handle Firestore Timestamp format (fallback)
+              date = new Date(order.createdAt.seconds * 1000);
+            } else {
+              return; // Skip if format is unknown
+            }
+
+            // Check if date is valid
+            if (!isNaN(date.getTime())) {
+              const monthName = monthNames[date.getMonth()];
+              monthlyOrders[monthName] = (monthlyOrders[monthName] || 0) + 1;
+            }
+          }
+        });
+
+        // Convert to chart data format
+        const chartData = monthNames.map(month => ({
+          name: month,
+          value: monthlyOrders[month]
+        }));
+
+        setOrderTrendsData(chartData);
+      } catch (error) {
+        console.error("Error fetching orders data:", error);
+      }
+    };
+
+    fetchOrdersData();
+  }, []);
+
+  // Fetch recent activities
+  useEffect(() => {
+    const fetchRecentActivities = async () => {
+      try {
+        const activities: Array<{
+          message: string;
+          timestamp: Date;
+          icon: string;
+          themeColor: string;
+        }> = [];
+
+        // Helper function to calculate relative time
+        const getRelativeTime = (date: Date): string => {
+          const now = new Date();
+          const diffInMs = now.getTime() - date.getTime();
+          const diffInMinutes = Math.floor(diffInMs / 60000);
+          const diffInHours = Math.floor(diffInMs / 3600000);
+          const diffInDays = Math.floor(diffInMs / 86400000);
+
+          if (diffInMinutes < 1) return "Just now";
+          if (diffInMinutes < 60) return `${diffInMinutes} min ago`;
+          if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+          return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+        };
+
+        // Fetch latest vendors (limit to 5)
+        const vendorsRef = collection(db, "vendors");
+        const vendorsQuery = query(vendorsRef, orderBy("createdAt", "desc"), limit(5));
+        const vendorsSnapshot = await getDocs(vendorsQuery);
+
+        vendorsSnapshot.forEach((doc) => {
+          const data = doc.data();
+          let createdAt: Date;
+
+          if (typeof data.createdAt === 'string') {
+            createdAt = new Date(data.createdAt);
+          } else if (data.createdAt?.seconds) {
+            createdAt = new Date(data.createdAt.seconds * 1000);
+          } else {
+            return;
+          }
+
+          activities.push({
+            message: `New vendor '${data.businessName || data.name || 'Unknown'}' registered`,
+            timestamp: createdAt,
+            icon: "streamline-plump:store-2",
+            themeColor: "#21C788",
+          });
+        });
+
+        // Fetch latest riders (limit to 5)
+        const ridersRef = collection(db, "riders");
+        const ridersQuery = query(ridersRef, orderBy("createdAt", "desc"), limit(5));
+        const ridersSnapshot = await getDocs(ridersQuery);
+
+        ridersSnapshot.forEach((doc) => {
+          const data = doc.data();
+          let createdAt: Date;
+
+          if (typeof data.createdAt === 'string') {
+            createdAt = new Date(data.createdAt);
+          } else if (data.createdAt?.seconds) {
+            createdAt = new Date(data.createdAt.seconds * 1000);
+          } else {
+            return;
+          }
+
+          const riderName = `${data.fullName || ''}`.trim();
+          activities.push({
+            message: `Rider ${riderName} joined the platform`,
+            timestamp: createdAt,
+            icon: "heroicons:user-plus",
+            themeColor: "#0095DA",
+          });
+        });
+
+        // Fetch latest orders (limit to 5)
+        const ordersRef = collection(db, "orders");
+        const ordersQuery = query(ordersRef, orderBy("createdAt", "desc"), limit(5));
+        const ordersSnapshot = await getDocs(ordersQuery);
+
+        ordersSnapshot.forEach((doc) => {
+          const data = doc.data();
+          let createdAt: Date;
+
+          if (typeof data.createdAt === 'string') {
+            createdAt = new Date(data.createdAt);
+          } else if (data.createdAt?.seconds) {
+            createdAt = new Date(data.createdAt.seconds * 1000);
+          } else {
+            return;
+          }
+
+          const orderId = data.orderId || doc.id.substring(0, 8);
+          const status = data.status || 'pending';
+
+          let icon = "mdi-light:clock";
+          let themeColor = "#FFAC33";
+          let statusText = "is in progress";
+
+          if (status === 'completed' || status === 'delivered') {
+            icon = "cil:check-circle";
+            themeColor = "#21C788";
+            statusText = "completed successfully";
+          } else if (status === 'cancelled') {
+            icon = "mdi:close-circle-outline";
+            themeColor = "#FF4D4F";
+            statusText = "was cancelled";
+          }
+
+          activities.push({
+            message: `Order #${orderId} ${statusText}`,
+            timestamp: createdAt,
+            icon: icon,
+            themeColor: themeColor,
+          });
+        });
+
+        // Sort all activities by timestamp (most recent first)
+        activities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+        // Take top 10 activities and format with relative time
+        const formattedActivities = activities.slice(0, 10).map(activity => ({
+          message: activity.message,
+          time: getRelativeTime(activity.timestamp),
+          icon: activity.icon,
+          themeColor: activity.themeColor,
+        }));
+
+        setRecentActivities(formattedActivities);
+      } catch (error) {
+        console.error("Error fetching recent activities:", error);
+      }
+    };
+
+    fetchRecentActivities();
+  }, []);
+
   const stats = [
     {
       title: "Vendors",
@@ -90,23 +302,14 @@ export default function Dashboard() {
     },
     {
       title: "Orders",
-      amount: "0",
+      amount: dataLoading ? "..." : ordersCount.toString(),
       percent: 0,
       icon: "mdi:cart-outline",
       iconBg: "#FFAC33",
     },
   ];
 
-  const lines = [{ key: "value", label: "Month", color: "#0095DA" }];
-
-  const orderTrendsData = [
-    { name: "Jan", value: 1200 },
-    { name: "Feb", value: 1500 },
-    { name: "Mar", value: 1400 },
-    { name: "Apr", value: 1800 },
-    { name: "May", value: 1500 },
-    { name: "Jun", value: 1900 },
-  ];
+  const lines = [{ key: "value", label: "Orders", color: "#0095DA" }];
 
   const revenuePayoutData = [
     { month: "Jan", revenue: 40000, payouts: 25000 },
