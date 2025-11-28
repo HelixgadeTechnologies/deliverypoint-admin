@@ -312,13 +312,21 @@ export default function Dashboard() {
   const lines = [{ key: "value", label: "Orders", color: "#0095DA" }];
 
   const revenuePayoutData = [
-    { month: "Jan", revenue: 40000, payouts: 25000 },
-    { month: "Feb", revenue: 50000, payouts: 30000 },
-    { month: "Mar", revenue: 48000, payouts: 28000 },
-    { month: "Apr", revenue: 60000, payouts: 35000 },
-    { month: "May", revenue: 58000, payouts: 36000 },
-    { month: "Jun", revenue: 70000, payouts: 42000 },
+    { month: "Jan", revenue: 0, payouts: 0 },
+    { month: "Feb", revenue: 0, payouts: 0 },
+    { month: "Mar", revenue: 0, payouts: 0 },
+    { month: "Apr", revenue: 0, payouts: 0 },
+    { month: "May", revenue: 0, payouts: 0 },
+    { month: "Jun", revenue: 0, payouts: 0 },
   ];
+  // const revenuePayoutData = [
+  //   { month: "Jan", revenue: 40000, payouts: 25000 },
+  //   { month: "Feb", revenue: 50000, payouts: 30000 },
+  //   { month: "Mar", revenue: 48000, payouts: 28000 },
+  //   { month: "Apr", revenue: 60000, payouts: 35000 },
+  //   { month: "May", revenue: 58000, payouts: 36000 },
+  //   { month: "Jun", revenue: 70000, payouts: 42000 },
+  // ];
 
   return (
     <section className="space-y-6">
