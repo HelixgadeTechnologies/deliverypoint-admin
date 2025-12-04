@@ -10,7 +10,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "@/app/(app)/firebase/config";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
+import { collection, getDocs, query, orderBy, limit, where } from "firebase/firestore";
 
 export default function Dashboard() {
   const [user, loading] = useAuthState(auth);
@@ -23,6 +23,8 @@ export default function Dashboard() {
   const [ordersCount, setOrdersCount] = useState(0);
   const [dataLoading, setDataLoading] = useState(true);
   const [orderTrendsData, setOrderTrendsData] = useState<Array<{ name: string; value: number }>>([]);
+  const [revenuePayoutData, setRevenuePayoutData] = useState<Array<{ month: string; revenue: number; payouts: number }>>([]);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [recentActivities, setRecentActivities] = useState<Array<{
     message: string;
     time: string;
@@ -139,6 +141,93 @@ export default function Dashboard() {
 
     fetchOrdersData();
   }, []);
+
+  // Fetch revenue and payout data
+  useEffect(() => {
+    const fetchRevenuePayoutData = async () => {
+      try {
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+        // Initialize monthly data
+        const monthlyRevenue: Record<string, number> = {};
+        const monthlyPayouts: Record<string, number> = {};
+
+        monthNames.forEach(month => {
+          monthlyRevenue[month] = 0;
+          monthlyPayouts[month] = 0;
+        });
+
+        // Fetch orders and calculate revenue from adminFee
+        const ordersRef = collection(db, "orders");
+        const q = query(
+          ordersRef,
+          where("deliveryStatus", "==", "delivered")
+        );
+        const ordersSnapshot = await getDocs(q);
+
+        ordersSnapshot.forEach((doc) => {
+          const data = doc.data();
+          if (data.createdAt && data.adminFee) {
+            let date: Date;
+
+            if (typeof data.createdAt === 'string') {
+              date = new Date(data.createdAt);
+            } else if (data.createdAt.seconds) {
+              date = new Date(data.createdAt.seconds * 1000);
+            } else {
+              return;
+            }
+
+            if (!isNaN(date.getTime()) && date.getFullYear() === selectedYear) {
+              const monthName = monthNames[date.getMonth()];
+              monthlyRevenue[monthName] += Number(data.adminFee) || 0;
+            }
+          }
+        });
+
+        // Fetch withdrawal requests and calculate payouts from withdrawalAmount
+        const withdrawalsRef = collection(db, "withdrawalRequest");
+        const q2 = query(
+          withdrawalsRef,
+          where("status", "==", "Approved")
+        );
+        const withdrawalsSnapshot = await getDocs(q2);
+
+        withdrawalsSnapshot.forEach((doc) => {
+          const data = doc.data();
+          if (data.createdAt && data.withdrawalAmount) {
+            let date: Date;
+
+            if (typeof data.createdAt === 'string') {
+              date = new Date(data.createdAt);
+            } else if (data.createdAt.seconds) {
+              date = new Date(data.createdAt.seconds * 1000);
+            } else {
+              return;
+            }
+
+            if (!isNaN(date.getTime()) && date.getFullYear() === selectedYear) {
+              const monthName = monthNames[date.getMonth()];
+              monthlyPayouts[monthName] += Number(data.withdrawalAmount) || 0;
+            }
+          }
+        });
+
+        // Convert to chart data format
+        const chartData = monthNames.map(month => ({
+          month: month,
+          revenue: Math.round(monthlyRevenue[month]),
+          payouts: Math.round(monthlyPayouts[month])
+        }));
+
+        setRevenuePayoutData(chartData);
+      } catch (error) {
+        console.error("Error fetching revenue/payout data:", error);
+      }
+    };
+
+    fetchRevenuePayoutData();
+  }, [selectedYear]);
 
   // Fetch recent activities
   useEffect(() => {
@@ -311,23 +400,6 @@ export default function Dashboard() {
 
   const lines = [{ key: "value", label: "Orders", color: "#0095DA" }];
 
-  const revenuePayoutData = [
-    { month: "Jan", revenue: 0, payouts: 0 },
-    { month: "Feb", revenue: 0, payouts: 0 },
-    { month: "Mar", revenue: 0, payouts: 0 },
-    { month: "Apr", revenue: 0, payouts: 0 },
-    { month: "May", revenue: 0, payouts: 0 },
-    { month: "Jun", revenue: 0, payouts: 0 },
-  ];
-  // const revenuePayoutData = [
-  //   { month: "Jan", revenue: 40000, payouts: 25000 },
-  //   { month: "Feb", revenue: 50000, payouts: 30000 },
-  //   { month: "Mar", revenue: 48000, payouts: 28000 },
-  //   { month: "Apr", revenue: 60000, payouts: 35000 },
-  //   { month: "May", revenue: 58000, payouts: 36000 },
-  //   { month: "Jun", revenue: 70000, payouts: 42000 },
-  // ];
-
   return (
     <section className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -337,13 +409,26 @@ export default function Dashboard() {
         <div className="flex flex-col md:flex-row justify-between items-start gap-6">
           <div className="w-full md:w-[65%]">
             <CardComponent>
-              <Heading
-                heading="Revenue vs Payouts"
-                subtitle="Monthly comparison of revenue and payouts"
-                icon="cil:dollar"
-                iconColor="#0095DA"
-                sm
-              />
+              <div className="flex justify-between items-start mb-4">
+                <Heading
+                  heading="Revenue vs Payouts"
+                  subtitle="Monthly comparison of revenue and payouts"
+                  icon="cil:dollar"
+                  iconColor="#0095DA"
+                  sm
+                />
+                <select
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(Number(e.target.value))}
+                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {[2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030, 2031, 2032, 2033, 2034, 2035].map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <div className="h-80">
                 <AreaChartComponent
                   data={revenuePayoutData}

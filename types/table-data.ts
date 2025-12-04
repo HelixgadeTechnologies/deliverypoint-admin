@@ -11,7 +11,11 @@ export type Status =
   | "completed"
   | "cancelled"
   | "declined"
-  | "rejected" | "paid";
+  | "rejected"
+  | "paid"
+  | "Pending"
+  | "Approved"
+  | "Declined";
 export type Status2 = "paid" | "pending" | "failed";
 
 export type Ticket = {

@@ -13,7 +13,7 @@ import ViewDetails from "@/ui/table-action";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import { collection, onSnapshot } from "firebase/firestore";
+import { onSnapshot, collection, query, where, getCountFromServer } from "firebase/firestore";
 import { db } from "@/app/(app)/firebase/config";
 import { toast, Toaster } from "react-hot-toast";
 import { Status } from "@/types/table-data";
@@ -44,7 +44,7 @@ export default function Riders() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [riderStatusFilter, setRiderStatusFilter] = useState("");
-  const [deliveryStatusFilter, setDeliveryStatusFilter] = useState("");
+  const [accountStatusFilter, setAccountStatusFilter] = useState("");
   // const { role } = useRoleStore();
 
   // Fetch riders data from Firestore
@@ -52,57 +52,77 @@ export default function Riders() {
     const fetchRiders = async () => {
       try {
         const ridersRef = collection(db, "riders");
-        
+        const ordersRef = collection(db, "orders");
+
         // Real-time listener for riders updates
-        const unsubscribe = onSnapshot(ridersRef, (querySnapshot) => {
-          const ridersData: RiderDetails[] = [];
-          querySnapshot.forEach((doc) => {
-            const data = doc.data();
-            ridersData.push({
-              id: doc.id,
-              uid: data.uid || doc.id,
-              fullName: data.fullName || "Unknown Rider",
-              email: data.email || "No email",
-              phoneNumber: data.phoneNumber || "No phone",
-              city: data.city || "Unknown",
-              state: data.state || "Unknown",
-              accountStatus: data.accountStatus || "Pending",
-              isOnline: data.isOnline || false,
-              profileCompleted: data.profileCompleted || false,
-              profilePhotoUrl: data.profilePhotoUrl || "/placeholder.webp",
-              createdAt: data.createdAt,
-              updatedAt: data.updatedAt,
-              userType: data.userType || "rider",
-              currentLocation: data.currentLocation,
-              deliveryStats: {
-                cancelled: data.deliveryStats?.cancelled || 0,
-                completed: data.deliveryStats?.completed || 0,
-                total: data.deliveryStats?.total || 0,
-                ongoing: data.deliveryStats?.ongoing || 0,
-              },
-              earnings: {
-                thisMonth: data.earnings?.thisMonth || 0,
-                thisWeek: data.earnings?.thisWeek || 0,
-                today: data.earnings?.today || 0,
-                total: data.earnings?.total || 0,
-              },
-              documents: {
-                driversLicense: data.documents?.driversLicense || "",
-                governmentId: data.documents?.governmentId || "",
-              },
-              vehicleInfo: {
-                type: data.vehicleInfo?.type || "Not specified",
-                color: data.vehicleInfo?.color || "",
-                plateNumber: data.vehicleInfo?.plateNumber || "",
-              },
-              ratings: {
-                average: data.ratings?.average || 0,
-                totalReviews: data.ratings?.totalReviews || 0,
-              }
-            } as RiderDetails);
-          });
-          setRiders(ridersData);
-          setLoading(false);
+        const unsubscribe = onSnapshot(ridersRef, async (querySnapshot) => {
+          try {
+            // Use Promise.all to wait for all async operations
+            const ridersData = await Promise.all(
+              querySnapshot.docs.map(async (doc) => {
+                const data = doc.data();
+
+                // Fetch completed deliveries count for this rider
+                const completedQuery = query(
+                  ordersRef,
+                  where("assignedRiderId", "==", doc.id),
+                  where("riderOrderStatus", "==", "completed")
+                );
+                const completedSnapshot = await getCountFromServer(completedQuery);
+                const completedCount = completedSnapshot.data().count;
+
+                return {
+                  id: doc.id,
+                  uid: data.uid || doc.id,
+                  fullName: data.fullName || "Unknown Rider",
+                  email: data.email || "No email",
+                  phoneNumber: data.phoneNumber || "No phone",
+                  city: data.city || "Unknown",
+                  state: data.state || "Unknown",
+                  accountStatus: data.accountStatus || "pending",
+                  isOnline: data.isOnline || false,
+                  profileCompleted: data.profileCompleted || false,
+                  profilePhotoUrl: data.profilePhotoUrl || "/placeholder.webp",
+                  createdAt: data.createdAt,
+                  updatedAt: data.updatedAt,
+                  userType: data.userType || "rider",
+                  currentLocation: data.currentLocation,
+                  deliveryStats: {
+                    cancelled: data.deliveryStats?.cancelled || 0,
+                    completed: completedCount,
+                    total: data.deliveryStats?.total || 0,
+                    ongoing: data.deliveryStats?.ongoing || 0,
+                  },
+                  earnings: {
+                    thisMonth: data.earnings?.thisMonth || 0,
+                    thisWeek: data.earnings?.thisWeek || 0,
+                    today: data.earnings?.today || 0,
+                    total: data.earnings?.total || 0,
+                  },
+                  documents: {
+                    driversLicense: data.documents?.driversLicense || "",
+                    governmentId: data.documents?.governmentId || "",
+                  },
+                  vehicleInfo: {
+                    type: data.vehicleInfo?.type || "Not specified",
+                    color: data.vehicleInfo?.color || "",
+                    plateNumber: data.vehicleInfo?.plateNumber || "",
+                  },
+                  ratings: {
+                    average: data.ratings?.average || 0,
+                    totalReviews: data.ratings?.totalReviews || 0,
+                  }
+                } as RiderDetails;
+              })
+            );
+
+            setRiders(ridersData);
+            setLoading(false);
+          } catch (error) {
+            console.error("Error processing riders data:", error);
+            toast.error("Failed to process riders data");
+            setLoading(false);
+          }
         });
 
         return unsubscribe;
@@ -117,24 +137,24 @@ export default function Riders() {
   }, []);
 
   // Calculate stats dynamically
-const dynamicRiderStats = [
-  {
-    ...riderStats[0],
-    amount: riders.length.toString(),
-  },
-  {
-    ...riderStats[1],
-    amount: riders.filter((r) => r.accountStatus === "active").length.toString(),
-  },
-  {
-    ...riderStats[2],
-    amount: riders.filter((r) => r.accountStatus === "pending").length.toString(),
-  },
-  {
-    ...riderStats[3],
-    amount: riders.filter((r) => r.isOnline === false).length.toString(),
-  },
-];
+  const dynamicRiderStats = [
+    {
+      ...riderStats[0],
+      amount: riders.length.toString(),
+    },
+    {
+      ...riderStats[1],
+      amount: riders.filter((r) => r.accountStatus === "active").length.toString(),
+    },
+    {
+      ...riderStats[2],
+      amount: riders.filter((r) => r.accountStatus === "pending").length.toString(),
+    },
+    {
+      ...riderStats[3],
+      amount: riders.filter((r) => r.isOnline === false).length.toString(),
+    },
+  ];
 
   // Transform Firestore data to table format
   const transformRidersToTableData = (riders: RiderDetails[]): RiderTableRow[] => {
@@ -178,22 +198,23 @@ const dynamicRiderStats = [
 
   // Filter riders based on search and filters
   const filteredRiders = riders.filter(rider => {
-    const matchesSearch = 
+    const matchesSearch =
       rider.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       rider.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       rider.phoneNumber?.includes(searchTerm) ||
-      rider.vehicleInfo.type?.toLowerCase().includes(searchTerm.toLowerCase());
+      rider.vehicleInfo.type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      rider.accountStatus?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesRiderStatus = 
-      !riderStatusFilter || 
+    const matchesRiderStatus =
+      !riderStatusFilter ||
       (riderStatusFilter === "Online" && rider.isOnline) ||
       (riderStatusFilter === "Offline" && !rider.isOnline);
 
-    const matchesDeliveryStatus =
-      !deliveryStatusFilter ||
-      mapAccountStatusToDeliveryStatus(rider.accountStatus) === deliveryStatusFilter;
+    const matchesAccountStatus =
+      !accountStatusFilter ||
+      rider.accountStatus?.toLowerCase() === accountStatusFilter.toLowerCase();
 
-    return matchesSearch && matchesRiderStatus && matchesDeliveryStatus;
+    return matchesSearch && matchesRiderStatus && matchesAccountStatus;
   });
 
   const tableData = transformRidersToTableData(filteredRiders);
@@ -235,11 +256,10 @@ const dynamicRiderStats = [
             </td>
             <td className="px-6">
               <div
-                className={`h-[28px] w-[84px] rounded-lg text-xs flex justify-center items-center ${
-                  row.riderStatus === "Online"
-                    ? "bg-[#0095DA15] text-[#0095DA]"
-                    : "bg-[#C9D1DA66] text-[#1F1F1F]"
-                }`}
+                className={`h-[28px] w-[84px] rounded-lg text-xs flex justify-center items-center ${row.riderStatus === "Online"
+                  ? "bg-[#0095DA15] text-[#0095DA]"
+                  : "bg-[#C9D1DA66] text-[#1F1F1F]"
+                  }`}
               >
                 {row.riderStatus}
               </div>
@@ -273,7 +293,7 @@ const dynamicRiderStats = [
           <SearchInput
             name="search"
             value={searchTerm}
-            placeholder="Search rider by name, email, phone, or vehicle..."
+            placeholder="Search rider by name, email, phone, vehicle, or status..."
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
@@ -290,16 +310,16 @@ const dynamicRiderStats = [
             onChange={(value) => setRiderStatusFilter(value)}
           />
           <DropDown
-            name="deliveryStatus"
-            value={deliveryStatusFilter}
+            name="accountStatus"
+            value={accountStatusFilter}
             placeholder="Account Status"
             options={[
               { value: "", label: "All Status" },
-              { value: "Active", label: "Active" },
-              { value: "Inactive", label: "Inactive" },
-              { value: "Suspended", label: "Suspended" },
+              { value: "pending", label: "Pending" },
+              { value: "active", label: "Active" },
+              { value: "suspended", label: "Suspended" },
             ]}
-            onChange={(value) => setDeliveryStatusFilter(value)}
+            onChange={(value) => setAccountStatusFilter(value)}
           />
         </div>
       </Table>
