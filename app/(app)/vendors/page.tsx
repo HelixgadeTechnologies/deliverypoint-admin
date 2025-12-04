@@ -10,7 +10,7 @@ import { Icon } from "@iconify/react";
 import { useState, useEffect } from "react";
 import ViewDetails from "@/ui/table-action";
 // import { useRoleStore } from "@/store/role-store";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/app/(app)/firebase/config";
 import { toast, Toaster } from "react-hot-toast";
 import { Status } from "@/types/table-data";
@@ -49,24 +49,33 @@ export default function Vendors() {
         const vendorsSnapshot = await getDocs(vendorsRef);
         console.log(vendorsRef)
 
-        const vendorsData: Vendor[] = vendorsSnapshot.docs.map(doc => {
-          const data = doc.data();
-          return {
-            id: doc.id,
-            vendor: {
-              vendorName: data.businessName || data.vendorName || "Unknown Vendor",
-              vendorBusiness: data.businessDescription || data.businessCategory || "Business",
-              image: data.logoUrl || "/placeholder.svg",
-            },
-            contact: {
-              email: data.email || "No email",
-              phone: data.phoneNumber || "No phone",
-            },
-            status: data.status || "active",
-            totalOrders: data.totalOrders || 0,
-            createdAt: data.createdAt,
-          };
-        });
+        const vendorsData: Vendor[] = await Promise.all(
+          vendorsSnapshot.docs.map(async (doc) => {
+            const data = doc.data();
+
+            // Query orders collection to get the actual count for this vendor
+            const ordersRef = collection(db, "orders");
+            const ordersQuery = query(ordersRef, where("vendorId", "==", doc.id));
+            const ordersSnapshot = await getDocs(ordersQuery);
+            const orderCount = ordersSnapshot.size;
+
+            return {
+              id: doc.id,
+              vendor: {
+                vendorName: data.businessName || data.vendorName || "Unknown Vendor",
+                vendorBusiness: data.businessDescription || data.businessCategory || "Business",
+                image: data.logoUrl || "/placeholder.svg",
+              },
+              contact: {
+                email: data.email || "No email",
+                phone: data.phoneNumber || "No phone",
+              },
+              status: data.status || "active",
+              totalOrders: orderCount,
+              createdAt: data.createdAt,
+            };
+          })
+        );
 
         setVendors(vendorsData);
       } catch (error) {
@@ -132,9 +141,9 @@ export default function Vendors() {
   // Status options for dropdown
   const statusOptions = [
     { value: "", label: "All Status" },
-    { value: "Active", label: "Active" },
-    { value: "Pending", label: "Pending" },
-    { value: "Suspended", label: "Suspended" },
+    { value: "active", label: "Active" },
+    { value: "pending", label: "Pending" },
+    { value: "suspended", label: "Suspended" },
   ];
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -186,7 +195,7 @@ export default function Vendors() {
               <StatusTab status={row.status} />
             </td>
             <td className="px-6 text-center">{row.totalOrders}</td>
-            {timeAgo(row.createdAt || "")}
+            <td className="px-6">{timeAgo(row.createdAt || "")}</td>
             <td className="px-6 relative">
               <div className="flex justify-center items-center">
                 <Icon

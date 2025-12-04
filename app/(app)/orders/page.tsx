@@ -22,6 +22,8 @@ export default function Orders() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState(orderStats);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -41,19 +43,14 @@ export default function Orders() {
           const createdAtIso = d.createdAt ? new Date(d.createdAt).toISOString() : "";
 
           // Infer vendor name from items if not present at top level
-          let vendorName = d.vendorId === "multiple" ? "Multiple Vendors" : "";
-          if (!vendorName && d.items) {
-            const firstItem = Object.values(d.items)[0];
-            if (firstItem) {
-              vendorName = firstItem.vendor;
-            }
-          }
+          let totalItems = Object.keys(d.items).length;
+          let vendorName = totalItems > 1 ? "Multiple Vendors" : d.vendorName || "";
 
           // Statistics Calculation
           totalOrders++;
           const status = d.status?.toLowerCase() || "pending";
-          const isDelivered = d.isDelivered;
-          const isCanceled = d.isCanceled;
+          const isDelivered = d.deliveryStatus === "delivered";
+          const isCanceled = d.status === "cancelled";
 
           if (isCanceled || status === "cancelled" || status === "declined") {
             declinedCancelled++;
@@ -72,7 +69,8 @@ export default function Orders() {
             },
             pickupLocation: "", // Not in data
             dropOffLocation: d.deliveryAddress || "",
-            riderName: d.riderId || "searching",
+            vendorAddress: d.vendorAddress || "",
+            riderName: d.riderName || "searching",
             vendorName: vendorName || "Unknown",
             status: d.status || "pending",
             earnings: {
@@ -129,6 +127,32 @@ export default function Orders() {
     fetchOrders();
   }, []);
 
+  // Filter orders based on search and status
+  const filteredOrders = orders.filter((order) => {
+    const matchesSearch =
+      searchTerm === "" ||
+      order.orderId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.vendorName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.riderName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.customerDetails?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.status?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus =
+      statusFilter === "" ||
+      order.status?.toLowerCase() === statusFilter.toLowerCase();
+
+    return matchesSearch && matchesStatus;
+  });
+
+  // Status options for dropdown
+  const statusOptions = [
+    { value: "", label: "All Status" },
+    { value: "pending", label: "Pending" },
+    { value: "accepted", label: "Accepted" },
+    { value: "completed", label: "Completed" },
+    { value: "cancelled", label: "Cancelled" },
+  ];
+
   if (loading) {
     return (
       <section className="space-y-6">
@@ -147,7 +171,7 @@ export default function Orders() {
         heading="Order Management"
         subtitle="Manage and monitor orders"
         tableHead={orderTableHead}
-        tableData={orders}
+        tableData={filteredOrders}
         renderRow={(row) => (
           <>
             <td className="px-6">{row.orderId}</td>
@@ -159,7 +183,7 @@ export default function Orders() {
                 {row.customerDetails.phoneNumber}
               </p>
             </td>
-            <td className="px-6">{row.pickupLocation}</td>
+            <td className="px-6">{row.vendorAddress}</td>
             <td className="px-6">{row.dropOffLocation}</td>
             <td className="px-6">{row.riderName}</td>
             <td className="px-6">{row.vendorName}</td>
@@ -197,18 +221,18 @@ export default function Orders() {
         <div className="w-full md:w-[90%]">
           <SearchInput
             name="search"
-            value=""
-            placeholder="Search rider..."
-            onChange={() => { }}
+            value={searchTerm}
+            placeholder="Search orders..."
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         <div className="w-full md:w-[10%] flex items-center gap-2">
           <DropDown
             name="status"
-            value=""
+            value={statusFilter}
             placeholder="Status"
-            options={[]}
-            onChange={() => { }}
+            options={statusOptions}
+            onChange={(value) => setStatusFilter(value)}
           />
         </div>
       </Table>

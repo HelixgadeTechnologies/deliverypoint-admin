@@ -1,0 +1,75 @@
+// State for vendor orders and statistics
+const [vendorOrders, setVendorOrders] = useState<any[]>([]);
+const [orderStats, setOrderStats] = useState({
+  totalOrders: 0,
+  pendingOrders: 0,
+  cancelledOrders: 0,
+});
+
+// Fetch vendor's orders from Firestore
+useEffect(() => {
+  const fetchVendorOrders = async () => {
+    if (!vendorId) return;
+
+    try {
+      const ordersRef = collection(db, "orders");
+      const ordersQuery = query(
+        ordersRef,
+        where("vendorId", "==", vendorId),
+        orderBy("createdAt", "desc"),
+        limit(3)
+      );
+      const ordersSnapshot = await getDocs(ordersQuery);
+
+      // Get all orders for statistics (without limit)
+      const allOrdersQuery = query(ordersRef, where("vendorId", "==", vendorId));
+      const allOrdersSnapshot = await getDocs(allOrdersQuery);
+
+      // Calculate statistics
+      let totalOrders = 0;
+      let pendingOrders = 0;
+      let cancelledOrders = 0;
+
+      allOrdersSnapshot.docs.forEach((doc) => {
+        const orderData = doc.data();
+        totalOrders++;
+        
+        const status = orderData.status?.toLowerCase() || "";
+        const isCanceled = orderData.isCanceled;
+
+        if (isCanceled || status === "cancelled" || status === "declined") {
+          cancelledOrders++;
+        } else if (status === "pending" || status === "in progress") {
+          pendingOrders++;
+        }
+      });
+
+      setOrderStats({
+        totalOrders,
+        pendingOrders,
+        cancelledOrders,
+      });
+
+      // Transform top 3 orders for display
+      const ordersData = ordersSnapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: data.orderId || doc.id,
+          date: data.createdAt ? new Date(data.createdAt).toLocaleDateString() : "N/A",
+          status: data.status || "pending",
+          total: data.totalAmount || 0,
+          // Store full data for modal
+          fullData: data,
+        };
+      });
+
+      setVendorOrders(ordersData);
+    } catch (error) {
+      console.error("Error fetching vendor orders:", error);
+    }
+  };
+
+  if (vendorId) {
+    fetchVendorOrders();
+  }
+}, [vendorId]);

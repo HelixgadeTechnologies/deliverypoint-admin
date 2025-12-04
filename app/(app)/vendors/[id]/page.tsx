@@ -1,9 +1,9 @@
 "use client";
-import {
-  vendorOderHistory,
-  orderSummary,
-  paymentSummary,
-} from "@/lib/config/demo-data/vendors";
+// import {
+//   vendorOderHistory,
+//   orderSummary,
+//   paymentSummary,
+// } from "@/lib/config/demo-data/vendors";
 import { usePathname, useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
 import { JSX, useState, useEffect } from "react";
@@ -22,7 +22,7 @@ import OrderDetailsModal from "@/components/vendors/vendor-order-details-modal";
 import { VendorData, VendorOrderDetails } from "@/types/vendors";
 import Divider from "@/ui/divider";
 // import { useRoleStore } from "@/store/role-store";
-import { doc, getDoc, collection, getDocs, updateDoc } from "firebase/firestore";
+import { doc, getDoc, collection, getDocs, updateDoc, query, where, orderBy, limit } from "firebase/firestore";
 import { db } from "@/app/(app)/firebase/config";
 import { toast, Toaster } from "react-hot-toast";
 import Loading from "@/app/loading";
@@ -42,6 +42,12 @@ export default function VendorDetails() {
   const [selectedVendor, setSelectedVendor] = useState<VendorData | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [vendorOrders, setVendorOrders] = useState<any[]>([]);
+  const [orderStats, setOrderStats] = useState({
+    totalOrders: 0,
+    pendingOrders: 0,
+    cancelledOrders: 0,
+  });
 
   const vendorId = pathname.split("/").pop();
 
@@ -92,6 +98,14 @@ export default function VendorDetails() {
           };
 
           setSelectedVendor(transformedVendor);
+
+          // Set financial stats from vendor data
+          const earnings = Number(vendorData.totalEarnings) || 0;
+          const commission = earnings * 0.1; // 10% commission
+          setFinancialStats({
+            totalEarnings: earnings,
+            commissionTaken: commission,
+          });
         } else {
           toast.error("Vendor not found");
         }
@@ -132,72 +146,152 @@ export default function VendorDetails() {
     }
   }, [vendorId]);
 
-  // Function to update vendor status
-    const updateVendorStatus = async (newStatus: Status, suspensionReason?: string) => {
-      if (!selectedVendor || !vendorId) return;
-  
-      setActionLoading(true);
+  const [financialStats, setFinancialStats] = useState({
+    totalEarnings: 0,
+    commissionTaken: 0,
+  });
+
+  const formatCurrency = (amount: number) => {
+    return amount.toLocaleString('en-NG', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  };
+
+  // Fetch vendor's orders from Firestore
+  useEffect(() => {
+    const fetchVendorOrders = async () => {
+      if (!vendorId) return;
+
       try {
-        const vendorRef = doc(db, "vendors", vendorId);
-  
-        const updateData: any = {
-          status: newStatus,
-          updatedAt: new Date(),
-        };
-  
-        if (suspensionReason) {
-          updateData.suspensionReason = suspensionReason;
-        }
-  
-        await updateDoc(vendorRef, updateData);
-  
-        // Update local state
-        setSelectedVendor((prev) =>
-          prev
-            ? ({
-                ...prev,
-                status: newStatus,
-                ...(suspensionReason ? { suspensionReason } : {}),
-              } as VendorData)
-            : null
+        const ordersRef = collection(db, "orders");
+        const ordersQuery = query(
+          ordersRef,
+          where("vendorId", "==", vendorId),
+          orderBy("createdAt", "desc"),
+          limit(3)
         );
-  
-        toast.success(`Vendor ${getStatusActionMessage(newStatus)} successfully!`);
-  
-        // Close modal
-        if (newStatus === "active") {
-          setVendorActivatedModal(false);
-        } else if (newStatus === "suspended") {
-          setVendorDeactivatedModal(false);
-        } else if (newStatus === "approved") {
-          setVendorApprovedModal(false);
-        }
-  
-        // Refresh the page after a short delay
-        setTimeout(() => {
-          router.refresh();
-        }, 1000);
+        const ordersSnapshot = await getDocs(ordersQuery);
+
+        // Get all orders for statistics (without limit)
+        const allOrdersQuery = query(ordersRef, where("vendorId", "==", vendorId));
+        const allOrdersSnapshot = await getDocs(allOrdersQuery);
+
+        // Calculate statistics
+        let totalOrders = 0;
+        let pendingOrders = 0;
+        let cancelledOrders = 0;
+
+        allOrdersSnapshot.docs.forEach((doc) => {
+          const orderData = doc.data();
+          totalOrders++;
+
+          const status = orderData.status?.toLowerCase() || "";
+          const isCanceled = orderData.isCanceled;
+
+          if (isCanceled || status === "cancelled" || status === "declined") {
+            cancelledOrders++;
+          } else if (status === "pending" || status === "in progress") {
+            pendingOrders++;
+          }
+        });
+
+        setOrderStats({
+          totalOrders,
+          pendingOrders,
+          cancelledOrders,
+        });
+
+        // Transform top 3 orders for display
+        const ordersData = ordersSnapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: data.orderId || doc.id,
+            date: data.createdAt ? new Date(data.createdAt).toLocaleDateString() : "N/A",
+            status: data.status || "pending",
+            total: data.totalAmount || 0,
+            fullData: data,
+          };
+        });
+
+        setVendorOrders(ordersData);
       } catch (error) {
-        console.error("Error updating vendor status:", error);
-        toast.error("Failed to update vendor status");
-      } finally {
-        setActionLoading(false);
+        console.error("Error fetching vendor orders:", error);
       }
     };
-  
-    // Helper function for status messages
-    const getStatusActionMessage = (status: Status) => {
-      switch (status) {
-        case "active":
-          return "activated";
-        case "suspended":
-          return "suspended";
-        case "approved":
-          return "approved";
-        default:
-          return "updated";
+
+    if (vendorId) {
+      fetchVendorOrders();
+    }
+  }, [vendorId]);
+
+
+  // Function to update vendor status
+  const updateVendorStatus = async (newStatus: Status, suspensionReason?: string) => {
+    if (!selectedVendor || !vendorId) return;
+
+    setActionLoading(true);
+    try {
+      const vendorRef = doc(db, "vendors", vendorId);
+
+      const updateData: any = {
+        status: newStatus,
+        updatedAt: new Date(),
+      };
+
+      if (suspensionReason) {
+        updateData.suspensionReason = suspensionReason;
       }
-    };
+
+      await updateDoc(vendorRef, updateData);
+
+      // Update local state
+      setSelectedVendor((prev) =>
+        prev
+          ? ({
+            ...prev,
+            status: newStatus,
+            ...(suspensionReason ? { suspensionReason } : {}),
+          } as VendorData)
+          : null
+      );
+
+      toast.success(`Vendor ${getStatusActionMessage(newStatus)} successfully!`);
+
+      // Close modal
+      if (newStatus === "active") {
+        setVendorActivatedModal(false);
+      } else if (newStatus === "suspended") {
+        setVendorDeactivatedModal(false);
+      } else if (newStatus === "approved") {
+        setVendorApprovedModal(false);
+      }
+
+      // Refresh the page after a short delay
+      setTimeout(() => {
+        router.refresh();
+      }, 1000);
+    } catch (error) {
+      console.error("Error updating vendor status:", error);
+      toast.error("Failed to update vendor status");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Helper function for status messages
+  const getStatusActionMessage = (status: Status) => {
+    switch (status) {
+      case "active":
+        return "activated";
+      case "suspended":
+        return "suspended";
+      case "approved":
+        return "approved";
+      default:
+        return "updated";
+    }
+  };
 
   // Action handlers
   const handleApproveVendor = async () => {
@@ -308,7 +402,7 @@ export default function VendorDetails() {
                 </div>
               </div>
 
-              
+
               <div className="">
                 <StatusTab status={selectedVendor.status} />
               </div>
@@ -406,43 +500,56 @@ export default function VendorDetails() {
               <div className="space-y-4">
                 {/* icons and text */}
                 <div className="space-y-4 text-sm">
-                  {orderSummary.map((summary, index) => (
-                    <SummaryRow
-                      key={index}
-                      name={summary.name}
-                      amount={summary.amount}
-                      icon={summary.icon}
-                      color={summary.color}
-                    />
-                  ))}
+                  <SummaryRow
+                    name="Total Orders"
+                    amount={orderStats.totalOrders.toString()}
+                    icon="solar:wallet-outline"
+                    color="#0095DA"
+                  />
+                  <SummaryRow
+                    name="Pending Orders"
+                    amount={orderStats.pendingOrders.toString()}
+                    icon="tdesign:time"
+                    color="#FFAC33"
+                  />
+                  <SummaryRow
+                    name="Cancelled Orders"
+                    amount={orderStats.cancelledOrders.toString()}
+                    icon="gg:close-o"
+                    color="#FF4D4F"
+                  />
                 </div>
                 <Divider />
                 <div className="space-y-4 scrollable">
-                  {vendorOderHistory.map((order) => (
-                    <div
-                      key={order.id}
-                      className="h-[85px] w-full bg-white p-4 shadow rounded flex justify-between items-center">
-                      <div className="text-sm">
-                        <h4 className="text-[#1F1F1F]">{order.id}</h4>
-                        <p className="text-[#6E747D]">{order.date}</p>
+                  {vendorOrders.length > 0 ? (
+                    vendorOrders.map((order) => (
+                      <div
+                        key={order.id}
+                        className="h-[85px] w-full bg-white p-4 shadow rounded flex justify-between items-center">
+                        <div className="text-sm">
+                          <h4 className="text-[#1F1F1F]">{order.id}</h4>
+                          <p className="text-[#6E747D]">{order.date}</p>
+                        </div>
+                        <div className="space-y-1">
+                          <button
+                            onClick={() => setSelectedOrder(order)}
+                            className={`w-20 h-7 rounded-lg text-white flex justify-center items-center text-xs cursor-pointer ${order.status === "completed"
+                              ? "bg-[#21C788]"
+                              : order.status === "cancelled" || order.status === "declined"
+                                ? "bg-[#FF4D4F]"
+                                : "bg-[#FFAC33]"
+                              }`}>
+                            {order.status}
+                          </button>
+                          <p className="text-sm text-[#6E747D]">
+                            ₦ {formatCurrency(order.total)}
+                          </p>
+                        </div>
                       </div>
-                      <div className="space-y-1">
-                        <button
-                          onClick={() => setSelectedOrder(order)}
-                          className={`w-20 h-7 rounded-lg text-white flex justify-center items-center text-xs cursor-pointer ${order.status === "completed"
-                            ? "bg-[#21C788]"
-                            : order.status === "cancelled"
-                              ? "bg-[#FF4D4F]"
-                              : "bg-[#FFAC33]"
-                            }`}>
-                          {order.status}
-                        </button>
-                        <p className="text-sm text-[#6E747D]">
-                          ₦ {order.total}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  ) : (
+                    <p className="text-center text-gray-500 py-4">No orders found for this vendor.</p>
+                  )}
                 </div>
               </div>
             </CardComponent>
@@ -451,15 +558,18 @@ export default function VendorDetails() {
             <CardComponent height="100%">
               <Heading xs heading="Payment Summary" />
               <div className="space-y-4 text-sm">
-                {paymentSummary.map((summary, index) => (
-                  <SummaryRow
-                    key={index}
-                    name={summary.name}
-                    amount={summary.amount}
-                    icon={summary.icon}
-                    color={summary.color}
-                  />
-                ))}
+                <SummaryRow
+                  name="Total Earnings"
+                  amount={`₦ ${formatCurrency(financialStats.totalEarnings)}`}
+                  icon="solar:dollar-minimalistic-linear"
+                  color="#21C788"
+                />
+                <SummaryRow
+                  name="Commission Taken"
+                  amount={`₦ ${formatCurrency(financialStats.commissionTaken)}`}
+                  icon="solar:graph-up-linear"
+                  color="#0095DA"
+                />
               </div>
               <div className="mt-4 text-sm">
                 <h4 className="text-[#1F1F1F]">Last Withdrawal</h4>

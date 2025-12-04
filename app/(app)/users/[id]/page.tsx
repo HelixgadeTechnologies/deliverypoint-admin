@@ -8,14 +8,13 @@ import StatusTab from "@/ui/status-tab";
 import Image from "next/image";
 import Heading from "@/ui/text-heading";
 import SummaryRow from "@/ui/summary-row";
-import { userOrderHistory } from "@/lib/config/demo-data/users";
 import Divider from "@/ui/divider";
 import UserActivatedModal from "@/components/users/user-activated-modal";
 import UserDeactivateModal from "@/components/users/user-deactivate-modal";
 import OrderDetailsModal from "@/components/users/user-order-details-modal";
 import { UserOrderDetails } from "@/types/users";
 // import { useRoleStore } from "@/store/role-store";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, collection, query, where, getDocs, orderBy, limit, getCountFromServer } from "firebase/firestore";
 import { db } from "@/app/(app)/firebase/config";
 import Loading from "@/app/loading";
 import { formatDateTime } from "@/utils/date-utility";
@@ -35,6 +34,7 @@ interface Customer {
   createdAt: string;
   updatedAt: string;
   profileCompleted: boolean;
+  profileImage?: string; // Profile image URL
   onboardingStatus: {
     currentStep: number;
     onboardingComplete: boolean;
@@ -51,6 +51,10 @@ export default function UserDetails() {
   const [selectedUser, setSelectedUser] = useState<Customer | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [recentOrders, setRecentOrders] = useState<any[]>([]);
+  const [totalOrders, setTotalOrders] = useState(0);
+  const [totalOrderSummary, setTotalOrderSummary] = useState(0);
+  const [lastOrderDate, setLastOrderDate] = useState<string | null>(null);
   // const { role } = useRoleStore();
   const router = useRouter();
 
@@ -59,7 +63,6 @@ export default function UserDetails() {
   const [userDeactivatedModal, setUserDeactivatedModal] = useState(false);
 
   const userId = pathname.split("/").pop();
-
   // Fetch user data from Firestore
   useEffect(() => {
     const fetchUserData = async () => {
@@ -75,6 +78,54 @@ export default function UserDetails() {
             ...userSnapshot.data(),
           } as Customer);
         }
+
+        // Fetch orders data
+        const ordersRef = collection(db, "orders");
+
+        // 1. Get total orders count
+        const ordersCountQuery = query(
+          ordersRef,
+          where("customerId", "==", userId)
+        );
+        const ordersCountSnapshot = await getCountFromServer(ordersCountQuery);
+        setTotalOrders(ordersCountSnapshot.data().count);
+
+        // 2. Get top 3 recent orders
+        const recentOrdersQuery = query(
+          ordersRef,
+          where("customerId", "==", userId),
+          orderBy("createdAt", "desc"),
+          limit(3)
+        );
+        const recentOrdersSnapshot = await getDocs(recentOrdersQuery);
+        const orders = recentOrdersSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setRecentOrders(orders);
+
+        // 3. Calculate total order summary (sum of all order amounts)
+        const allOrdersQuery = query(
+          ordersRef,
+          where("customerId", "==", userId)
+        );
+        const allOrdersSnapshot = await getDocs(allOrdersQuery);
+        let totalSum = 0;
+        let latestOrderDate: string | null = null;
+
+        allOrdersSnapshot.forEach((doc) => {
+          const data = doc.data();
+          totalSum += data.totalAmount || 0;
+
+          // Track the latest order date
+          if (!latestOrderDate || data.createdAt > latestOrderDate) {
+            latestOrderDate = data.createdAt;
+          }
+        });
+
+        setTotalOrderSummary(totalSum);
+        setLastOrderDate(latestOrderDate);
+
       } catch (error) {
         console.error("Error fetching user data:", error);
       } finally {
@@ -85,58 +136,58 @@ export default function UserDetails() {
     fetchUserData();
   }, [userId]);
 
- // Function to update user status - creates field if it doesn't exist using setDoc merge
-const updateUserStatus = async (newStatus: string, suspensionReason?: string) => {
-  if (!selectedUser || !userId) return;
+  // Function to update user status - creates field if it doesn't exist using setDoc merge
+  const updateUserStatus = async (newStatus: string, suspensionReason?: string) => {
+    if (!selectedUser || !userId) return;
 
-  setActionLoading(true);
-  try {
-    const userRef = doc(db, "customers", userId);
-    
-    const updateData: any = {
-      accountStatus: newStatus,
-      updatedAt: new Date().toISOString(),
-    };
+    setActionLoading(true);
+    try {
+      const userRef = doc(db, "customers", userId);
 
-    if (suspensionReason) {
-      updateData.suspensionReason = suspensionReason;
-    } else if (newStatus === "active") {
-      // Clear suspension reason when activating
-      updateData.suspensionReason = null;
+      const updateData: any = {
+        accountStatus: newStatus,
+        updatedAt: new Date().toISOString(),
+      };
+
+      if (suspensionReason) {
+        updateData.suspensionReason = suspensionReason;
+      } else if (newStatus === "active") {
+        // Clear suspension reason when activating
+        updateData.suspensionReason = null;
+      }
+
+      // Use setDoc with merge: true to create fields if they don't exist
+      await setDoc(userRef, updateData, { merge: true });
+
+      // Update local state
+      setSelectedUser(prev => prev ? {
+        ...prev,
+        accountStatus: newStatus,
+        ...(suspensionReason && { suspensionReason }),
+        ...(newStatus === "active" && { suspensionReason: undefined }) // Clear suspension reason on activate
+      } : null);
+
+      toast.success(`User ${getStatusActionMessage(newStatus)} successfully!`);
+
+      // Close modal
+      if (newStatus === "active") {
+        setUserActivatedModal(false);
+      } else if (newStatus === "suspended") {
+        setUserDeactivatedModal(false);
+      }
+
+      // Refresh the page after a short delay
+      setTimeout(() => {
+        router.refresh();
+      }, 1000);
+
+    } catch (error) {
+      console.error("Error updating user status:", error);
+      toast.error("Failed to update user status");
+    } finally {
+      setActionLoading(false);
     }
-
-    // Use setDoc with merge: true to create fields if they don't exist
-    await setDoc(userRef, updateData, { merge: true });
-
-    // Update local state
-    setSelectedUser(prev => prev ? {
-      ...prev,
-      accountStatus: newStatus,
-      ...(suspensionReason && { suspensionReason }),
-      ...(newStatus === "active" && { suspensionReason: undefined }) // Clear suspension reason on activate
-    } : null);
-
-    toast.success(`User ${getStatusActionMessage(newStatus)} successfully!`);
-    
-    // Close modal
-    if (newStatus === "active") {
-      setUserActivatedModal(false);
-    } else if (newStatus === "suspended") {
-      setUserDeactivatedModal(false);
-    }
-
-    // Refresh the page after a short delay
-    setTimeout(() => {
-      router.refresh();
-    }, 1000);
-
-  } catch (error) {
-    console.error("Error updating user status:", error);
-    toast.error("Failed to update user status");
-  } finally {
-    setActionLoading(false);
-  }
-};
+  };
 
   // Helper function for status messages
   const getStatusActionMessage = (status: string) => {
@@ -165,8 +216,8 @@ const updateUserStatus = async (newStatus: string, suspensionReason?: string) =>
       return user.accountStatus === "active"
         ? "active"
         : user.accountStatus === "suspended"
-        ? "suspended"
-        : "pending";
+          ? "suspended"
+          : "pending";
     }
     return user.onboardingStatus?.onboardingComplete ? "active" : "pending";
   };
@@ -232,7 +283,7 @@ const updateUserStatus = async (newStatus: string, suspensionReason?: string) =>
           <div className="flex flex-col md:flex-row items-start justify-between gap-4">
             <div className="flex flex-col md:flex-row items-start md:items-center relative gap-3">
               <Image
-                src="/placeholder.svg"
+                src={selectedUser.profileImage || "/placeholder.webp"}
                 alt="Profile Picture"
                 height={50}
                 width={50}
@@ -303,7 +354,9 @@ const updateUserStatus = async (newStatus: string, suspensionReason?: string) =>
                 </div>
                 <div>
                   <h4 className="text-[#1F1F1F]">Last Order</h4>
-                  <p className="text-[#6E747D]">N/A</p>
+                  <p className="text-[#6E747D]">
+                    {lastOrderDate ? formatDateTime(lastOrderDate) : "N/A"}
+                  </p>
                 </div>
               </div>
             </CardComponent>
@@ -318,36 +371,41 @@ const updateUserStatus = async (newStatus: string, suspensionReason?: string) =>
                   icon="material-symbols-light:package-2-outline"
                   name="Total Orders"
                   color="#21C788"
-                  amount="0"
+                  amount={totalOrders.toString()}
                 />
                 <Divider />
                 <div className="space-y-4 scrollable">
-                  {userOrderHistory.map((order) => (
-                    <div
-                      key={order.orderId}
-                      className="h-[85px] w-full bg-white p-4 shadow rounded flex justify-between items-center">
-                      <div className="text-sm">
-                        <h4 className="text-[#1F1F1F]">{order.orderId}</h4>
-                        <p className="text-[#6E747D]">{order.date}</p>
-                      </div>
-                      <div className="space-y-1">
-                        <button
-                          onClick={() => setSelectedOrder(order)}
-                          className={`w-20 h-7 rounded-lg text-white flex justify-center items-center text-xs cursor-pointer ${
-                            order.status === "completed"
+                  {recentOrders.length > 0 ? (
+                    recentOrders.map((order) => (
+                      <div
+                        key={order.id}
+                        className="h-[85px] w-full bg-white p-4 shadow rounded flex justify-between items-center">
+                        <div className="text-sm">
+                          <h4 className="text-[#1F1F1F]">{order.orderId}</h4>
+                          <p className="text-[#6E747D]">{formatDateTime(order.createdAt)}</p>
+                        </div>
+                        <div className="space-y-1">
+                          <button
+                            onClick={() => setSelectedOrder(order)}
+                            className={`w-20 h-7 rounded-lg text-white flex justify-center items-center text-xs cursor-pointer ${order.status === "completed"
                               ? "bg-[#21C788]"
                               : order.status === "cancelled"
-                              ? "bg-[#FF4D4F]"
-                              : "bg-[#FFAC33]"
-                          }`}>
-                          {order.status}
-                        </button>
-                        <p className="text-sm text-[#6E747D]">
-                          ₦ {order.total}
-                        </p>
+                                ? "bg-[#FF4D4F]"
+                                : "bg-[#FFAC33]"
+                              }`}>
+                            {order.status}
+                          </button>
+                          <p className="text-sm text-[#6E747D]">
+                            ₦ {order.totalAmount?.toLocaleString()}
+                          </p>
+                        </div>
                       </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-[#6E747D]">
+                      <p>No orders yet</p>
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
             </CardComponent>
@@ -361,11 +419,13 @@ const updateUserStatus = async (newStatus: string, suspensionReason?: string) =>
                 icon="mynaui:dollar"
                 name="Total Order Summary"
                 color="#21C788"
-                amount="N/A"
+                amount={`₦${totalOrderSummary.toLocaleString()}`}
               />
               <div className="mt-4 text-sm">
                 <h4 className="text-[#1F1F1F]">Last Order</h4>
-                <p className="text-[#6E747D]">N/A</p>
+                <p className="text-[#6E747D]">
+                  {lastOrderDate ? formatDateTime(lastOrderDate) : "N/A"}
+                </p>
               </div>
               <div className="mt-6">{statusCard[userStatus]}</div>
             </CardComponent>

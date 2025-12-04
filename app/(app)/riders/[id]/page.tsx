@@ -13,7 +13,7 @@ import DocumentPreview from "@/ui/document-preview-modal";
 import SummaryRow from "@/ui/summary-row";
 import Divider from "@/ui/divider";
 // import { useRoleStore } from "@/store/role-store";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc, collection, query, where, getDocs, getCountFromServer } from "firebase/firestore";
 import { db } from "@/app/(app)/firebase/config";
 import type { RiderDetails } from "@/types/riders";
 import RiderSuspendedModal from "@/components/riders/rider-suspended-modal";
@@ -28,18 +28,25 @@ export default function RiderDetails() {
   const [selectedRider, setSelectedRider] = useState<RiderDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [deliveryStats, setDeliveryStats] = useState({
+    total: 0,
+    completed: 0,
+    cancelled: 0,
+  });
+  const [recentOrders, setRecentOrders] = useState<any[]>([]);
   // const { role } = useRoleStore();
   const router = useRouter();
 
   const pathname = usePathname();
   const riderId = pathname.split("/").pop();
 
-  // Fetch rider data from Firestore
+  // Fetch rider data and delivery stats
   useEffect(() => {
-    const fetchRiderData = async () => {
+    const fetchData = async () => {
       if (!riderId) return;
 
       try {
+        // Fetch Rider Data
         const riderRef = doc(db, "riders", riderId);
         const riderSnapshot = await getDoc(riderRef);
 
@@ -50,14 +57,70 @@ export default function RiderDetails() {
             ...riderData,
           } as RiderDetails);
         }
+
+        // Fetch Delivery Stats
+        const ordersRef = collection(db, "orders");
+
+        // 1. Completed Orders: assignedRiderId == riderId AND riderOrderStatus == 'completed'
+        const completedQuery = query(
+          ordersRef,
+          where("assignedRiderId", "==", riderId),
+          where("riderOrderStatus", "==", "completed")
+        );
+        const completedSnapshot = await getCountFromServer(completedQuery);
+        const completedCount = completedSnapshot.data().count;
+
+        // 2. Total Deliveries (Assigned): assignedRiderId == riderId
+        const totalAssignedQuery = query(
+          ordersRef,
+          where("assignedRiderId", "==", riderId)
+        );
+        const totalAssignedSnapshot = await getCountFromServer(totalAssignedQuery);
+        const totalAssignedCount = totalAssignedSnapshot.data().count;
+
+        // 3. Cancelled (Rejected) Orders: Check riderOrderReject array
+        // Fetch all orders to check for rejections
+        const allOrdersSnapshot = await getDocs(ordersRef);
+        let cancelledCount = 0;
+        allOrdersSnapshot.forEach((doc) => {
+          const data = doc.data();
+          if (data.riderOrderReject && Array.isArray(data.riderOrderReject)) {
+            const isRejected = data.riderOrderReject.some(
+              (rejection: any) => rejection.riderId === riderId
+            );
+            if (isRejected) {
+              cancelledCount++;
+            }
+          }
+        });
+
+        // 4. Fetch Recent Orders: assignedRiderId == riderId AND (riderOrderStatus == 'in_progress' OR 'completed')
+        const recentOrdersQuery = query(
+          ordersRef,
+          where("assignedRiderId", "==", riderId),
+          where("riderOrderStatus", "in", ["in_progress", "completed"])
+        );
+        const recentOrdersSnapshot = await getDocs(recentOrdersQuery);
+        const orders = recentOrdersSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setRecentOrders(orders);
+
+        setDeliveryStats({
+          total: totalAssignedCount + cancelledCount,
+          completed: completedCount,
+          cancelled: cancelledCount,
+        });
+
       } catch (error) {
-        console.error("Error fetching rider data:", error);
+        console.error("Error fetching data:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchRiderData();
+    fetchData();
   }, [riderId]);
 
   // for action modals
@@ -97,11 +160,11 @@ export default function RiderDetails() {
       setSelectedRider((prev) =>
         prev
           ? {
-              ...prev,
-              accountStatus: newStatus as any,
-              isOnline: newStatus === "active",
-              ...(suspensionReason && { suspensionReason }),
-            }
+            ...prev,
+            accountStatus: newStatus as any,
+            isOnline: newStatus === "active",
+            ...(suspensionReason && { suspensionReason }),
+          }
           : null
       );
 
@@ -199,19 +262,19 @@ export default function RiderDetails() {
   const deliverySummaryData = [
     {
       name: "Total Deliveries",
-      amount: selectedRider.deliveryStats?.total?.toString() || "0",
+      amount: deliveryStats.total.toString(),
       icon: "majesticons:box-line",
       color: "#21C788",
     },
     {
       name: "Completed",
-      amount: selectedRider.deliveryStats?.completed?.toString() || "0",
+      amount: deliveryStats.completed.toString(),
       icon: "mdi-light:clock",
       color: "#FFAC33",
     },
     {
       name: "Cancelled",
-      amount: selectedRider.deliveryStats?.cancelled?.toString() || "0",
+      amount: deliveryStats.cancelled.toString(),
       icon: "streamline:graph-arrow-increase",
       color: "#FF4D4F",
     },
@@ -290,11 +353,10 @@ export default function RiderDetails() {
                 <Heading xs heading="Profile Information" />
                 {/* online status */}
                 <div
-                  className={`h-[28px] w-[84px] rounded-lg text-xs flex justify-center items-center ${
-                    selectedRider.isOnline
-                      ? "bg-[#0095DA15] text-[#0095DA]"
-                      : "bg-[#C9D1DA66] text-[#1F1F1F]"
-                  }`}>
+                  className={`h-[28px] w-[84px] rounded-lg text-xs flex justify-center items-center ${selectedRider.isOnline
+                    ? "bg-[#0095DA15] text-[#0095DA]"
+                    : "bg-[#C9D1DA66] text-[#1F1F1F]"
+                    }`}>
                   {selectedRider.isOnline ? "Online" : "Offline"}
                 </div>
               </div>
@@ -384,16 +446,36 @@ export default function RiderDetails() {
                   ))}
                 </div>
                 <Divider />
-                <div className="text-center py-8 text-[#6E747D]">
-                  <Icon
-                    icon="material-symbols:package-2-outline"
-                    width={48}
-                    height={48}
-                    className="mx-auto mb-2"
-                  />
-                  <p>No recent orders</p>
-                  <p className="text-sm">Order history will appear here</p>
-                </div>
+                {recentOrders.length > 0 ? (
+                  <div className="space-y-3">
+                    {recentOrders.map((order) => (
+                      <div key={order.id} className="flex items-center justify-between p-3 bg-[#F9FAFB] rounded-lg">
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-[#1F1F1F]">{order.orderId}</p>
+                          <p className="text-xs text-[#6E747D]">{formatDate(order.createdAt)}</p>
+                        </div>
+                        <div className={`px-3 py-1 rounded-full text-xs font-medium ml-4 ${order.riderOrderStatus === 'completed'
+                          ? 'bg-[#21C78815] text-[#21C788]'
+                          : 'bg-[#FFAC3315] text-[#FFAC33]'
+                          }`}>
+                          {order.riderOrderStatus === 'completed' ? 'Completed' : 'In Progress'}
+                          <p className="text-sm font-semibold text-[#1F1F1F] ml-4">₦{order.riderCharge?.toLocaleString()}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-[#6E747D]">
+                    <Icon
+                      icon="material-symbols:package-2-outline"
+                      width={48}
+                      height={48}
+                      className="mx-auto mb-2"
+                    />
+                    <p>No recent orders</p>
+                    <p className="text-sm">Order history will appear here</p>
+                  </div>
+                )}
               </div>
             </CardComponent>
 

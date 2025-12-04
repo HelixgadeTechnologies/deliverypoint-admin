@@ -10,7 +10,7 @@ import Image from "next/image";
 import { useState, useEffect, ChangeEvent } from "react";
 import { Icon } from "@iconify/react";
 // import { useRoleStore } from "@/store/role-store";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, query, where, getCountFromServer } from "firebase/firestore";
 import { db } from "@/app/(app)/firebase/config";
 import { timeAgo } from "@/utils/date-utility";
 import Loading from "@/app/loading";
@@ -30,11 +30,13 @@ interface Customer {
   createdAt: string;
   updatedAt: string;
   profileCompleted: boolean;
+  profileImage?: string; // Profile image URL
   onboardingStatus: {
     currentStep: number;
     onboardingComplete: boolean;
   };
   accountStatus: Status; // Added for status management
+  totalOrders?: number; // Total orders count
 }
 
 export default function Users() {
@@ -54,10 +56,26 @@ export default function Users() {
         const customersRef = collection(db, "customers");
         const customersSnapshot = await getDocs(customersRef);
 
-        const customersData = customersSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Customer[];
+        const customersData = await Promise.all(
+          customersSnapshot.docs.map(async (doc) => {
+            const customerData = doc.data();
+
+            // Fetch order count for this customer
+            const ordersRef = collection(db, "orders");
+            const ordersQuery = query(
+              ordersRef,
+              where("customerId", "==", doc.id)
+            );
+            const orderCountSnapshot = await getCountFromServer(ordersQuery);
+            const totalOrders = orderCountSnapshot.data().count;
+
+            return {
+              id: doc.id,
+              ...customerData,
+              totalOrders,
+            };
+          })
+        ) as Customer[];
 
         setCustomers(customersData);
       } catch (error) {
@@ -113,7 +131,7 @@ export default function Users() {
         <>
           <td className="px-6 flex items-center gap-2 h-full pt-5">
             <Image
-              src="/placeholder.svg"
+              src={row.profileImage || "/placeholder.webp"}
               alt="Profile Picture"
               height={50}
               width={50}
@@ -128,10 +146,15 @@ export default function Users() {
           </td>
           <td className="px-6">{row.phoneNumber}</td>
           <td className="px-6">
-            <StatusTab status={row.accountStatus} />
+            <StatusTab
+              status={
+                row.onboardingStatus?.onboardingComplete
+                  ? "active"
+                  : "pending"
+              }
+            />
           </td>
-          <td className="px-6">0</td>{" "}
-          {/* Total Orders - hardcoded as 0 since not in data */}
+          <td className="px-6">{row.totalOrders || 0}</td>
           <td className="px-6">{timeAgo(row.createdAt)}</td>
           <td className="px-6 relative">
             <div className="flex justify-center items-center">

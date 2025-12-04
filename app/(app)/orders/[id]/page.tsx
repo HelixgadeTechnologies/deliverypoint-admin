@@ -33,13 +33,11 @@ export default function OrderDetails() {
 
         if (docSnap.exists()) {
           const d = docSnap.data() as Order;
-          // Infer vendor name
-          let vendorName = d.vendorId === "multiple" ? "Multiple Vendors" : "";
-          if (!vendorName && d.items) {
-            const firstItem = Object.values(d.items)[0];
-            if (firstItem) {
-              vendorName = firstItem.vendor;
-            }
+          // Use vendorName directly from the order
+          let vendorName = d.vendorName || "Unknown";
+          let totalItems = d.items ? Object.keys(d.items).length : 0;
+          if (totalItems > 1) {
+            vendorName = "Multiple Vendors";
           }
 
           setOrder({
@@ -49,14 +47,14 @@ export default function OrderDetails() {
               name: d.customerName || "Unknown",
               phoneNumber: "", // Not in data
             },
-            pickupLocation: "", // Not in data
+            pickupLocation: d.vendorAddress || "",
             dropOffLocation: d.deliveryAddress || "",
-            riderName: d.riderId || "searching",
-            vendorName: vendorName || "Unknown",
+            riderName: d.riderName || "Searching for rider",
+            vendorName: vendorName,
             status: d.status || "pending",
             earnings: {
               main: d.totalAmount ?? 0,
-              platform: 0, // Not in data
+              platform: d.adminFee ?? 0,
             },
             items: d.items || {},
             createdAt: d.createdAt,
@@ -188,40 +186,72 @@ export default function OrderDetails() {
             <CardComponent height="100%">
               <Heading xs heading="Status Timeline" />
               <div className="space-y-4">
+                {/* Order Created - Always shown */}
                 <StatusTimeline
                   status="Success"
                   title="Order Created"
                   subtitle="Order placed by customer"
-                  date={order.createdAt ? new Date(order.createdAt).toLocaleDateString() : ""}
-                  time={order.createdAt ? new Date(order.createdAt).toLocaleTimeString() : ""}
-                />
-                <StatusTimeline
-                  status={order.isDelivered ? "Success" : "Pending"}
-                  title="Picked Up"
-                  subtitle="Pending rider confirmation"
-                  date={order.createdAt ? new Date(order.createdAt).toLocaleDateString() : ""}
-                  time={order.createdAt ? new Date(order.createdAt).toLocaleTimeString() : ""}
+                  date={order.raw?.createdAt ? new Date(order.raw.createdAt).toLocaleDateString() : ""}
+                  time={order.raw?.createdAt ? new Date(order.raw.createdAt).toLocaleTimeString() : ""}
                 />
 
-                {order.isCanceled ? (
+                {/* Order Accepted by Vendor */}
+                <StatusTimeline
+                  status={order.raw?.status === "accepted" || order.raw?.status === "completed" || order.raw?.deliveryStatus ? "Success" : order.raw?.status === "cancelled" ? "Inactive" : "Pending"}
+                  title="Order Accepted"
+                  subtitle={order.raw?.status === "accepted" || order.raw?.status === "completed" || order.raw?.deliveryStatus ? "Vendor accepted the order" : "Waiting for vendor acceptance"}
+                  date={order.raw?.vendorAcceptedAt ? new Date(order.raw.vendorAcceptedAt).toLocaleDateString() : ""}
+                  time={order.raw?.vendorAcceptedAt ? new Date(order.raw.vendorAcceptedAt).toLocaleTimeString() : ""}
+                />
+
+                {/* Check if order was cancelled */}
+                {order.raw?.status === "cancelled" ? (
                   <StatusTimeline
                     status="Failed"
-                    title="Order Canceled"
-                    subtitle="Order was cancelled by customer"
-                    date={order.canceledDate ? new Date(order.canceledDate).toLocaleDateString() : ""}
-                    time={order.canceledDate ? new Date(order.canceledDate).toLocaleTimeString() : ""}
+                    title="Order Cancelled"
+                    subtitle="Order was cancelled"
+                    date={order.raw?.updatedAt ? new Date(order.raw.updatedAt).toLocaleDateString() : ""}
+                    time={order.raw?.updatedAt ? new Date(order.raw.updatedAt).toLocaleTimeString() : ""}
                   />
                 ) : (
-                  <StatusTimeline
-                    status={order.isDelivered ? "Success" : "Inactive"}
-                    title="Order Delivered"
-                    subtitle={order.isDelivered ? "Order was delivered by rider" : "Order delivered to customer"}
-                    date={order.deliveryDate ? new Date(order.deliveryDate).toLocaleDateString() : ""}
-                    time={order.deliveryDate ? new Date(order.deliveryDate).toLocaleTimeString() : ""}
-                  />
-                )}
+                  <>
+                    {/* Order Completed (Given to Rider) */}
+                    <StatusTimeline
+                      status={order.raw?.status === "completed" || order.raw?.deliveryStatus ? "Success" : "Inactive"}
+                      title="Order Ready"
+                      subtitle={order.raw?.status === "completed" ? "Order given to rider" : "Order being prepared"}
+                      date={order.raw?.completedAt ? new Date(order.raw.completedAt).toLocaleDateString() : ""}
+                      time={order.raw?.completedAt ? new Date(order.raw.completedAt).toLocaleTimeString() : ""}
+                    />
 
-                {/* Add more timeline items based on status if needed, currently static or based on single date */}
+                    {/* Picked Up by Rider */}
+                    <StatusTimeline
+                      status={order.raw?.deliveryStatus === "picked_up" || order.raw?.deliveryStatus === "in_transit" || order.raw?.deliveryStatus === "delivered" ? "Success" : "Inactive"}
+                      title="Picked Up"
+                      subtitle={order.raw?.deliveryStatus === "picked_up" || order.raw?.deliveryStatus === "in_transit" || order.raw?.deliveryStatus === "delivered" ? "Rider picked up the order" : "Waiting for rider pickup"}
+                      date={order.raw?.pickedUpAt ? new Date(order.raw.pickedUpAt).toLocaleDateString() : ""}
+                      time={order.raw?.pickedUpAt ? new Date(order.raw.pickedUpAt).toLocaleTimeString() : ""}
+                    />
+
+                    {/* In Transit */}
+                    <StatusTimeline
+                      status={order.raw?.deliveryStatus === "in_transit" || order.raw?.deliveryStatus === "delivered" ? "Success" : "Inactive"}
+                      title="In Transit"
+                      subtitle={order.raw?.deliveryStatus === "in_transit" || order.raw?.deliveryStatus === "delivered" ? "Order is on the way" : "Order not yet in transit"}
+                      date={order.raw?.inTransitAt ? new Date(order.raw.inTransitAt).toLocaleDateString() : ""}
+                      time={order.raw?.inTransitAt ? new Date(order.raw.inTransitAt).toLocaleTimeString() : ""}
+                    />
+
+                    {/* Order Delivered */}
+                    <StatusTimeline
+                      status={order.raw?.deliveryStatus === "delivered" ? "Success" : "Inactive"}
+                      title="Order Delivered"
+                      subtitle={order.raw?.deliveryStatus === "delivered" ? "Order delivered to customer" : "Awaiting delivery"}
+                      date={order.raw?.deliveredAt ? new Date(order.raw.deliveredAt).toLocaleDateString() : ""}
+                      time={order.raw?.deliveredAt ? new Date(order.raw.deliveredAt).toLocaleTimeString() : ""}
+                    />
+                  </>
+                )}
               </div>
             </CardComponent>
             {/* earnings breakdown */}
@@ -230,40 +260,40 @@ export default function OrderDetails() {
               <div className="space-y-3 text-[#7C7979] text-sm">
                 <p className="flex justify-between items-center">
                   <span>Platform Fee</span>
-                  <span>N {order.earnings.platform}</span>
+                  <span>₦{order.raw?.adminFee?.toLocaleString() || 0}</span>
                 </p>
                 {/* conditional earning breakdown */}
-                {order.status === "declined" ? (
+                {order.status === "cancelled" ? (
                   <div className="space-y-3">
                     <p className="flex justify-between items-center">
                       <span>Rider Payout</span>
-                      <span>N 0</span>
+                      <span>₦0</span>
                     </p>
                     <Divider />
                     <p className="flex justify-between items-center">
                       <span className="text-[#1F1F1F]">Total Order Value</span>
-                      <span>N {order.earnings.main}</span>
+                      <span>₦{order.earnings.main?.toLocaleString()}</span>
                     </p>
                     <Divider />
                     <p className="flex justify-between items-center">
                       <span className="text-[#1F1F1F]">Commission Status</span>
-                      <StatusTab successKeywords={["paid"]} status="paid" />
+                      <StatusTab successKeywords={["paid"]} status="cancelled" />
                     </p>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     <p className="flex justify-between items-center">
                       <span>Rider Payout</span>
-                      <span>N 0</span>
+                      <span>₦{order.raw?.riderCharge?.toLocaleString() || 0}</span>
                     </p>
                     <p className="flex justify-between items-center">
                       <span>Vendor Payout</span>
-                      <span>N {order.earnings.main}</span>
+                      <span>₦{order.raw?.vendorCharge?.toLocaleString() || 0}</span>
                     </p>
                     <Divider />
                     <p className="flex justify-between items-center">
                       <span className="text-[#1F1F1F]">Total Order Value</span>
-                      <span>N {order.earnings.main}</span>
+                      <span>₦{order.earnings.main?.toLocaleString()}</span>
                     </p>
                   </div>
                 )}
