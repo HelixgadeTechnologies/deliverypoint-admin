@@ -4,7 +4,6 @@ import CardComponent from "@/ui/card-wrapper";
 import { Icon } from "@iconify/react";
 import StatusTimeline from "@/ui/status-timeline";
 import { usePathname } from "next/navigation";
-import { orderTableData } from "@/lib/config/demo-data/orders";
 import StatusTab from "@/ui/status-tab";
 import Heading from "@/ui/text-heading";
 import Divider from "@/ui/divider";
@@ -34,11 +33,8 @@ export default function OrderDetails() {
         if (docSnap.exists()) {
           const d = docSnap.data() as Order;
           // Use vendorName directly from the order
-          let vendorName = d.vendorName || "Unknown";
-          let totalItems = d.items ? Object.keys(d.items).length : 0;
-          if (totalItems > 1) {
-            vendorName = "Multiple Vendors";
-          }
+          const totalItems = d.items ? Object.keys(d.items).length : 0;
+          const vendorName = totalItems > 1 ? "Multiple Vendors" : d.vendorName || "Unknown";
 
           setOrder({
             id: docSnap.id,

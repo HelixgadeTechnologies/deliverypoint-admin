@@ -2,7 +2,6 @@
 
 import {
   orderStats,
-  orderTableData,
   orderTableHead,
 } from "@/lib/config/demo-data/orders";
 import SearchInput from "@/ui/forms/search-input";
