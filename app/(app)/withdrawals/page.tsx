@@ -14,6 +14,8 @@ import Table from "@/ui/table";
 import ViewDetails from "@/ui/table-action";
 import UserDetailsModal from "@/components/withdrawals/user-details-modal";
 import { toast, Toaster } from "react-hot-toast";
+import { generateRef } from "@/lib/services/paystackService";
+import { getBankCodeAction, createTransferRecipientAction, initiateWithdrawalAction } from "@/lib/actions/paystackActions";
 
 export default function Withdrawals() {
   const [activeRowId, setActiveRowId] = useState<string | null>(null);
@@ -80,22 +82,82 @@ export default function Withdrawals() {
 
   // Approve withdrawal
   const handleApprove = async (withdrawal: WithdrawalRequest) => {
+    const loadingToast = toast.loading("Processing withdrawal...");
+
     try {
-      const withdrawalRef = doc(db, "withdrawalRequest", withdrawal.id);
-      await updateDoc(withdrawalRef, {
-        status: "Approved",
-        lastPayOutDate: new Date(),
-        updatedAt: new Date(),
+      // Validate withdrawal data
+      if (!withdrawal.bankName || !withdrawal.bankAccountNumber || !withdrawal.accountName) {
+        toast.error("Missing bank details", { id: loadingToast });
+        return;
+      }
+
+      if (!withdrawal.withdrawalAmount || withdrawal.withdrawalAmount <= 0) {
+        toast.error("Invalid withdrawal amount", { id: loadingToast });
+        return;
+      }
+
+      // Step 1: Get bank code from Paystack
+      toast.loading("Fetching bank details...", { id: loadingToast });
+      const bankCode = await getBankCodeAction(withdrawal.bankName);
+
+      if (!bankCode) {
+        toast.error(`Bank not found: ${withdrawal.bankName}`, { id: loadingToast });
+        return;
+      }
+
+      // Step 2: Create transfer recipient
+      toast.loading("Creating transfer recipient...", { id: loadingToast });
+      const recipientResponse = await createTransferRecipientAction({
+        accountNumber: withdrawal.bankAccountNumber,
+        accountName: withdrawal.accountName,
+        bankCode: bankCode,
       });
 
-      toast.success("Withdrawal approved successfully!");
+      if (!recipientResponse.status || !recipientResponse.data?.recipient_code) {
+        toast.error("Failed to create transfer recipient", { id: loadingToast });
+        return;
+      }
+
+      const recipientCode = recipientResponse.data.recipient_code;
+
+      // Step 3: Initiate withdrawal transfer
+      toast.loading("Initiating transfer...", { id: loadingToast });
+      const reference = generateRef();
+      const transferResponse = await initiateWithdrawalAction({
+        amount: withdrawal.withdrawalAmount,
+        recipient: recipientCode,
+        reason: `Withdrawal for ${withdrawal.name} (${withdrawal.user_type})`,
+        reference: reference,
+      });
+
+      console.log("Transfer Response", transferResponse);
+
+      if (!transferResponse.status) {
+        toast.error("Transfer failed", { id: loadingToast });
+        return;
+      }
+
+      // Step 4: Update withdrawal status in Firebase (Keep as Pending until finalized)
+      toast.loading("Updating withdrawal status...", { id: loadingToast });
+      const withdrawalRef = doc(db, "withdrawalRequest", withdrawal.id);
+      await updateDoc(withdrawalRef, {
+        status: "Pending", // Keep as Pending until OTP finalization
+        lastPayOutDate: new Date(),
+        updatedAt: new Date(),
+        paystackReference: reference,
+        paystackRecipientCode: recipientCode,
+        paystackTransferCode: transferResponse.data?.transfer_code || null,
+      });
+
+      toast.success("Withdrawal approved and transfer initiated successfully!", { id: loadingToast });
       setViewUserDetails(false);
 
       // Refresh data
       window.location.reload();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error approving withdrawal:", error);
-      toast.error("Failed to approve withdrawal");
+      const errorMessage = error?.message || "Failed to approve withdrawal";
+      toast.error(errorMessage, { id: loadingToast });
     }
   };
 
@@ -233,7 +295,16 @@ export default function Withdrawals() {
             </td>
             <td className="px-6">₦{row.withdrawalAmount?.toLocaleString()}</td>
             <td className="px-6">
-              <StatusTab status={row.status} />
+              {row.status === "Pending" && row.paystackTransferCode ? (
+                <div className="flex flex-col gap-1">
+                  <StatusTab status="Pending" />
+                  <span className="text-[10px] text-blue-600 font-medium flex items-center gap-1">
+                    <Icon icon="mdi:clock-alert-outline" /> Needs Finalization
+                  </span>
+                </div>
+              ) : (
+                <StatusTab status={row.status} />
+              )}
             </td>
             <td className="px-6 relative">
               <div className="flex justify-center items-center">

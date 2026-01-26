@@ -8,6 +8,10 @@ import StatusTab from "@/ui/status-tab";
 import Heading from "@/ui/text-heading";
 import { Icon } from "@iconify/react";
 import { useState } from "react";
+import { finalizeTransferAction } from "@/lib/actions/paystackActions";
+import { toast } from "react-hot-toast";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "@/app/(app)/firebase/config";
 
 type UserDetailsModalProps = {
   isOpen: boolean;
@@ -27,6 +31,8 @@ export default function UserDetailsModal({
   const [confirmApproval, setConfirmApproval] = useState(false);
   const [confirmDecline, setConfirmDecline] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [isFinalizing, setIsFinalizing] = useState(false);
 
   if (!withdrawal) {
     return null;
@@ -46,6 +52,49 @@ export default function UserDetailsModal({
     setConfirmDecline(false);
   };
 
+  const handleFinalizeTransfer = async () => {
+    if (!otp || otp.length < 6) {
+      toast.error("Please enter a valid 6-digit OTP");
+      return;
+    }
+
+    if (!withdrawal.paystackTransferCode) {
+      toast.error("Transfer code not found");
+      return;
+    }
+
+    setIsFinalizing(true);
+    const loadingToast = toast.loading("Finalizing transfer...");
+
+    try {
+      const response = await finalizeTransferAction({
+        transferCode: withdrawal.paystackTransferCode,
+        otp: otp,
+      });
+
+      if (response.status) {
+        // Update status in Firebase to Approved after successful finalization
+        const withdrawalRef = doc(db, "withdrawalRequest", withdrawal.id);
+        await updateDoc(withdrawalRef, {
+          status: "Approved",
+          updatedAt: new Date(),
+        });
+
+        toast.success("Transfer finalized and approved successfully!", { id: loadingToast });
+        setOtp("");
+        onClose();
+        window.location.reload();
+      } else {
+        toast.error(response.message || "Failed to finalize transfer", { id: loadingToast });
+      }
+    } catch (error: any) {
+      console.error("Finalize Transfer Error:", error);
+      toast.error(error.message || "Failed to finalize transfer", { id: loadingToast });
+    } finally {
+      setIsFinalizing(false);
+    }
+  };
+
   return (
     <>
       <Modal isOpen={isOpen} onClose={onClose} maxWidth="700px">
@@ -59,7 +108,7 @@ export default function UserDetailsModal({
           </div>
         </div>
         <CardComponent>
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center -gap-3">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
             <Heading heading="Withdrawal Information" sm />
             <StatusTab status={withdrawal.status} />
           </div>
@@ -113,7 +162,33 @@ export default function UserDetailsModal({
               </p>
             </div>
           </div>
-          {withdrawal.status === "Pending" && (
+
+          {withdrawal.status === "Pending" && withdrawal.paystackTransferCode && (
+            <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-100">
+              <h4 className="text-[#1F1F1F] font-bold mb-2">Finalize Transfer</h4>
+              <p className="text-xs text-[#6E747D] mb-4">
+                This transfer requires an OTP to complete. Please enter the OTP sent to the business phone.
+              </p>
+              <div className="flex flex-col gap-3">
+                <input
+                  type="text"
+                  placeholder="Enter 6-digit OTP"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  className="w-full p-2.5 bg-white border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0095DA]"
+                  maxLength={6}
+                />
+                <Button
+                  onClick={handleFinalizeTransfer}
+                  content={isFinalizing ? "Finalizing..." : "Confirm & Finalize"}
+                  variant="normal"
+                  isDisabled={isFinalizing || otp.length < 6}
+                />
+              </div>
+            </div>
+          )}
+
+          {withdrawal.status === "Pending" && !withdrawal.paystackTransferCode && (
             <div className="flex items-center justify-end mt-2.5">
               <div className="flex flex-col md:flex-row items-center gap-2 w-[400px]">
                 <Button

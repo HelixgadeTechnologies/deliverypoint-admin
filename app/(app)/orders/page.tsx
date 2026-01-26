@@ -193,11 +193,8 @@ export default function Orders() {
             </td>
             <td className="px-6 max-w-[220px]">
               <h4 className="text-sm truncate text-center">
-                N{row.earnings.main}
+                N{row.earnings.main.toFixed(2)}
               </h4>
-              <p className="text-xs truncate text-[#7C7979] text-center">
-                Platform: N{row.earnings.platform}
-              </p>
             </td>
             <td className="px-6 relative">
               <div className="flex justify-center items-center">

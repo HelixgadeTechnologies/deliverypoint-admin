@@ -15,4 +15,8 @@ export interface WithdrawalRequest {
     user_type: "Rider" | "Vendor" | "Customer";
     walletBalance: number;
     withdrawalAmount: number;
+    // Paystack fields
+    paystackReference?: string;
+    paystackRecipientCode?: string;
+    paystackTransferCode?: string | null;
 }
