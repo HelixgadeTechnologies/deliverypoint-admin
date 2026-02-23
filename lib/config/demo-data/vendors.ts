@@ -35,6 +35,7 @@ export const vendorStats = [
 export const vendorHead = [
   "Vendor",
   "Contact Info",
+  "State",
   "Status",
   "Total Orders",
   "Registration",

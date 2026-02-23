@@ -91,7 +91,7 @@ export default function VendorDetails() {
             businessLicenseMetadata: vendorData.businessLicenseMetadata,
             address: vendorData.address,
             city: vendorData.city,
-            state: vendorData.state,
+            state: vendorData.businessAddress?.state || vendorData.state || "Unknown",
             fullAddress: vendorData.fullAddress,
             businessDescription: vendorData.businessDescription,
             businessCategory: vendorData.businessCategory,

@@ -6,6 +6,7 @@ import CardComponent from "@/ui/card-wrapper";
 import LineChartComponent from "@/ui/line-chart";
 import Heading from "@/ui/text-heading";
 import DashboardStatCard from "@/ui/stat-card";
+import BarChartComponent from "@/ui/bar-chart";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "@/app/(app)/firebase/config";
 import { useRouter } from "next/navigation";
@@ -24,6 +25,8 @@ export default function Dashboard() {
   const [dataLoading, setDataLoading] = useState(true);
   const [orderTrendsData, setOrderTrendsData] = useState<Array<{ name: string; value: number }>>([]);
   const [revenuePayoutData, setRevenuePayoutData] = useState<Array<{ month: string; revenue: number; payouts: number }>>([]);
+  const [vendorsByStateData, setVendorsByStateData] = useState<Array<{ state: string; count: number }>>([]);
+  const [revenueByStateData, setRevenueByStateData] = useState<Array<{ state: string; revenue: number }>>([]);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [recentActivities, setRecentActivities] = useState<Array<{
     message: string;
@@ -228,6 +231,64 @@ export default function Dashboard() {
 
     fetchRevenuePayoutData();
   }, [selectedYear]);
+
+  // Fetch vendors data by state
+  useEffect(() => {
+    const fetchVendorStateData = async () => {
+      try {
+        const vendorsRef = collection(db, "vendors");
+        const vendorsSnapshot = await getDocs(vendorsRef);
+
+        const stateCounts: Record<string, number> = {};
+        const stateRevenues: Record<string, number> = {};
+
+        const validNigerianStates = [
+          "abia", "adamawa", "akwa ibom", "anambra", "bauchi", "bayelsa", "benue", "borno", "cross river", "delta",
+          "ebonyi", "edo", "ekiti", "enugu", "gombe", "imo", "jigawa", "kaduna", "kano", "katsina", "kebbi", "kogi",
+          "kwara", "lagos", "nasarawa", "niger", "ogun", "ondo", "osun", "oyo", "plateau", "rivers", "sokoto", "taraba",
+          "yobe", "zamfara", "federal capital territory", "fct", "abuja"
+        ];
+
+        vendorsSnapshot.forEach((doc) => {
+          const data = doc.data();
+          let state = data.businessAddress?.state || data.state || "Unknown";
+          
+          // Normalize state name 
+          let normalizedState = state.toLowerCase().trim();
+          
+          // Check if valid state
+          if (validNigerianStates.includes(normalizedState)) {
+             // Re-capitalize correctly for display
+             state = normalizedState.split(' ').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+             
+             // Handle FCT variations
+             if (state === "Fct" || state === "Abuja") state = "Federal Capital Territory";
+
+             stateCounts[state] = (stateCounts[state] || 0) + 1;
+             const earnings = Number(data.totalEarnings) || 0;
+             stateRevenues[state] = (stateRevenues[state] || 0) + earnings;
+          }
+        });
+
+        const sortedStatesForCount = Object.keys(stateCounts).map(state => ({
+          state,
+          count: stateCounts[state]
+        })).sort((a, b) => b.count - a.count).slice(0, 10);
+
+        const sortedStatesForRevenue = Object.keys(stateRevenues).map(state => ({
+          state,
+          revenue: Math.round(stateRevenues[state])
+        })).sort((a, b) => b.revenue - a.revenue).slice(0, 10);
+
+        setVendorsByStateData(sortedStatesForCount);
+        setRevenueByStateData(sortedStatesForRevenue);
+      } catch (error) {
+        console.error("Error fetching vendor state data:", error);
+      }
+    };
+
+    fetchVendorStateData();
+  }, []);
 
   // Fetch recent activities
   useEffect(() => {
@@ -456,6 +517,49 @@ export default function Dashboard() {
                   data={orderTrendsData}
                   xKey="name"
                   legend={false}
+                />
+              </div>
+            </CardComponent>
+          </div>
+        </div>
+
+        <div className="flex flex-col md:flex-row justify-between items-start gap-6">
+          <div className="w-full md:w-[65%]">
+            <CardComponent>
+              <div className="mb-4">
+                <Heading
+                  heading="Vendors by State"
+                  subtitle="Distribution of vendors across different locations"
+                  icon="mdi:map-marker"
+                  iconColor="#886CE4"
+                  sm
+                />
+              </div>
+              <div className="h-80">
+                <BarChartComponent
+                  data={vendorsByStateData}
+                  xKey="state"
+                  bars={[{ key: "count", label: "Vendors", color: "#886CE4" }]}
+                />
+              </div>
+            </CardComponent>
+          </div>
+          <div className="w-full md:w-[35%]">
+            <CardComponent>
+              <div className="mb-4">
+                <Heading
+                  heading="Top Earning States"
+                  subtitle="Total vendor revenue by location"
+                  icon="solar:dollar-minimalistic-linear"
+                  iconColor="#21C788"
+                  sm
+                />
+              </div>
+              <div className="h-80">
+                <BarChartComponent
+                  data={revenueByStateData}
+                  xKey="state"
+                  bars={[{ key: "revenue", label: "Revenue (₦)", color: "#21C788" }]}
                 />
               </div>
             </CardComponent>

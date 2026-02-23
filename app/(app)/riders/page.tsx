@@ -78,7 +78,7 @@ export default function Riders() {
                   email: data.email || "No email",
                   phoneNumber: data.phoneNumber || "No phone",
                   city: data.city || "Unknown",
-                  state: data.state || "Unknown",
+                  state: data.state || data.businessAddress?.state || "Unknown",
                   accountStatus: data.accountStatus || "pending",
                   isOnline: data.isOnline || false,
                   profileCompleted: data.profileCompleted || false,

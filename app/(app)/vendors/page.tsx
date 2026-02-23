@@ -28,6 +28,7 @@ interface Vendor {
     email: string;
     phone: string;
   };
+  state: string;
   status: Status;
   totalOrders: number;
   createdAt: string;
@@ -70,13 +71,16 @@ export default function Vendors() {
                 email: data.email || "No email",
                 phone: data.phoneNumber || "No phone",
               },
+              state: data.businessAddress?.state || data.state || "Unknown",
               status: data.status || "active",
               totalOrders: orderCount,
               createdAt: data.createdAt,
-            };
+              rawState: data.state,
+              rawBusinessAddress: data.businessAddress
+            } as any;
           })
         );
-
+        console.log("VENDOR STATE DEBUG", vendorsData.map((v: any) => ({ name: v.vendor.vendorName, state: v.state, rawState: v.rawState, rawBusAddress: v.rawBusinessAddress })));
         setVendors(vendorsData);
       } catch (error) {
         console.error("Error fetching vendors:", error);
@@ -191,6 +195,7 @@ export default function Vendors() {
               <h4>{row.contact.email}</h4>
               <p className="text-[#7C7979]">{row.contact.phone}</p>
             </td>
+            <td className="px-6 text-sm capitalize">{row.state}</td>
             <td className="px-6">
               <StatusTab status={row.status} />
             </td>

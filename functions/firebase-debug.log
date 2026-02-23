@@ -1,0 +1,19 @@
+[debug] [2026-02-23T05:41:32.582Z] ----------------------------------------------------------------------
+[debug] [2026-02-23T05:41:32.653Z] Command:       /usr/local/bin/node /usr/local/bin/firebase init
+[debug] [2026-02-23T05:41:32.654Z] CLI Version:   14.27.0
+[debug] [2026-02-23T05:41:32.654Z] Platform:      darwin
+[debug] [2026-02-23T05:41:32.655Z] Node Version:  v20.12.2
+[debug] [2026-02-23T05:41:32.655Z] Time:          Mon Feb 23 2026 06:41:32 GMT+0100 (West Africa Standard Time)
+[debug] [2026-02-23T05:41:32.655Z] ----------------------------------------------------------------------
+[debug] 
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  /Users/ayaosigodfrey/deliverypoint-admin/functions
+
