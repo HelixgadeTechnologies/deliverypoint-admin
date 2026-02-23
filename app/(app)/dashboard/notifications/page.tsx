@@ -190,7 +190,7 @@ export default function NotificationsPage() {
         ) : notifs.length === 0 ? (
           <div className="flex flex-col justify-center items-center py-20 text-gray-500">
             <h3 className="text-lg font-medium mb-2">No notifications found</h3>
-            <p className="text-sm">You're all caught up!</p>
+            <p className="text-sm">You&apos;re all caught up!</p>
           </div>
         ) : (
           <div className="space-y-4">

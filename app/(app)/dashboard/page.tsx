@@ -254,7 +254,7 @@ export default function Dashboard() {
           let state = data.businessAddress?.state || data.state || "Unknown";
           
           // Normalize state name 
-          let normalizedState = state.toLowerCase().trim();
+          const normalizedState = state.toLowerCase().trim();
           
           // Check if valid state
           if (validNigerianStates.includes(normalizedState)) {
