@@ -34,18 +34,20 @@ export default function RiderSuspendedModal({ isOpen, onClose, onSuspend, isLoad
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
-        <div className="flex gap-2 items-center w/full">
+        <div className="flex gap-2 items-center w-full">
             <Button
             content="Cancel"
             onClick={onClose}
             variant="error"
             isSecondary
+            className="flex-1"
             />
             <Button
             content="Suspend Rider"
             variant="error"
             onClick={() => onSuspend(query)}
             isLoading={isLoading}
+            className="flex-1"
             />
         </div>
       </div>
